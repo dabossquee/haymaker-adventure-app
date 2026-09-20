@@ -216,7 +216,7 @@ if user_action:
                 temperature=0.7
             )
             
-            raw_ai_text = response.choices.message.content
+            raw_ai_text = response.choices[0].message.content
             
             loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
             for item in loot_matches:
