@@ -46,7 +46,6 @@ else:
 
 engine = st.session_state.world_engine
 char = engine["player_character"]
-
 # 4. SIDEBAR DASHBOARD CONTROL LAYER
 with st.sidebar:
     st.title("📊 STATUS CONTROL")
@@ -64,7 +63,7 @@ with st.sidebar:
             st.info("🛡️ Zero Ads. Zero Traps. Experience absolute narrative freedom.")
         else:
             st.subheader("🔒 Action Pool Depleted!")
-            st.error("Create an account and unlock the $10/week Unlimited Pass to save your universe timeline.")
+            st.error("Create an account and unlock the \$10/week Unlimited Pass to save your universe timeline.")
             
             auth_mode = st.radio("Access Corridors:", ["Create Account", "Sign In"])
             email = st.text_input("Account Email:")
@@ -104,7 +103,7 @@ with st.sidebar:
         
         if "user" in st.session_state and not getattr(st.session_state, 'is_premium', False):
             st.subheader("💳 Activate Subscription")
-            if st.button("👑 Get Unlimited Pass ($10/wk)", type="primary", use_container_width=True):
+            if st.button("👑 Get Unlimited Pass (\$10/wk)", type="primary", use_container_width=True):
                 try:
                     checkout_session = stripe.checkout.Session.create(
                         payment_method_types=['card'],
@@ -134,7 +133,6 @@ with st.sidebar:
                 st.session_state.guest_tokens -= 1
             engine["story_log"].append({"role": "user", "content": "🛠️ [System Command] I ordered my engineer to patch the ship hulls!"})
             st.rerun()
-
 # 5. BALA AI LANDING HUB AND PLATFORM NAVIGATION
 if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
@@ -148,7 +146,6 @@ if not engine["world_name"]:
     with tab_explore:
         st.markdown("### 🌟 Public Discovery Marketplace")
         try:
-            # Live scan fetching every world saved globally in your Supabase table
             public_worlds = supabase_client.table("worlds").select("*").order("created_at", desc=True).execute()
             if public_worlds.data:
                 cols = st.columns(3)
@@ -170,7 +167,6 @@ if not engine["world_name"]:
         st.markdown("### 🏗️ Your Private Universes")
         if "user" in st.session_state:
             try:
-                # Target scan pulling only rows where the creator_id matches the active user token
                 my_worlds = supabase_client.table("worlds").select("*").eq("creator_id", st.session_state.user.id).execute()
                 if my_worlds.data:
                     for my_row in my_worlds.data:
@@ -193,7 +189,6 @@ if not engine["world_name"]:
             if w_name and w_genre and c_name:
                 if "user" in st.session_state:
                     try:
-                        # Write the permanent row data directly to your live cloud database table
                         new_world = supabase_client.table("worlds").insert({
                             "creator_id": st.session_state.user.id,
                             "world_name": w_name,
