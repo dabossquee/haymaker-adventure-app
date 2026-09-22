@@ -6,7 +6,7 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. INITIALIZE MASTER PAGE ENVIRONMENT
+# 1. PAGE CONFIG & ENVIRONMENTAL GATEWAY
 st.set_page_config(page_title="Haymaker Engine", page_icon="🪐", layout="wide")
 
 load_dotenv()
@@ -25,19 +25,19 @@ supabase_client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 if STRIPE_SECRET:
     stripe.api_key = STRIPE_SECRET
 
-# 2. STRIPE CHECKOUT REDIRECT STATE CAPTURE
+# 2. CAPTURE MONETIZATION PAYWALL REDIRECTS
 query_params = st.query_params
 if "success" in query_params and query_params["success"] == "true":
     st.session_state.is_premium = True
     st.toast("👑 Premium Unlimited Pass Activated Successfully!")
 
-# 3. SET GENEROUS HOOK THRESHOLDS & ENGINE MEMORY
+# 3. SET BASE TRIAL THRESHOLDS & ENGINE MEMORY
 if "user" not in st.session_state:
     if "guest_tokens" not in st.session_state:
-        st.session_state.guest_tokens = 3  # Set to 3 for instant testing. Switch to 30 for production!
+        st.session_state.guest_tokens = 3  # Set to 30 for production release!
     if "world_engine" not in st.session_state:
         st.session_state.world_engine = {
-            "world_name": "", "world_genre": "",
+            "world_id": None, "world_name": "", "world_genre": "",
             "player_character": {"name": "", "backstory": "", "health": 100, "inventory": ["survival gear"]},
             "story_log": []
         }
@@ -135,28 +135,89 @@ with st.sidebar:
             engine["story_log"].append({"role": "user", "content": "🛠️ [System Command] I ordered my engineer to patch the ship hulls!"})
             st.rerun()
 
-# 5. INITIAL UNIVERSE ARCHITECT ENTRY PANEL
+# 5. BALA AI LANDING HUB AND PLATFORM NAVIGATION
 if not engine["world_name"]:
-    st.title("🪐 Haymaker Universe Architect")
-    st.subheader("Configure your custom universe structure from scratch")
+    st.title("🪐 Haymaker Industry Hub")
+    st.subheader("Explore alternate realities or forge your own timeline")
     
-    w_name = st.text_input("Name your universe/world:", placeholder="e.g., Mother Earth, Sector 7")
-    w_genre = st.text_input("What is the genre?", placeholder="e.g., Dark Fantasy, Cyberpunk, Sci-Fi")
-    c_name = st.text_input("What is your character's name?")
-    c_backstory = st.text_area("Give your character a quick backstory/role:")
+    # Render the 4 premium interface navigation tabs
+    tab_explore, tab_my_creations, tab_create, tab_avatars = st.tabs([
+        "🪐 Explore Universes", "🏗️ My Creations", "🪄 Create a World", "🎭 Community Avatars"
+    ])
     
-    if st.button("🚀 Initialize World Engine", use_container_width=True):
-        if w_name and w_genre and c_name:
-            engine["world_name"] = w_name
-            engine["world_genre"] = w_genre
-            char["name"] = c_name
-            char["backstory"] = c_backstory
-            st.rerun()
+    with tab_explore:
+        st.markdown("### 🌟 Public Discovery Marketplace")
+        try:
+            # Live scan fetching every world saved globally in your Supabase table
+            public_worlds = supabase_client.table("worlds").select("*").order("created_at", desc=True).execute()
+            if public_worlds.data:
+                cols = st.columns(3)
+                for index, world_row in enumerate(public_worlds.data):
+                    with cols[index % 3]:
+                        st.markdown(f"#### 🪐 {world_row['world_name'].upper()}")
+                        st.caption(f"🎭 GENRE: {world_row['world_genre']}")
+                        if st.button(f"🎮 Enter Universe", key=f"pub_{world_row['id']}", use_container_width=True):
+                            engine["world_id"] = world_row["id"]
+                            engine["world_name"] = world_row["world_name"]
+                            engine["world_genre"] = world_row["world_genre"]
+                            st.rerun()
+            else:
+                st.info("No alternate universes have been mapped yet. Be the first to spark the cosmos under 'Create a World'!")
+        except Exception as e:
+            st.error(f"Database Fetch Error: {e}")
+            
+    with tab_my_creations:
+        st.markdown("### 🏗️ Your Private Universes")
+        if "user" in st.session_state:
+            try:
+                # Target scan pulling only rows where the creator_id matches the active user token
+                my_worlds = supabase_client.table("worlds").select("*").eq("creator_id", st.session_state.user.id).execute()
+                if my_worlds.data:
+                    for my_row in my_worlds.data:
+                        st.markdown(f"- **{my_row['world_name'].upper()}** ({my_row['world_genre']})")
+                else:
+                    st.info("You haven't deployed any permanent universes yet.")
+            except Exception as e:
+                st.error(f"Fetch Error: {e}")
         else:
-            st.warning("⚠️ Please fill out the configuration profiles to ignite the core.")
+            st.warning("🔒 Please sign in via the sidebar to look inside your private creation vault.")
+            
+    with tab_create:
+        st.markdown("### 🪄 Universe Architect Form")
+        w_name = st.text_input("Name your universe:", placeholder="e.g., Sector 7, Neo-Tokyo")
+        w_genre = st.text_input("Thematic genre:", placeholder="e.g., Cyberpunk, Steampunk, Gritty Realism")
+        c_name = st.text_input("Your character's name:")
+        c_backstory = st.text_area("Character profile/backstory:")
+        
+        if st.button("🚀 Deploy and Ignite Core Engine", use_container_width=True):
+            if w_name and w_genre and c_name:
+                if "user" in st.session_state:
+                    try:
+                        # Write the permanent row data directly to your live cloud database table
+                        new_world = supabase_client.table("worlds").insert({
+                            "creator_id": st.session_state.user.id,
+                            "world_name": w_name,
+                            "world_genre": w_genre
+                        }).execute()
+                        engine["world_id"] = new_world.data[0]["id"]
+                    except Exception as e:
+                        st.error(f"Table Write Failure: {e}")
+                        st.stop()
+                
+                engine["world_name"] = w_name
+                engine["world_genre"] = w_genre
+                char["name"] = c_name
+                char["backstory"] = c_backstory
+                st.rerun()
+            else:
+                st.warning("⚠️ Fill out the architectural inputs to launch.")
+                
+    with tab_avatars:
+        st.markdown("### 🎭 Community Avatars Portal")
+        st.info("Global hero matrix database synchronization offline—relinking profile cells during Phase 5 upgrades.")
     st.stop()
 
-# 6. CINEMATIC NARRATIVE INTERFACE LAYER
+# 6. ACTIVE ADVENTURE STORY LAYER
 st.title(f"🎬 {engine['world_name'].upper()}")
 
 for text_turn in engine["story_log"]:
@@ -191,7 +252,6 @@ if not engine["story_log"]:
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
 
-# 7. ACTION PROCESSOR ENTRY GATEWAY WITH FAILSAFE CHECKS
 if "user" not in st.session_state and st.session_state.guest_tokens <= 0:
     st.error("🛑 Free actions fully expended. Create an account or sign in via the left sidebar to unlock your dashboard timeline parameters!")
 else:
@@ -212,10 +272,7 @@ else:
             f"CRITICAL ENGINE RULES:\n"
             f"1. Never break character. Never mention you are an AI model.\n"
             f"2. Immersively narrate cinematic outcomes matching the genre.\n"
-            f"3. Maintain strict coherence with the established world, inventory, and character status provided in the current state.\n"
-            f"4. For each user action, calculate the impact on '{char['name']}'s health, inventory, and world situation, updating these variables for the next turn.\n"
-            f"5. Generate a concise, vivid description of the consequences of the user's choices, ensuring the tone remains intense and engaging.\n\n"
-            f"Always append system data tags at the absolute bottom if state changes:\n"
+            f"3. Always append system data tags at the absolute bottom if state changes:\n"
             f"   - Award item: [LOOT: item_name]\n"
             f"   - Modify health: [HEALTH: -15]"
         )
