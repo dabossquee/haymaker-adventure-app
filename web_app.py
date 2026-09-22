@@ -6,7 +6,7 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. PAGE CONFIG & ENVIRONMENTAL GATEWAY
+# 1. INITIALIZE MASTER PAGE ENVIRONMENT
 st.set_page_config(page_title="Haymaker Engine", page_icon="🪐", layout="wide")
 
 load_dotenv()
@@ -25,7 +25,7 @@ supabase_client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 if STRIPE_SECRET:
     stripe.api_key = STRIPE_SECRET
 
-# 2. CAPTURE MONETIZATION PAYWALL REDIRECTS
+# 2. STRIPE CHECKOUT REDIRECT STATE CAPTURE
 query_params = st.query_params
 if "success" in query_params and query_params["success"] == "true":
     st.session_state.is_premium = True
@@ -34,7 +34,7 @@ if "success" in query_params and query_params["success"] == "true":
 # 3. SET BASE TRIAL THRESHOLDS & ENGINE MEMORY
 if "user" not in st.session_state:
     if "guest_tokens" not in st.session_state:
-        st.session_state.guest_tokens = 3  # Set to 30 for production release!
+        st.session_state.guest_tokens = 3  # Leave at 3 for rapid testing. Switch to 30 for production release!
     if "world_engine" not in st.session_state:
         st.session_state.world_engine = {
             "world_id": None, "world_name": "", "world_genre": "",
@@ -144,24 +144,90 @@ if not engine["world_name"]:
     ])
     
     with tab_explore:
-        st.markdown("### 🌟 Public Discovery Marketplace")
-        try:
-            public_worlds = supabase_client.table("worlds").select("*").order("created_at", desc=True).execute()
-            if public_worlds.data:
-                cols = st.columns(3)
-                for index, world_row in enumerate(public_worlds.data):
-                    with cols[index % 3]:
-                        st.markdown(f"#### 🪐 {world_row['world_name'].upper()}")
-                        st.caption(f"🎭 GENRE: {world_row['world_genre']}")
-                        if st.button(f"🎮 Enter Universe", key=f"pub_{world_row['id']}", use_container_width=True):
-                            engine["world_id"] = world_row["id"]
-                            engine["world_name"] = world_row["world_name"]
-                            engine["world_genre"] = world_row["world_genre"]
-                            st.rerun()
-            else:
-                st.info("No alternate universes have been mapped yet. Be the first to spark the cosmos under 'Create a World'!")
-        except Exception as e:
-            st.error(f"Database Fetch Error: {e}")
+        # Genre Sub-Tabs for clean, hyper-focused discovery
+        sub_scifi, sub_fantasy, sub_cyberpunk, sub_ai = st.tabs([
+            "🚀 Sci-Fi", "🧙 Dark Fantasy", "🏙️ Cyberpunk", "🤖 AI Generated"
+        ])
+        
+        with sub_scifi:
+            st.markdown("### Pre-Made Sci-Fi Realities")
+            cols = st.columns(2)
+            with cols[0]:
+                st.markdown("#### 🚀 SECTOR 7 NOMAD")
+                st.caption("Grit, survival, and starship dogfights across an outlaw solar system.")
+                if st.button("🎮 Launch Sector 7", use_container_width=True):
+                    engine["world_id"] = "pre_scifi_1"
+                    engine["world_name"] = "Sector 7 Nomad"
+                    engine["world_genre"] = "Sci-Fi"
+                    st.rerun()
+            with cols[1]:
+                st.markdown("#### 🛰️ CHRONOS STATION")
+                st.caption("A psychological thriller aboard a deep-space station stuck in a time anomaly.")
+                if st.button("🎮 Launch Chronos", use_container_width=True):
+                    engine["world_id"] = "pre_scifi_2"
+                    engine["world_name"] = "Chronos Station"
+                    engine["world_genre"] = "Sci-Fi"
+                    st.rerun()
+                    
+        with sub_fantasy:
+            st.markdown("### Pre-Made Dark Fantasy Realities")
+            cols = st.columns(2)
+            with cols[0]:
+                st.markdown("#### 🧛 VAMPIRE NOMAD")
+                st.caption("Navigate exile, bloodlines, and dark covens in a gothic world of endless night.")
+                if st.button("🎮 Launch Vampire Nomad", use_container_width=True):
+                    engine["world_id"] = "pre_fant_1"
+                    engine["world_name"] = "Vampire Nomad"
+                    engine["world_genre"] = "Dark Fantasy"
+                    st.rerun()
+            with cols[1]:
+                st.markdown("#### ⚔️ ASHELANDS RENEGADE")
+                st.caption("A tactical swords-and-sorcery survival gauntlet across a ruined kingdom.")
+                if st.button("🎮 Launch Ashelands", use_container_width=True):
+                    engine["world_id"] = "pre_fant_2"
+                    engine["world_name"] = "Ashelands Renegade"
+                    engine["world_genre"] = "Dark Fantasy"
+                    st.rerun()
+
+        with sub_cyberpunk:
+            st.markdown("### Pre-Made Cyberpunk Realities")
+            cols = st.columns(2)
+            with cols[0]:
+                st.markdown("#### 🏙️ NEO-TOKYO RUNNER")
+                st.caption("High-stakes tech espionage, corporate warfare, and neon-lit street racing.")
+                if st.button("🎮 Launch Neo-Tokyo", use_container_width=True):
+                    engine["world_id"] = "pre_cyber_1"
+                    engine["world_name"] = "Neo-Tokyo Runner"
+                    engine["world_genre"] = "Cyberpunk"
+                    st.rerun()
+            with cols[1]:
+                st.markdown("#### ⛓️ GRIDLOCK UNDERGROUND")
+                st.caption("Hack deep mainframe grids and lead a digital rebellion against mega-corps.")
+                if st.button("🎮 Launch Gridlock", use_container_width=True):
+                    engine["world_id"] = "pre_cyber_2"
+                    engine["world_name"] = "Gridlock Underground"
+                    engine["world_genre"] = "Cyberpunk"
+                    st.rerun()
+
+        with sub_ai:
+            st.markdown("### Community & AI Generated Universes")
+            try:
+                public_worlds = supabase_client.table("worlds").select("*").order("created_at", desc=True).execute()
+                if public_worlds.data:
+                    cols = st.columns(3)
+                    for index, world_row in enumerate(public_worlds.data):
+                        with cols[index % 3]:
+                            st.markdown(f"#### 🪐 {world_row['world_name'].upper()}")
+                            st.caption(f"🎭 GENRE: {world_row['world_genre']}")
+                            if st.button(f"🎮 Enter Universe", key=f"pub_{world_row['id']}", use_container_width=True):
+                                engine["world_id"] = world_row["id"]
+                                engine["world_name"] = world_row["world_name"]
+                                engine["world_genre"] = world_row["world_genre"]
+                                st.rerun()
+                else:
+                    st.info("No player-built alternate universes have been mapped yet. Be the first to spark the cosmos under 'Create a World'!")
+            except Exception as e:
+                st.error(f"Database Fetch Error: {e}")
             
     with tab_my_creations:
         st.markdown("### 🏗️ Your Private Universes")
@@ -181,7 +247,7 @@ if not engine["world_name"]:
     with tab_create:
         st.markdown("### 🪄 Universe Architect Form")
         w_name = st.text_input("Name your universe:", placeholder="e.g., Sector 7, Neo-Tokyo")
-        w_genre = st.text_input("Thematic genre:", placeholder="e.g., Cyberpunk, Steampunk, Gritty Realism")
+        w_genre = st.selectbox("Select thematic genre:", ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Romance", "Other"])
         c_name = st.text_input("Your character's name:")
         c_backstory = st.text_area("Character profile/backstory:")
         
@@ -209,9 +275,24 @@ if not engine["world_name"]:
                 
     with tab_avatars:
         st.markdown("### 🎭 Community Avatars Portal")
-        st.info("Global hero matrix database synchronization offline—relinking profile cells during Phase 5 upgrades.")
+        # Visual Grid Cards for characters mimicking a clean marketplace card display
+        cols = st.columns(3)
+        with cols[0]:
+            st.markdown("#### 👤 COMMANDER DIXON")
+            st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
+            st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
+            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
+        with cols[1]:
+            st.markdown("#### 👤 NYX THE SHADOW")
+            st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
+            st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
+            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
+        with cols[2]:
+            st.markdown("#### 👤 VALERIUS THE EXILE")
+            st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade, Vial`")
+            st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
+            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
     st.stop()
-
 # 6. ACTIVE ADVENTURE STORY LAYER
 st.title(f"🎬 {engine['world_name'].upper()}")
 
