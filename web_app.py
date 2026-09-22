@@ -186,7 +186,7 @@ if not engine["story_log"]:
             max_tokens=450,
             temperature=0.7
         )
-        initial_story = response.choices.message.content
+        initial_story = response.choices[0].message.content
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
