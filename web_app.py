@@ -11,17 +11,19 @@ st.set_page_config(page_title="Haymaker Engine", page_icon="🪐", layout="wide"
 
 load_dotenv()
 # POP-UP INSPECTOR WINDOW GATEWAY
+# POP-UP INSPECTOR WINDOW GATEWAY
 if "active_modal" in st.session_state and st.session_state.active_modal:
     modal = st.session_state.active_modal
     @st.dialog(modal["title"])
     def render_modal_window():
-        st.image(modal["img"], use_container_width=True)
+        st.info(f"📁 {modal['img']}")
         st.markdown(f"**🎨 Creator ID:** `{modal['creator']}`")
         st.markdown(f"**🎭 Character Dossier:** {modal['bio']}")
         if st.button("🚪 Close Dossier File", use_container_width=True):
             st.session_state.active_modal = None
             st.rerun()
     render_modal_window()
+
 
 API_KEY = os.getenv("OPENAI_API_KEY")
 STRIPE_SECRET = os.getenv("STRIPE_SECRET_KEY")
@@ -235,7 +237,7 @@ if not engine["world_name"]:
                 
     with tab_avatars:
         st.markdown("### 🎭 Community Avatars Portal")
-        st.caption("Click 'Inspect File' to view full resolution fan art and creator records.")
+        st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
         
         cols = st.columns(3)
         
@@ -243,14 +245,23 @@ if not engine["world_name"]:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
             st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
-            # Using stable open-source cloud links that never get blocked by server firewalls
-            st.image("https://picsum.photos", use_container_width=True)
-            if st.button("🔍 Inspect Dixon File", use_container_width=True):
+            # Indestructible vector concept block
+            st.code(
+                "┌──────────────────────────┐\n"
+                "│    🚀  [ SCI - FI ]      │\n"
+                "│   COMMANDER DIXON        │\n"
+                "│                          │\n"
+                "│   [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% │\n"
+                "│   TACTICAL CLASS PILOT   │\n"
+                "└──────────────────────────┘",
+                language="text"
+            )
+            if st.button("🔍 Inspect Dixon File", key="btn_dixon_inspect", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 COMMANDER DIXON",
                     "creator": "Alpha_Dreamer99",
                     "bio": "Ex-military tactical operative specializing in high-stakes salvage ops across lawless outer rims.",
-                    "img": "https://picsum.photos"
+                    "img": "🚀 DEEP SPACE NOMAD FRAME // SECURE OUTPOST INTEL"
                 }
                 st.rerun()
 
@@ -258,13 +269,22 @@ if not engine["world_name"]:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
             st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
-            st.image("https://picsum.photos", use_container_width=True)
-            if st.button("🔍 Inspect Nyx File", use_container_width=True):
+            st.code(
+                "┌──────────────────────────┐\n"
+                "│    🏙️  [ CYBERPUNK ]     │\n"
+                "│   NYX THE SHADOW         │\n"
+                "│                          │\n"
+                "│   [▓▓▓▓▓▓▓▓▓▓▓▓░░░] 85%  │\n"
+                "│   NETWORK CORE HACKER    │\n"
+                "└──────────────────────────┘",
+                language="text"
+            )
+            if st.button("🔍 Inspect Nyx File", key="btn_nyx_inspect", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 NYX THE SHADOW",
                     "creator": "Neon_Ghost",
                     "bio": "Cybernetic network runner operating out of Neo-Tokyo's underbelly. Known for breaking corporate firewalls.",
-                    "img": "https://picsum.photos"
+                    "img": "🏙️ NEON GRID RUNNER PROTOCOL // DECRYPTED DATA"
                 }
                 st.rerun()
 
@@ -272,13 +292,22 @@ if not engine["world_name"]:
             st.markdown("#### 👤 VALERIUS THE EXILE")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
             st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
-            st.image("https://picsum.photos", use_container_width=True)
-            if st.button("🔍 Inspect Valerius File", use_container_width=True):
+            st.code(
+                "┌──────────────────────────┐\n"
+                "│    🧙  [ FANTASY ]       │\n"
+                "│   VALERIUS THE EXILE     │\n"
+                "│                          │\n"
+                "│   [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% │\n"
+                "│   SUN-FORGED IRON GUARD  │\n"
+                "└──────────────────────────┘",
+                language="text"
+            )
+            if st.button("🔍 Inspect Valerius File", key="btn_valerius_inspect", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 VALERIUS THE EXILE",
                     "creator": "Gothic_Lord",
                     "bio": "Nomadic bloodline guardian navigating dark medieval covenant wars. Wielder of the sun-forged iron blade.",
-                    "img": "https://picsum.photos"
+                    "img": "🧙 ANCIENT COVENANT ARCHIVE // BLOODLINE DATA"
                 }
                 st.rerun()
 
