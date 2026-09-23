@@ -13,7 +13,7 @@ load_dotenv()
 # POP-UP INSPECTOR WINDOW GATEWAY
 if "active_modal" in st.session_state and st.session_state.active_modal:
     modal = st.session_state.active_modal
-    @st.dialog(modal["title"], clear_on_submit=True)
+    @st.dialog(modal["title"])
     def render_modal_window():
         st.image(modal["img"], use_container_width=True)
         st.markdown(f"**🎨 Creator ID:** `{modal['creator']}`")
