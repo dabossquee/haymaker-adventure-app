@@ -51,7 +51,7 @@ with st.sidebar:
     st.title("📊 STATUS CONTROL")
     
     if "user" in st.session_state:
-        st.success(f"👑 PREMUM PILOT: {st.session_state.user.email}")
+        st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
     else:
         if st.session_state.guest_tokens > 0:
             st.warning(f"⏳ TRIAL ACTIVE: {st.session_state.guest_tokens} Actions Left")
@@ -88,9 +88,9 @@ if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
     st.subheader("Explore alternate realities or forge your own timeline")
     
-    # Render the 4 premium interface navigation tabs cleanly on the main canvas
-    tab_explore, tab_my_creations, tab_create, tab_profile = st.tabs([
-        "🪐 Explore Universes", "🏗️ My Creations", "🪄 Create a World", "👤 Account Profile"
+    # Render the 5 premium interface navigation tabs cleanly on the main canvas
+    tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
+        "🪐 Explore Universes", "🏗️ My Creations", "🪄 Create a World", "🎭 Community Avatars", "👤 Account Profile"
     ])
     
     with tab_explore:
@@ -101,7 +101,7 @@ if not engine["world_name"]:
         with sub_scifi:
             st.markdown("### Pre-Made Sci-Fi Realities")
             cols = st.columns(2)
-            with cols[0]:
+            with cols:
                 st.markdown("#### 🚀 SECTOR 7 NOMAD")
                 st.caption("Grit, survival, and starship dogfights across an outlaw solar system.")
                 if st.button("🎮 Launch Sector 7", use_container_width=True):
@@ -109,7 +109,7 @@ if not engine["world_name"]:
                     engine["world_name"] = "Sector 7 Nomad"
                     engine["world_genre"] = "Sci-Fi"
                     st.rerun()
-            with cols[1]:
+            with cols:
                 st.markdown("#### 🛰️ CHRONOS STATION")
                 st.caption("A psychological thriller aboard a deep-space station stuck in a time anomaly.")
                 if st.button("🎮 Launch Chronos", use_container_width=True):
@@ -121,7 +121,7 @@ if not engine["world_name"]:
         with sub_fantasy:
             st.markdown("### Pre-Made Dark Fantasy Realities")
             cols = st.columns(2)
-            with cols[0]:
+            with cols:
                 st.markdown("#### 🧛 VAMPIRE NOMAD")
                 st.caption("Navigate exile, bloodlines, and dark covens in a gothic world of endless night.")
                 if st.button("🎮 Launch Vampire Nomad", use_container_width=True):
@@ -129,7 +129,7 @@ if not engine["world_name"]:
                     engine["world_name"] = "Vampire Nomad"
                     engine["world_genre"] = "Dark Fantasy"
                     st.rerun()
-            with cols[1]:
+            with cols:
                 st.markdown("#### ⚔️ ASHELANDS RENEGADE")
                 st.caption("A tactical swords-and-sorcery survival gauntlet across a ruined kingdom.")
                 if st.button("🎮 Launch Ashelands", use_container_width=True):
@@ -141,7 +141,7 @@ if not engine["world_name"]:
         with sub_cyberpunk:
             st.markdown("### Pre-Made Cyberpunk Realities")
             cols = st.columns(2)
-            with cols[0]:
+            with cols:
                 st.markdown("#### 🏙️ NEO-TOKYO RUNNER")
                 st.caption("High-stakes tech espionage, corporate warfare, and neon-lit street racing.")
                 if st.button("🎮 Launch Neo-Tokyo", use_container_width=True):
@@ -149,7 +149,7 @@ if not engine["world_name"]:
                     engine["world_name"] = "Neo-Tokyo Runner"
                     engine["world_genre"] = "Cyberpunk"
                     st.rerun()
-            with cols[1]:
+            with cols:
                 st.markdown("#### ⛓️ GRIDLOCK UNDERGROUND")
                 st.caption("Hack deep mainframe grids and lead a digital rebellion against mega-corps.")
                 if st.button("🎮 Launch Gridlock", use_container_width=True):
@@ -191,7 +191,6 @@ if not engine["world_name"]:
                 st.error(f"Fetch Error: {e}")
         else:
             st.warning("🔒 Please sign in via the 'Account Profile' tab to look inside your private creation vault.")
-            
     with tab_create:
         st.markdown("### 🪄 Universe Architect Form")
         w_name = st.text_input("Name your universe:", placeholder="e.g., Sector 7, Neo-Tokyo")
@@ -208,7 +207,7 @@ if not engine["world_name"]:
                             "world_name": w_name,
                             "world_genre": w_genre
                         }).execute()
-                        engine["world_id"] = new_world.data["id"]
+                        engine["world_id"] = new_world.data[0]["id"]
                     except Exception as e:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
@@ -220,6 +219,25 @@ if not engine["world_name"]:
                 st.rerun()
             else:
                 st.warning("⚠️ Fill out the architectural inputs to launch.")
+                
+    with tab_avatars:
+        st.markdown("### 🎭 Community Avatars Portal")
+        cols = st.columns(3)
+        with cols:
+            st.markdown("#### 👤 COMMANDER DIXON")
+            st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
+            st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
+            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
+        with cols:
+            st.markdown("#### 👤 NYX THE SHADOW")
+            st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
+            st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
+            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
+        with cols:
+            st.markdown("#### 👤 VALERIUS THE EXILE")
+            st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade, Vial`")
+            st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
+            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
                 
     with tab_profile:
         st.markdown("### 👤 User Authentication Center")
@@ -253,7 +271,6 @@ if not engine["world_name"]:
 # 6. ACTIVE ADVENTURE STORY LAYER
 st.title(f"🎬 {engine['world_name'].upper()}")
 
-# Handle active Stripe payment checks for authenticated users
 if "user" in st.session_state and not getattr(st.session_state, 'is_premium', False):
     st.subheader("💳 Activate Subscription")
     st.info("Unlock the $10/week Unlimited Pass to keep playing.")
@@ -279,7 +296,6 @@ if "user" in st.session_state and not getattr(st.session_state, 'is_premium', Fa
             st.error(f"Stripe Error: {e}")
     st.stop()
 
-# Freeze engine if trial tokens are completely depleted for guest sessions
 if "user" not in st.session_state and st.session_state.guest_tokens <= 0:
     st.error("🛑 Free trial actions fully expended!")
     if st.button("🚀 Create an Account / Sign In to Continue", type="primary", use_container_width=True):
@@ -287,7 +303,6 @@ if "user" not in st.session_state and st.session_state.guest_tokens <= 0:
         st.rerun()
     st.stop()
 
-# Render running text adventure timeline logs cleanly
 for text_turn in engine["story_log"]:
     if text_turn["role"] == "user":
         if "[System Command]" in text_turn["content"]:
@@ -315,7 +330,7 @@ if not engine["story_log"]:
             max_tokens=450,
             temperature=0.7
         )
-        initial_story = response.choices[0].message.content
+        initial_story = response.choices.message.content
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
@@ -354,7 +369,7 @@ if user_action:
             temperature=0.7
         )
         
-        raw_ai_text = response.choices[0].message.content
+        raw_ai_text = response.choices.message.content
         
         loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
         for item in loot_matches:
