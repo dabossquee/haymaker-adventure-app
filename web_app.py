@@ -10,6 +10,19 @@ from dotenv import load_dotenv
 st.set_page_config(page_title="Haymaker Engine", page_icon="🪐", layout="wide")
 
 load_dotenv()
+# POP-UP INSPECTOR WINDOW GATEWAY
+if "active_modal" in st.session_state and st.session_state.active_modal:
+    modal = st.session_state.active_modal
+    @st.dialog(modal["title"], clear_on_submit=True)
+    def render_modal_window():
+        st.image(modal["img"], use_container_width=True)
+        st.markdown(f"**🎨 Creator ID:** `{modal['creator']}`")
+        st.markdown(f"**🎭 Character Dossier:** {modal['bio']}")
+        if st.button("🚪 Close Dossier File", use_container_width=True):
+            st.session_state.active_modal = None
+            st.rerun()
+    render_modal_window()
+
 API_KEY = os.getenv("OPENAI_API_KEY")
 STRIPE_SECRET = os.getenv("STRIPE_SECRET_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -220,24 +233,51 @@ if not engine["world_name"]:
             else:
                 st.warning("⚠️ Fill out the architectural inputs to launch.")
                 
-        with tab_avatars:
-            st.markdown("### 🎭 Community Avatars Portal")
-            cols = st.columns(3)
+    with tab_avatars:
+        st.markdown("### 🎭 Community Avatars Portal")
+        st.caption("Click 'Inspect File' to view full resolution fan art and creator records.")
+        
+        cols = st.columns(3)
+        
         with cols[0]:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
-            st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
-            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
+            st.image("https://unsplash.com", use_container_width=True)
+            if st.button("🔍 Inspect Dixon File", use_container_width=True):
+                st.session_state.active_modal = {
+                    "title": "👤 COMMANDER DIXON",
+                    "creator": "Alpha_Dreamer99",
+                    "bio": "Ex-military tactical operative specializing in high-stakes salvage ops across lawless outer rims.",
+                    "img": "https://unsplash.com"
+                }
+                st.rerun()
+
         with cols[1]:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
-            st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
-            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
+            st.image("https://unsplash.com", use_container_width=True)
+            if st.button("🔍 Inspect Nyx File", use_container_width=True):
+                st.session_state.active_modal = {
+                    "title": "👤 NYX THE SHADOW",
+                    "creator": "Neon_Ghost",
+                    "bio": "Cybernetic network runner operating out of Neo-Tokyo's underbelly. Known for breaking corporate firewalls.",
+                    "img": "https://unsplash.com"
+                }
+                st.rerun()
+
         with cols[2]:
             st.markdown("#### 👤 VALERIUS THE EXILE")
-            st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade, Vial`")
-            st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
-            st.image("https://unsplash.com", caption="Fan Art Concept Frame")
+            st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
+            st.image("https://unsplash.com", use_container_width=True)
+            if st.button("🔍 Inspect Valerius File", use_container_width=True):
+                st.session_state.active_modal = {
+                    "title": "👤 VALERIUS THE EXILE",
+                    "creator": "Gothic_Lord",
+                    "bio": "Nomadic bloodline guardian navigating dark medieval covenant wars. Wielder of the sun-forged iron blade.",
+                    "img": "https://unsplash.com"
+                }
+                st.rerun()
+
 
                 
     with tab_profile:
