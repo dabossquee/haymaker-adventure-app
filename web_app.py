@@ -242,39 +242,43 @@ if not engine["world_name"]:
         with cols[0]:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
-            st.image("https://unsplash.com", use_container_width=True)
+            st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
+            # Using stable open-source cloud links that never get blocked by server firewalls
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Dixon File", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 COMMANDER DIXON",
                     "creator": "Alpha_Dreamer99",
                     "bio": "Ex-military tactical operative specializing in high-stakes salvage ops across lawless outer rims.",
-                    "img": "https://unsplash.com"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
 
         with cols[1]:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
-            st.image("https://unsplash.com", use_container_width=True)
+            st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Nyx File", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 NYX THE SHADOW",
                     "creator": "Neon_Ghost",
                     "bio": "Cybernetic network runner operating out of Neo-Tokyo's underbelly. Known for breaking corporate firewalls.",
-                    "img": "https://unsplash.com"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
 
         with cols[2]:
             st.markdown("#### 👤 VALERIUS THE EXILE")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
-            st.image("https://unsplash.com", use_container_width=True)
+            st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Valerius File", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 VALERIUS THE EXILE",
                     "creator": "Gothic_Lord",
                     "bio": "Nomadic bloodline guardian navigating dark medieval covenant wars. Wielder of the sun-forged iron blade.",
-                    "img": "https://unsplash.com"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
 
