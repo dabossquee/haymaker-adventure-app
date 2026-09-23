@@ -97,11 +97,10 @@ if not engine["world_name"]:
         sub_scifi, sub_fantasy, sub_cyberpunk, sub_ai = st.tabs([
             "🚀 Sci-Fi", "🧙 Dark Fantasy", "🏙️ Cyberpunk", "🤖 Community & AI"
         ])
-        
         with sub_scifi:
             st.markdown("### Pre-Made Sci-Fi Realities")
             cols = st.columns(2)
-            with cols:
+            with cols[0]:
                 st.markdown("#### 🚀 SECTOR 7 NOMAD")
                 st.caption("Grit, survival, and starship dogfights across an outlaw solar system.")
                 if st.button("🎮 Launch Sector 7", use_container_width=True):
@@ -109,7 +108,7 @@ if not engine["world_name"]:
                     engine["world_name"] = "Sector 7 Nomad"
                     engine["world_genre"] = "Sci-Fi"
                     st.rerun()
-            with cols:
+            with cols[1]:
                 st.markdown("#### 🛰️ CHRONOS STATION")
                 st.caption("A psychological thriller aboard a deep-space station stuck in a time anomaly.")
                 if st.button("🎮 Launch Chronos", use_container_width=True):
@@ -121,7 +120,7 @@ if not engine["world_name"]:
         with sub_fantasy:
             st.markdown("### Pre-Made Dark Fantasy Realities")
             cols = st.columns(2)
-            with cols:
+            with cols[0]:
                 st.markdown("#### 🧛 VAMPIRE NOMAD")
                 st.caption("Navigate exile, bloodlines, and dark covens in a gothic world of endless night.")
                 if st.button("🎮 Launch Vampire Nomad", use_container_width=True):
@@ -129,7 +128,7 @@ if not engine["world_name"]:
                     engine["world_name"] = "Vampire Nomad"
                     engine["world_genre"] = "Dark Fantasy"
                     st.rerun()
-            with cols:
+            with cols[1]:
                 st.markdown("#### ⚔️ ASHELANDS RENEGADE")
                 st.caption("A tactical swords-and-sorcery survival gauntlet across a ruined kingdom.")
                 if st.button("🎮 Launch Ashelands", use_container_width=True):
@@ -141,7 +140,7 @@ if not engine["world_name"]:
         with sub_cyberpunk:
             st.markdown("### Pre-Made Cyberpunk Realities")
             cols = st.columns(2)
-            with cols:
+            with cols[0]:
                 st.markdown("#### 🏙️ NEO-TOKYO RUNNER")
                 st.caption("High-stakes tech espionage, corporate warfare, and neon-lit street racing.")
                 if st.button("🎮 Launch Neo-Tokyo", use_container_width=True):
@@ -149,7 +148,7 @@ if not engine["world_name"]:
                     engine["world_name"] = "Neo-Tokyo Runner"
                     engine["world_genre"] = "Cyberpunk"
                     st.rerun()
-            with cols:
+            with cols[1]:
                 st.markdown("#### ⛓️ GRIDLOCK UNDERGROUND")
                 st.caption("Hack deep mainframe grids and lead a digital rebellion against mega-corps.")
                 if st.button("🎮 Launch Gridlock", use_container_width=True):
@@ -157,6 +156,7 @@ if not engine["world_name"]:
                     engine["world_name"] = "Gridlock Underground"
                     engine["world_genre"] = "Cyberpunk"
                     st.rerun()
+
         with sub_ai:
             st.markdown("### Community & AI Generated Universes")
             try:
