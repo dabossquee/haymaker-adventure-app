@@ -220,24 +220,25 @@ if not engine["world_name"]:
             else:
                 st.warning("⚠️ Fill out the architectural inputs to launch.")
                 
-    with tab_avatars:
-        st.markdown("### 🎭 Community Avatars Portal")
-        cols = st.columns(3)
-        with cols:
+        with tab_avatars:
+            st.markdown("### 🎭 Community Avatars Portal")
+            cols = st.columns(3)
+        with cols[0]:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
             st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
             st.image("https://unsplash.com", caption="Fan Art Concept Frame")
-        with cols:
+        with cols[1]:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
             st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
             st.image("https://unsplash.com", caption="Fan Art Concept Frame")
-        with cols:
+        with cols[2]:
             st.markdown("#### 👤 VALERIUS THE EXILE")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade, Vial`")
             st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
             st.image("https://unsplash.com", caption="Fan Art Concept Frame")
+
                 
     with tab_profile:
         st.markdown("### 👤 User Authentication Center")
