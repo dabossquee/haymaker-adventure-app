@@ -392,7 +392,7 @@ if not engine["story_log"]:
             max_tokens=450,
             temperature=0.7
         )
-        initial_story = response.choices.message.content
+        initial_story = response.choices[0].message.content
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
@@ -431,7 +431,7 @@ if user_action:
             temperature=0.7
         )
         
-        raw_ai_text = response.choices.message.content
+        raw_ai_text = response.choices[0].message.content
         
         loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
         for item in loot_matches:
