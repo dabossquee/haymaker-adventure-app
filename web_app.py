@@ -246,15 +246,18 @@ if not engine["world_name"]:
             if w_name and w_genre and c_name:
                 if "user" in st.session_state:
                     try:
-                        new_world = supabase_client.table("worlds").insert({
-                            "creator_id": st.session_state.user.id,
+                        # Explicitly inject the active user ID string to guarantee RLS clearance
+                        user_id = st.session_state.user.id if "user" in st.session_state else None
+                        supabase_client.table("worlds").insert({
+                            "creator_id": user_id,
                             "world_name": w_name,
                             "world_genre": w_genre
                         }).execute()
-                        engine["world_id"] = new_world.data["id"]
+                        engine["world_id"] = "user_custom"
                     except Exception as e:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
+
                 
                 engine["world_name"] = w_name
                 engine["world_genre"] = w_genre
