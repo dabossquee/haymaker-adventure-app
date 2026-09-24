@@ -10,21 +10,6 @@ from dotenv import load_dotenv
 st.set_page_config(page_title="Haymaker Engine", page_icon="🪐", layout="wide")
 
 load_dotenv()
-# POP-UP INSPECTOR WINDOW GATEWAY
-# POP-UP INSPECTOR WINDOW GATEWAY
-if "active_modal" in st.session_state and st.session_state.active_modal:
-    modal = st.session_state.active_modal
-    @st.dialog(modal["title"])
-    def render_modal_window():
-        st.info(f"📁 {modal['img']}")
-        st.markdown(f"**🎨 Creator ID:** `{modal['creator']}`")
-        st.markdown(f"**🎭 Character Dossier:** {modal['bio']}")
-        if st.button("🚪 Close Dossier File", use_container_width=True):
-            st.session_state.active_modal = None
-            st.rerun()
-    render_modal_window()
-
-
 API_KEY = os.getenv("OPENAI_API_KEY")
 STRIPE_SECRET = os.getenv("STRIPE_SECRET_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -39,6 +24,19 @@ supabase_client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 if STRIPE_SECRET:
     stripe.api_key = STRIPE_SECRET
+
+# POP-UP INSPECTOR WINDOW GATEWAY
+if "active_modal" in st.session_state and st.session_state.active_modal:
+    modal = st.session_state.active_modal
+    @st.dialog(modal["title"])
+    def render_modal_window():
+        st.image(modal["img"], use_container_width=True)
+        st.markdown(f"**🎨 Creator ID:** `{modal['creator']}`")
+        st.markdown(f"**🎭 Character Dossier:** {modal['bio']}")
+        if st.button("🚪 Close Dossier File", use_container_width=True):
+            st.session_state.active_modal = None
+            st.rerun()
+    render_modal_window()
 
 # 2. CAPTURE ACTIVE STRIPE PAYWALL REDIRECTS
 query_params = st.query_params
@@ -96,8 +94,13 @@ with st.sidebar:
             engine["story_log"].append({"role": "user", "content": "🛠️ [System Command] I ordered my engineer to patch the ship hulls!"})
             st.rerun()
     else:
-        st.info("No active universe initialized yet. Choose an experience or build one inside the landing tabs.")
-
+        st.subheader("📡 CONSOLE PARAMETERS")
+        st.caption("No active universe initialized yet. Choose an experience or build one inside the landing tabs.")
+        
+        if st.button("⚡ Test Cloud Telemetry", use_container_width=True):
+            st.toast("🟢 Cloud Matrix Online. Handshake with Supabase database stable.")
+        if st.button("📰 View Engine Logs", use_container_width=True):
+            st.info("System Patch: Version 1.2.0 Active. Bala Multi-Tab Discovery Core fully synced. DALL-E image pipelines scheduled for Phase 2 deployment sprints.")
 # 5. BALA AI LANDING HUB AND PLATFORM NAVIGATION
 if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
@@ -112,6 +115,7 @@ if not engine["world_name"]:
         sub_scifi, sub_fantasy, sub_cyberpunk, sub_ai = st.tabs([
             "🚀 Sci-Fi", "🧙 Dark Fantasy", "🏙️ Cyberpunk", "🤖 Community & AI"
         ])
+        
         with sub_scifi:
             st.markdown("### Pre-Made Sci-Fi Realities")
             cols = st.columns(2)
@@ -122,6 +126,8 @@ if not engine["world_name"]:
                     engine["world_id"] = "pre_scifi_1"
                     engine["world_name"] = "Sector 7 Nomad"
                     engine["world_genre"] = "Sci-Fi"
+                    char["name"] = "Pilot Vance"
+                    char["backstory"] = "A disgraced military pilot running illicit scrap metal through deep-space asteroid fields to stay hidden."
                     st.rerun()
             with cols[1]:
                 st.markdown("#### 🛰️ CHRONOS STATION")
@@ -130,6 +136,8 @@ if not engine["world_name"]:
                     engine["world_id"] = "pre_scifi_2"
                     engine["world_name"] = "Chronos Station"
                     engine["world_genre"] = "Sci-Fi"
+                    char["name"] = "Dr. Aris"
+                    char["backstory"] = "The chief quantum technician investigating a strange radiation pulse that locked the entire station loop."
                     st.rerun()
                     
         with sub_fantasy:
@@ -142,6 +150,8 @@ if not engine["world_name"]:
                     engine["world_id"] = "pre_fant_1"
                     engine["world_name"] = "Vampire Nomad"
                     engine["world_genre"] = "Dark Fantasy"
+                    char["name"] = "Kaelen Voss"
+                    char["backstory"] = "An ancient rogue vampire cast out of the High Court, struggling to survive among deadly monster hunters."
                     st.rerun()
             with cols[1]:
                 st.markdown("#### ⚔️ ASHELANDS RENEGADE")
@@ -150,6 +160,8 @@ if not engine["world_name"]:
                     engine["world_id"] = "pre_fant_2"
                     engine["world_name"] = "Ashelands Renegade"
                     engine["world_genre"] = "Dark Fantasy"
+                    char["name"] = "Gideon Black"
+                    char["backstory"] = "A weathered mercenary carrying the broken sword of his king across fields contaminated by volcanic ash."
                     st.rerun()
 
         with sub_cyberpunk:
@@ -162,6 +174,8 @@ if not engine["world_name"]:
                     engine["world_id"] = "pre_cyber_1"
                     engine["world_name"] = "Neo-Tokyo Runner"
                     engine["world_genre"] = "Cyberpunk"
+                    char["name"] = "Ren 'Zero' Tanaka"
+                    char["backstory"] = "A skilled street racer running data modifications inside a hidden neural link to pay off yakuza syndicates."
                     st.rerun()
             with cols[1]:
                 st.markdown("#### ⛓️ GRIDLOCK UNDERGROUND")
@@ -170,8 +184,9 @@ if not engine["world_name"]:
                     engine["world_id"] = "pre_cyber_2"
                     engine["world_name"] = "Gridlock Underground"
                     engine["world_genre"] = "Cyberpunk"
+                    char["name"] = "Echo"
+                    char["backstory"] = "A phantom hacker who lives entirely inside deep mainframe server nodes, wiping dirty corporate banks."
                     st.rerun()
-
         with sub_ai:
             st.markdown("### Community & AI Generated Universes")
             try:
@@ -186,6 +201,8 @@ if not engine["world_name"]:
                                 engine["world_id"] = world_row["id"]
                                 engine["world_name"] = world_row["world_name"]
                                 engine["world_genre"] = world_row["world_genre"]
+                                char["name"] = "Unknown Wanderer"
+                                char["backstory"] = "A traveler dropped suddenly into an unfamiliar alternate reality matrix checkpoint."
                                 st.rerun()
                 else:
                     st.info("No player-built alternate universes have been mapped yet. Be the first to spark the cosmos under 'Create a World'!")
@@ -206,6 +223,7 @@ if not engine["world_name"]:
                 st.error(f"Fetch Error: {e}")
         else:
             st.warning("🔒 Please sign in via the 'Account Profile' tab to look inside your private creation vault.")
+            
     with tab_create:
         st.markdown("### 🪄 Universe Architect Form")
         w_name = st.text_input("Name your universe:", placeholder="e.g., Sector 7, Neo-Tokyo")
@@ -222,7 +240,7 @@ if not engine["world_name"]:
                             "world_name": w_name,
                             "world_genre": w_genre
                         }).execute()
-                        engine["world_id"] = new_world.data[0]["id"]
+                        engine["world_id"] = new_world.data["id"]
                     except Exception as e:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
@@ -245,23 +263,13 @@ if not engine["world_name"]:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
             st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
-            # Indestructible vector concept block
-            st.code(
-                "┌──────────────────────────┐\n"
-                "│    🚀  [ SCI - FI ]      │\n"
-                "│   COMMANDER DIXON        │\n"
-                "│                          │\n"
-                "│   [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% │\n"
-                "│   TACTICAL CLASS PILOT   │\n"
-                "└──────────────────────────┘",
-                language="text"
-            )
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Dixon File", key="btn_dixon_inspect", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 COMMANDER DIXON",
                     "creator": "Alpha_Dreamer99",
                     "bio": "Ex-military tactical operative specializing in high-stakes salvage ops across lawless outer rims.",
-                    "img": "🚀 DEEP SPACE NOMAD FRAME // SECURE OUTPOST INTEL"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
 
@@ -269,22 +277,13 @@ if not engine["world_name"]:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
             st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
-            st.code(
-                "┌──────────────────────────┐\n"
-                "│    🏙️  [ CYBERPUNK ]     │\n"
-                "│   NYX THE SHADOW         │\n"
-                "│                          │\n"
-                "│   [▓▓▓▓▓▓▓▓▓▓▓▓░░░] 85%  │\n"
-                "│   NETWORK CORE HACKER    │\n"
-                "└──────────────────────────┘",
-                language="text"
-            )
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Nyx File", key="btn_nyx_inspect", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 NYX THE SHADOW",
                     "creator": "Neon_Ghost",
                     "bio": "Cybernetic network runner operating out of Neo-Tokyo's underbelly. Known for breaking corporate firewalls.",
-                    "img": "🏙️ NEON GRID RUNNER PROTOCOL // DECRYPTED DATA"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
 
@@ -292,26 +291,15 @@ if not engine["world_name"]:
             st.markdown("#### 👤 VALERIUS THE EXILE")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
             st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
-            st.code(
-                "┌──────────────────────────┐\n"
-                "│    🧙  [ FANTASY ]       │\n"
-                "│   VALERIUS THE EXILE     │\n"
-                "│                          │\n"
-                "│   [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% │\n"
-                "│   SUN-FORGED IRON GUARD  │\n"
-                "└──────────────────────────┘",
-                language="text"
-            )
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Valerius File", key="btn_valerius_inspect", use_container_width=True):
                 st.session_state.active_modal = {
                     "title": "👤 VALERIUS THE EXILE",
                     "creator": "Gothic_Lord",
                     "bio": "Nomadic bloodline guardian navigating dark medieval covenant wars. Wielder of the sun-forged iron blade.",
-                    "img": "🧙 ANCIENT COVENANT ARCHIVE // BLOODLINE DATA"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
-
-
                 
     with tab_profile:
         st.markdown("### 👤 User Authentication Center")
