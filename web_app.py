@@ -62,6 +62,17 @@ char = engine["player_character"]
 # 4. SIDEBAR STATUS OVERWATCH PANEL
 with st.sidebar:
     st.title("📊 STATUS CONTROL")
+
+    # 🚨 DESTROY MEMORY AND BACK OUT TO HOME HUB BUTTON
+    if engine["world_name"]:
+        if st.button("🚪 ABANDON TIMELINE (HOME HUB)", type="secondary", use_container_width=True):
+            st.session_state.world_engine = {
+                "world_id": None, "world_name": "", "world_genre": "",
+                "player_character": {"name": "", "backstory": "", "health": 100, "inventory": ["survival gear"]},
+                "story_log": []
+            }
+            st.rerun()
+
     
     if "user" in st.session_state:
         st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
