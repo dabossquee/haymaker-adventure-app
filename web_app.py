@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import re
+import time
 import stripe
 from openai import OpenAI
 from supabase import create_client, Client
@@ -30,7 +31,7 @@ if "active_modal" in st.session_state and st.session_state.active_modal:
     modal = st.session_state.active_modal
     @st.dialog(modal["title"])
     def render_modal_window():
-        st.image(modal["img"], use_container_width=True)
+        st.info(f"📁 {modal['img']}")
         st.markdown(f"**🎨 Creator ID:** `{modal['creator']}`")
         st.markdown(f"**🎭 Character Dossier:** {modal['bio']}")
         if st.button("🚪 Close Dossier File", use_container_width=True):
@@ -59,11 +60,11 @@ else:
 
 engine = st.session_state.world_engine
 char = engine["player_character"]
+
 # 4. SIDEBAR STATUS OVERWATCH PANEL
 with st.sidebar:
     st.title("📊 STATUS CONTROL")
-
-    # 🚨 DESTROY MEMORY AND BACK OUT TO HOME HUB BUTTON
+    
     if engine["world_name"]:
         if st.button("🚪 ABANDON TIMELINE (HOME HUB)", type="secondary", use_container_width=True):
             st.session_state.world_engine = {
@@ -72,8 +73,7 @@ with st.sidebar:
                 "story_log": []
             }
             st.rerun()
-
-    
+            
     if "user" in st.session_state:
         st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
     else:
@@ -117,7 +117,6 @@ if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
     st.subheader("Explore alternate realities or forge your own timeline")
     
-    # Render the 5 premium interface navigation tabs cleanly on the main canvas
     tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
         "🪐 Explore Universes", "🏗️ My Creations", "🪄 Create a World", "🎭 Community Avatars", "👤 Account Profile"
     ])
@@ -174,11 +173,10 @@ if not engine["world_name"]:
                     char["name"] = "Gideon Black"
                     char["backstory"] = "A weathered mercenary carrying the broken sword of his king across fields contaminated by volcanic ash."
                     st.rerun()
-
         with sub_cyberpunk:
             st.markdown("### Pre-Made Cyberpunk Realities")
             cols = st.columns(2)
-            with cols[0]:
+            with cols:
                 st.markdown("#### 🏙️ NEO-TOKYO RUNNER")
                 st.caption("High-stakes tech espionage, corporate warfare, and neon-lit street racing.")
                 if st.button("🎮 Launch Neo-Tokyo", use_container_width=True):
@@ -188,7 +186,7 @@ if not engine["world_name"]:
                     char["name"] = "Ren 'Zero' Tanaka"
                     char["backstory"] = "A skilled street racer running data modifications inside a hidden neural link to pay off yakuza syndicates."
                     st.rerun()
-            with cols[1]:
+            with cols:
                 st.markdown("#### ⛓️ GRIDLOCK UNDERGROUND")
                 st.caption("Hack deep mainframe grids and lead a digital rebellion against mega-corps.")
                 if st.button("🎮 Launch Gridlock", use_container_width=True):
@@ -198,6 +196,7 @@ if not engine["world_name"]:
                     char["name"] = "Echo"
                     char["backstory"] = "A phantom hacker who lives entirely inside deep mainframe server nodes, wiping dirty corporate banks."
                     st.rerun()
+
         with sub_ai:
             st.markdown("### Community & AI Generated Universes")
             try:
@@ -234,7 +233,6 @@ if not engine["world_name"]:
                 st.error(f"Fetch Error: {e}")
         else:
             st.warning("🔒 Please sign in via the 'Account Profile' tab to look inside your private creation vault.")
-            
     with tab_create:
         st.markdown("### 🪄 Universe Architect Form")
         w_name = st.text_input("Name your universe:", placeholder="e.g., Sector 7, Neo-Tokyo")
@@ -245,20 +243,11 @@ if not engine["world_name"]:
         if st.button("🚀 Deploy and Ignite Core Engine", use_container_width=True):
             if w_name and w_genre and c_name:
                 if "user" in st.session_state:
-                  
                     try:
-                        if "user" not in st.session_state:
-                            st.error("🔒 Security Block: You must be logged into an account profile to write to the database matrix!")
-                            st.stop()
-                            
-                        active_user = st.session_state.user
-                        
-                        # 👑 THE FINAL BOSS FIX: Inject the saved access token straight into the network header
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
-                            
                         supabase_client.table("worlds").insert({
-                            "creator_id": active_user.id,
+                            "creator_id": st.session_state.user.id,
                             "world_name": str(w_name).strip(),
                             "world_genre": str(w_genre).strip()
                         }).execute()
@@ -274,53 +263,46 @@ if not engine["world_name"]:
                 st.rerun()
             else:
                 st.warning("⚠️ Fill out the architectural inputs to launch.")
-
                 
     with tab_avatars:
         st.markdown("### 🎭 Community Avatars Portal")
         st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
         
         cols = st.columns(3)
-        
-        with cols[0]:
+        with cols:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
             st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
-            st.image("https://picsum.photos/id/1016/400/400", use_container_width=True)
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Dixon File", key="btn_dixon_inspect", use_container_width=True):
                 st.session_state.active_modal = {
-                    "title": "👤 COMMANDER DIXON",
-                    "creator": "Alpha_Dreamer99",
+                    "title": "👤 COMMANDER DIXON", "creator": "Alpha_Dreamer99",
                     "bio": "Ex-military tactical operative specializing in high-stakes salvage ops across lawless outer rims.",
-                    "img": "https://picsum.photos/id/1016/800/800"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
-
-        with cols[1]:
+        with cols:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
             st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
-            st.image("https://picsum.photo/id/1016/400/400", use_container_width=True)
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Nyx File", key="btn_nyx_inspect", use_container_width=True):
                 st.session_state.active_modal = {
-                    "title": "👤 NYX THE SHADOW",
-                    "creator": "Neon_Ghost",
+                    "title": "👤 NYX THE SHADOW", "creator": "Neon_Ghost",
                     "bio": "Cybernetic network runner operating out of Neo-Tokyo's underbelly. Known for breaking corporate firewalls.",
-                    "img": "https://picsum.photos/id/1044/800/800"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
-
-        with cols[2]:
+        with cols:
             st.markdown("#### 👤 VALERIUS THE EXILE")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
             st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
-            st.image("https://picsum.photos/id/1035/400/400", use_container_width=True)
+            st.image("https://picsum.photos", use_container_width=True)
             if st.button("🔍 Inspect Valerius File", key="btn_valerius_inspect", use_container_width=True):
                 st.session_state.active_modal = {
-                    "title": "👤 VALERIUS THE EXILE",
-                    "creator": "Gothic_Lord",
+                    "title": "👤 VALERIUS THE EXILE", "creator": "Gothic_Lord",
                     "bio": "Nomadic bloodline guardian navigating dark medieval covenant wars. Wielder of the sun-forged iron blade.",
-                    "img": "https://picsum.photos/id/1035/800/800"
+                    "img": "https://picsum.photos"
                 }
                 st.rerun()
                 
@@ -346,29 +328,52 @@ if not engine["world_name"]:
                         st.error(f"Error: {e}")
             elif auth_mode == "Sign In":
                 if st.button("🔓 Authenticate Profile", use_container_width=True):
-                    
-                    
-                  try:
-                     session_data = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
-                     st.session_state.user = session_data.user
-                     # 👑 SAVE THE LIVE SESSION ACCESS TOKEN KEYS
-                     if hasattr(session_data, 'session') and session_data.session:
-                         st.session_state["access_token"] = session_data.session.access_token
-                     st.rerun()
-
-                  except Exception as e:
+                    try:
+                        session_data = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
+                        st.session_state.user = session_data.user
+                        if hasattr(session_data, 'session') and session_data.session:
+                            st.session_state["access_token"] = session_data.session.access_token
+                        st.rerun()
+                    except Exception as e:
                         st.error(f"Error: {e}")
     st.stop()
-# 6. ACTIVE ADVENTURE STORY LAYER
+# 6. ACTIVE ADVENTURE STYLING OVERLAY (GLASSMORPHISM RESPONSIVE WRAPPERS)
+st.markdown("""
+<style>
+    .glass-bubble-user {
+        background-color: rgba(255, 75, 75, 0.12);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 75, 75, 0.2);
+        border-radius: 16px 16px 2px 16px;
+        padding: 12px 16px;
+        color: #ffffff;
+        font-size: 15px;
+        width: 100%;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .glass-bubble-ai {
+        background-color: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px 16px 16px 2px;
+        padding: 12px 16px;
+        color: #f0f2f6;
+        font-size: 15px;
+        width: 100%;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title(f"🎬 {engine['world_name'].upper()}")
 
+# THE UNIVERSAL PLAYER LOCK: The paywall ONLY activates if they aren't premium AND their actions hit 0
 if "user" in st.session_state:
-    # 👑 MASTER ADMIN OVERRIDE FOR YOUR EXCLUSIVE ACCOUNT
-    # Change 'your_exact_admin_email@example.com' to your real master login email address!
     if st.session_state.user.email == "your_exact_admin_email@example.com":
         st.session_state.is_premium = True
 
-# THE UNIVERSAL PLAYER LOCK: The paywall ONLY activates if they aren't premium AND their actions hit 0
 is_premium_active = getattr(st.session_state, 'is_premium', False)
 has_trial_tokens = st.session_state.guest_tokens > 0
 
@@ -397,133 +402,43 @@ if not is_premium_active and not has_trial_tokens:
             st.error(f"Stripe Error: {e}")
     st.stop()
 
-
-if "user" not in st.session_state and st.session_state.guest_tokens <= 0:
-    st.error("🛑 Free trial actions fully expended!")
-    if st.button("🚀 Create an Account / Sign In to Continue", type="primary", use_container_width=True):
-        st.session_state.clear()
-        st.rerun()
-    st.stop()
-# 🎬 ACTIVE NARRATIVE DISPLAY CANVAS (TEXTING STYLE INTERFACE)
-st.markdown("""
-<style>
-    .chat-row {
-        display: flex;
-        align-items: flex-end;
-        margin-bottom: 15px;
-        width: 100%;
-    }
-    .user-row {
-        justify-content: flex-end;
-    }
-    .ai-row {
-        justify-content: flex-start;
-    }
-    .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin: 0 10px;
-    }
-    .chat-bubble-user {
-        background-color: rgba(255, 75, 75, 0.15);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 75, 75, 0.25);
-        border-radius: 18px 18px 2px 18px;
-        padding: 12px 16px;
-        margin: 0;
-        max-width: 75%;
-        text-align: right;
-        color: #ffffff;
-        font-size: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .chat-bubble-ai {
-        background-color: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 18px 18px 18px 2px;
-        padding: 12px 16px;
-        margin: 0;
-        max-width: 75%;
-        text-align: left;
-        color: #f0f2f6;
-        font-size: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    /* Dynamic Character Voice Styles Inside Bubbles */
-    .character-voice {
-        color: #00E5FF;
-        font-weight: bold;
-    }
-    .narrator-voice {
-        color: #f0f2f6;
-        font-weight: normal;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-import re
-
-def parse_voices(text):
-    """Bolds and color-codes character dialogue while keeping narration normal."""
-    pattern = r'("[^"\r\n]*")'
-    parts = re.split(pattern, text)
-    formatted_html = ""
-    for part in parts:
-        if part.startswith('"') and part.endswith('"'):
-            formatted_html += f'<span class="character-voice">{part}</span>'
+# RENDERING THE NATIVE HISTORY LAYER WITH AVATARS + GLASS CHAT BUBBLES
+for text_turn in engine["story_log"]:
+    if text_turn["role"] == "user":
+        if "[System Command]" in text_turn["content"]:
+            st.info(text_turn["content"])
         else:
-            formatted_html += f'<span class="narrator-voice">{part}</span>'
-    return formatted_html
-def display_game_history():
-    """Renders all past turns in the history using the updated bubble styles."""
-    USER_AVATAR = "https://w3schools.com"
-    AI_AVATAR = "https://w3schools.com"
-    
-    for past_turn in engine["story_log"]:
-        if past_turn["role"] == "system":
-            continue
-        if past_turn["role"] == "user":
-            html = f"""
-            <div class="chat-row user-row">
-                <div class="chat-bubble-user">{past_turn["content"]}</div>
-                <img src="{USER_AVATAR}" class="avatar">
-            </div>
-            """
-            st.markdown(html, unsafe_allow_html=True)
-        elif past_turn["role"] == "assistant":
-            dynamic_html = parse_voices(past_turn["content"])
-            html = f"""
-            <div class="chat-row ai-row">
-                <img src="{AI_AVATAR}" class="avatar">
-                <div class="chat-bubble-ai">{dynamic_html}</div>
-            </div>
-            """
-            st.markdown(html, unsafe_allow_html=True)
+            cols = st.columns([1, 4, 1])
+            with cols[2]:
+                st.markdown("### 👤")
+            with cols[1]:
+                st.markdown(f'<div class="glass-bubble-user">{text_turn["content"]}</div>', unsafe_allow_html=True)
+    elif text_turn["role"] == "assistant":
+        clean_text = re.sub(r'\[.*?\]', '', text_turn["content"]).strip()
+        cols = st.columns([1, 4, 1])
+        with cols[0]:
+            st.markdown("### 🤖")
+        with cols[1]:
+            st.markdown(f'<div class="glass-bubble-ai">{clean_text}</div>', unsafe_allow_html=True)
 
-
-
-        display_game_history()
-
+# 7. CHRONOS SPACE MATRIX INITIAL SCENE SPARK
 if not engine["story_log"]:
     with st.spinner("⏳ Simulating initial cosmos entry scene..."):
         master_prompt = (
-            f"You are the master engine for an advanced text game called Haymaker.\n"
-            f"The user's world: '{engine['world_name']}' (Genre: '{engine['world_genre']}').\n"
-            f"Character: '{char['name']}' (Backstory: '{char['backstory']}').\n"
-            f"Current Inventory: {', '.join(char['inventory'])}.\n"
-            f"Current Health: {char['health']}/100.\n"
-            f"Generate an immersive opening scene. End by prompting them what to do next."
+            f"You are the master narrator for a text adventure game called Haymaker.\n"
+            f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
+            f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
+            f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
+            f"⚠️ CRITICAL RULES:\n"
+            f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
+            f"2. Never play for the user or decide their actions. Establish the scene and stop talking immediately.\n"
+            f"3. COLOR CODE DIALOGUE: Wrap all character dialogue in :orange[**\"Speech\"**] to pop in bold orange. Keep basic narration standard."
         )
         
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "system", "content": master_prompt}, {"role": "user", "content": "Wake up and look around."}],
-            max_tokens=450,
+            max_tokens=100,
             temperature=0.7
         )
         initial_story = response.choices[0].message.content
@@ -539,8 +454,6 @@ if user_action:
         
     engine["story_log"].append({"role": "user", "content": user_action})
     
-    import time
-
     master_prompt = (
         f"You are the master narrator for a text adventure game called Haymaker.\n"
         f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
@@ -553,54 +466,33 @@ if user_action:
         f"4. Append system tags at the absolute bottom if changes occur: [LOOT: item_name] or [HEALTH: -15]."
     )
     
-    # 🏎️ FINE-TUNED TYPEWRITER SPEED STREAMING LOOP
-    with st.chat_message("assistant"):
+    # RENDER TYPEWRITER CONTAINER DIRECTLY ALONGSIDE THE ROBOT AVATAR WITH NO GHOST DUPLICATES
+    cols = st.columns([1, 4, 1])
+    with cols[0]:
+        st.markdown("### 🤖")
+    with cols[1]:
+        chat_placeholder = st.empty()
+        
         messages = [{"role": "system", "content": master_prompt}]
         for past_turn in engine["story_log"]:
             messages.append({"role": past_turn["role"], "content": past_turn["content"]})
-
+            
         stream_response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
-            max_tokens=100,  # Hard locked to guarantee a short, detailed paragraph
+            max_tokens=100,
             temperature=0.7,
             stream=True
         )
         
-               # --- NEW CLEAN STREAMING CONTROLLER ---
-        
-        # 1. Define your profile picture links (Replace these with your actual image paths)
-        USER_AVATAR = "https://w3schools.com"
-        AI_AVATAR = "https://w3schools.com"
-
-        # 2. Build the live placeholder row container before the typing starts
-        row_placeholder = st.empty()
         raw_ai_text = ""
-
-        # 3. Type it out letter-by-letter directly inside the bubble framework
         for chunk in stream_response:
             if chunk.choices and chunk.choices[0].delta.content:
-                text_content = chunk.choices[0].delta.content
+                raw_ai_text += chunk.choices[0].delta.content
+                # Update the custom glass container block character-by-character live
+                chat_placeholder.markdown(f'<div class="glass-bubble-ai">{raw_ai_text}</div>', unsafe_allow_html=True)
+                time.sleep(0.01)
                 
-                # Split down to the individual character for that steady human tempo
-                for character in text_content:
-                    raw_ai_text += character
-                    time.sleep(0.015)  # Your perfect conversational typing pace
-                    
-                    # Color-code the narrative vs character voices on the fly
-                    dynamic_html = parse_voices(raw_ai_text)
-                    
-                    # Package it beautifully with the profile picture anchored
-                    bubble_html = f"""
-                    <div class="chat-row ai-row">
-                        <img src="{AI_AVATAR}" class="avatar">
-                        <div class="chat-bubble-ai">{dynamic_html}</div>
-                    </div>
-                    """
-                    # Push it live onto the canvas instantly
-                    row_placeholder.markdown(bubble_html, unsafe_allow_html=True)
-
-        
     loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
     for item in loot_matches:
         if item.strip() not in char["inventory"]:
@@ -613,4 +505,3 @@ if user_action:
         
     engine["story_log"].append({"role": "assistant", "content": raw_ai_text})
     st.rerun()
-
