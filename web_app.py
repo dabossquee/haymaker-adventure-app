@@ -245,21 +245,26 @@ if not engine["world_name"]:
         if st.button("🚀 Deploy and Ignite Core Engine", use_container_width=True):
             if w_name and w_genre and c_name:
                 if "user" in st.session_state:
+                                        
                     try:
-                        # 1. Grab the active authenticated user details from session memory
-                        active_user = st.session_state.user if "user" in st.session_state else None
-                        
-                        if not active_user:
+                        # 1. Check if a valid user is logged in
+                        if "user" not in st.session_state:
                             st.error("🔒 Security Block: You must be logged into an account profile to write to the database matrix!")
                             st.stop()
                             
-                        # 2. THE FIX: Force the global client to use your live login access token parameters
-                        # This passes the validation handshake straight to the Supabase RLS bouncer
-                        if hasattr(active_user, 'aud') and active_user.aud == 'authenticated':
-                            # Safe fallback check to verify the account is active
+                        active_user = st.session_state.user
+                        
+                        # 2. THE CHOSEN FIX: Retrieve the active session tokens from the client auth memory
+                        # We must force the client to bind to this user's live token right before inserting
+                        try:
+                            current_session = supabase_client.auth.get_session()
+                            if current_session and current_session.access_token:
+                                supabase_client.postgrest.auth(current_session.access_token)
+                        except Exception:
+                            # Fallback to prevent app crashes if session memory is transient
                             pass
                             
-                        # 3. Explicitly execute the insert using the synchronized data packet
+                        # 3. Explicitly execute the insert using the verified user token parameters
                         supabase_client.table("worlds").insert({
                             "creator_id": active_user.id,
                             "world_name": str(w_name).strip(),
@@ -269,6 +274,7 @@ if not engine["world_name"]:
                     except Exception as e:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
+
 
 
 
