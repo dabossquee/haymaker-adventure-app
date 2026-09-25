@@ -446,42 +446,47 @@ if user_action:
     engine["story_log"].append({"role": "user", "content": user_action})
     
     master_prompt = (
-        f"You are the master engine for an advanced text-game called Haymaker.\n"
-        f"The user's world: '{engine['world_name']}' (Genre: '{engine['world_genre']}').\n"
-        f"Character: '{char['name']}' (Backstory: '{char['backstory']}').\n"
-        f"Current Inventory: {', '.join(char['inventory'])}.\n"
-        f"Current Health: {char['health']}/100.\n\n"
-        f"CRITICAL ENGINE RULES:\n"
-        f"1. Never break character. Never mention you are an AI model.\n"
-        f"2. Immersively narrate cinematic outcomes matching the genre.\n"
-        f"3. Always append system data tags at the absolute bottom if state changes:\n"
-        f"   - Award item: [LOOT: item_name]\n"
-        f"   - Modify health: [HEALTH: -15]"
+        f"You are the master narrator for a text adventure game called Haymaker.\n"
+        f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
+        f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
+        f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
+        f"⚠️ CRITICAL RULES:\n"
+        f"1. Be a concise, punchy narrator. Maximum 3-4 sentences per response.\n"
+        f"2. Never play FOR the user or decide their movements. Let the user drive completely.\n"
+        f"3. Speak cleanly for NPC characters if they are present in the immediate scene.\n"
+        f"4. Append system tags at the absolute bottom if changes occur: [LOOT: item_name] or [HEALTH: -15]."
     )
     
-    messages = [{"role": "system", "content": master_prompt}]
-    for past_turn in engine["story_log"]:
-        messages.append({"role": past_turn["role"], "content": past_turn["content"]})
-        
-    with st.spinner("⏳ Simulating reality consequences..."):
-        response = openai_client.chat.completions.create(
+    # 🏎️ THE LIVE WORD-BY-WORD STREAMING ENGINE LOOP
+    with st.chat_message("assistant"):
+        messages = [{"role": "system", "content": master_prompt}]
+        for past_turn in engine["story_log"]:
+            messages.append({"role": past_turn["role"], "content": past_turn["content"]})
+
+        stream_response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
-            max_tokens=450,
-            temperature=0.7
+            max_tokens=150,  # Strict limit to keep it fast, short, and punchy!
+            temperature=0.7,
+            stream=True
         )
         
-        raw_ai_text = response.choices[0].message.content
+        def generate_chunks():
+            for chunk in stream_response:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+                    
+        raw_ai_text = st.write_stream(generate_chunks())
         
-        loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
-        for item in loot_matches:
-            if item.strip() not in char["inventory"]:
-                char["inventory"].append(item.strip())
-                
-        health_matches = re.findall(r'\[HEALTH:\s*([+-]\d+)\]', raw_ai_text)
-        for modifier in health_matches:
-            char["health"] += int(modifier)
-            char["health"] = max(0, min(100, char["health"]))
+    loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
+    for item in loot_matches:
+        if item.strip() not in char["inventory"]:
+            char["inventory"].append(item.strip())
             
-        engine["story_log"].append({"role": "assistant", "content": raw_ai_text})
-        st.rerun()
+    health_matches = re.findall(r'\[HEALTH:\s*([+-]\d+)\]', raw_ai_text)
+    for modifier in health_matches:
+        char["health"] += int(modifier)
+        char["health"] = max(0, min(100, char["health"]))
+        
+    engine["story_log"].append({"role": "assistant", "content": raw_ai_text})
+    st.rerun()
