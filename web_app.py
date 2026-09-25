@@ -245,26 +245,18 @@ if not engine["world_name"]:
         if st.button("🚀 Deploy and Ignite Core Engine", use_container_width=True):
             if w_name and w_genre and c_name:
                 if "user" in st.session_state:
-                                        
+                  
                     try:
-                        # 1. Check if a valid user is logged in
                         if "user" not in st.session_state:
                             st.error("🔒 Security Block: You must be logged into an account profile to write to the database matrix!")
                             st.stop()
                             
                         active_user = st.session_state.user
                         
-                        # 2. THE CHOSEN FIX: Retrieve the active session tokens from the client auth memory
-                        # We must force the client to bind to this user's live token right before inserting
-                        try:
-                            current_session = supabase_client.auth.get_session()
-                            if current_session and current_session.access_token:
-                                supabase_client.postgrest.auth(current_session.access_token)
-                        except Exception:
-                            # Fallback to prevent app crashes if session memory is transient
-                            pass
+                        # 👑 THE FINAL BOSS FIX: Inject the saved access token straight into the network header
+                        if "access_token" in st.session_state:
+                            supabase_client.postgrest.auth(st.session_state["access_token"])
                             
-                        # 3. Explicitly execute the insert using the verified user token parameters
                         supabase_client.table("worlds").insert({
                             "creator_id": active_user.id,
                             "world_name": str(w_name).strip(),
@@ -274,10 +266,6 @@ if not engine["world_name"]:
                     except Exception as e:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
-
-
-
-
                 
                 engine["world_name"] = w_name
                 engine["world_genre"] = w_genre
@@ -286,6 +274,7 @@ if not engine["world_name"]:
                 st.rerun()
             else:
                 st.warning("⚠️ Fill out the architectural inputs to launch.")
+
                 
     with tab_avatars:
         st.markdown("### 🎭 Community Avatars Portal")
@@ -357,11 +346,17 @@ if not engine["world_name"]:
                         st.error(f"Error: {e}")
             elif auth_mode == "Sign In":
                 if st.button("🔓 Authenticate Profile", use_container_width=True):
-                    try:
-                        session_data = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
-                        st.session_state.user = session_data.user
-                        st.rerun()
-                    except Exception as e:
+                    
+                    
+                  try:
+                     session_data = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
+                     st.session_state.user = session_data.user
+                     # 👑 SAVE THE LIVE SESSION ACCESS TOKEN KEYS
+                     if hasattr(session_data, 'session') and session_data.session:
+                         st.session_state["access_token"] = session_data.session.access_token
+                     st.rerun()
+
+                  except Exception as e:
                         st.error(f"Error: {e}")
     st.stop()
 # 6. ACTIVE ADVENTURE STORY LAYER
