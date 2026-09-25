@@ -405,16 +405,87 @@ if "user" not in st.session_state and st.session_state.guest_tokens <= 0:
         st.rerun()
     st.stop()
 
+# 🎬 ACTIVE NARRATIVE DISPLAY CANVAS (TEXTING STYLE INTERFACE)
+st.markdown("""
+<style>
+    .chat-bubble-user {
+        background-color: rgba(255, 75, 75, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 75, 75, 0.25);
+        border-radius: 18px 18px 2px 18px;
+        padding: 12px 16px;
+        margin: 8px 0px 8px auto;
+        max-width: 75%;
+        text-align: right;
+        color: #ffffff;
+        font-size: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .chat-bubble-ai {
+        background-color: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px 18px 18px 2px;
+        padding: 12px 16px;
+        margin: 8px auto 8px 0px;
+        max-width: 75%;
+        text-align: left;
+        color: #f0f2f6;
+        font-size: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+#ACTIVE NARRATIVE DISPLAY CANVAS (TEXTING STYLE INTERFACE)
+st.markdown("""
+<style>
+    .chat-bubble-user {
+        background-color: rgba(255, 75, 75, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 75, 75, 0.25);
+        border-radius: 18px 18px 2px 18px;
+        padding: 12px 16px;
+        margin: 8px 0px 8px auto;
+        max-width: 75%;
+        text-align: right;
+        color: #ffffff;
+        font-size: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .chat-bubble-ai {
+        background-color: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px 18px 18px 2px;
+        padding: 12px 16px;
+        margin: 8px auto 8px 0px;
+        max-width: 75%;
+        text-align: left;
+        color: #f0f2f6;
+        font-size: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+</style>
+""", unsafe_allow_html=True)
+
 for text_turn in engine["story_log"]:
     if text_turn["role"] == "user":
         if "[System Command]" in text_turn["content"]:
             st.info(text_turn["content"])
         else:
-            st.chat_message("user").write(text_turn["content"])
+            # Right-aligned player text bubble
+            st.markdown(f'<div class="chat-bubble-user">{text_turn["content"]}</div>', unsafe_allow_html=True)
     elif text_turn["role"] == "assistant":
         clean_text = re.sub(r'\[.*?\]', '', text_turn["content"]).strip()
-        st.chat_message("assistant").write(clean_text)
-
+        # Left-aligned, semi-transparent AI narrator text bubble
+        st.markdown(f'<div class="chat-bubble-ai">{clean_text}</div>', unsafe_allow_html=True)
+        # Left-aligned, semi-transparent AI narrator text bubble
+        st.markdown(f'<div class="chat-bubble-ai">{clean_text}</div>', unsafe_allow_html=True)
 if not engine["story_log"]:
     with st.spinner("⏳ Simulating initial cosmos entry scene..."):
         master_prompt = (
