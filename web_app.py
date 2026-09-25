@@ -445,7 +445,7 @@ if user_action:
         
     engine["story_log"].append({"role": "user", "content": user_action})
     
-        import time
+    import time
 
     master_prompt = (
         f"You are the master narrator for a text adventure game called Haymaker.\n"
