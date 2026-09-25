@@ -404,10 +404,28 @@ if "user" not in st.session_state and st.session_state.guest_tokens <= 0:
         st.session_state.clear()
         st.rerun()
     st.stop()
-
 # 🎬 ACTIVE NARRATIVE DISPLAY CANVAS (TEXTING STYLE INTERFACE)
 st.markdown("""
 <style>
+    .chat-row {
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 15px;
+        width: 100%;
+    }
+    .user-row {
+        justify-content: flex-end;
+    }
+    .ai-row {
+        justify-content: flex-start;
+    }
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 10px;
+    }
     .chat-bubble-user {
         background-color: rgba(255, 75, 75, 0.15);
         backdrop-filter: blur(8px);
@@ -415,7 +433,7 @@ st.markdown("""
         border: 1px solid rgba(255, 75, 75, 0.25);
         border-radius: 18px 18px 2px 18px;
         padding: 12px 16px;
-        margin: 8px 0px 8px auto;
+        margin: 0;
         max-width: 75%;
         text-align: right;
         color: #ffffff;
@@ -429,63 +447,68 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 18px 18px 18px 2px;
         padding: 12px 16px;
-        margin: 8px auto 8px 0px;
+        margin: 0;
         max-width: 75%;
         text-align: left;
         color: #f0f2f6;
         font-size: 15px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-</style>
-""", unsafe_allow_html=True)
-
-#ACTIVE NARRATIVE DISPLAY CANVAS (TEXTING STYLE INTERFACE)
-st.markdown("""
-<style>
-    .chat-bubble-user {
-        background-color: rgba(255, 75, 75, 0.15);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 75, 75, 0.25);
-        border-radius: 18px 18px 2px 18px;
-        padding: 12px 16px;
-        margin: 8px 0px 8px auto;
-        max-width: 75%;
-        text-align: right;
-        color: #ffffff;
-        font-size: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    /* Dynamic Character Voice Styles Inside Bubbles */
+    .character-voice {
+        color: #00E5FF;
+        font-weight: bold;
     }
-    .chat-bubble-ai {
-        background-color: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 18px 18px 18px 2px;
-        padding: 12px 16px;
-        margin: 8px auto 8px 0px;
-        max-width: 75%;
-        text-align: left;
+    .narrator-voice {
         color: #f0f2f6;
-        font-size: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        font-weight: normal;
     }
 </style>
 """, unsafe_allow_html=True)
 
-for text_turn in engine["story_log"]:
-    if text_turn["role"] == "user":
-        if "[System Command]" in text_turn["content"]:
-            st.info(text_turn["content"])
+import re
+
+def parse_voices(text):
+    """Bolds and color-codes character dialogue while keeping narration normal."""
+    pattern = r'("[^"\r\n]*")'
+    parts = re.split(pattern, text)
+    formatted_html = ""
+    for part in parts:
+        if part.startswith('"') and part.endswith('"'):
+            formatted_html += f'<span class="character-voice">{part}</span>'
         else:
-            # Right-aligned player text bubble
-            st.markdown(f'<div class="chat-bubble-user">{text_turn["content"]}</div>', unsafe_allow_html=True)
-    elif text_turn["role"] == "assistant":
-        clean_text = re.sub(r'\[.*?\]', '', text_turn["content"]).strip()
-        # Left-aligned, semi-transparent AI narrator text bubble
-        st.markdown(f'<div class="chat-bubble-ai">{clean_text}</div>', unsafe_allow_html=True)
-        # Left-aligned, semi-transparent AI narrator text bubble
-        st.markdown(f'<div class="chat-bubble-ai">{clean_text}</div>', unsafe_allow_html=True)
+            formatted_html += f'<span class="narrator-voice">{part}</span>'
+    return formatted_html
+def display_game_history():
+    """Renders all past turns in the history using the updated bubble styles."""
+    USER_AVATAR = "https://w3schools.com"
+    AI_AVATAR = "https://w3schools.com"
+    
+    for past_turn in engine["story_log"]:
+        if past_turn["role"] == "system":
+            continue
+        if past_turn["role"] == "user":
+            html = f"""
+            <div class="chat-row user-row">
+                <div class="chat-bubble-user">{past_turn["content"]}</div>
+                <img src="{USER_AVATAR}" class="avatar">
+            </div>
+            """
+            st.markdown(html, unsafe_allow_html=True)
+        elif past_turn["role"] == "assistant":
+            dynamic_html = parse_voices(past_turn["content"])
+            html = f"""
+            <div class="chat-row ai-row">
+                <img src="{AI_AVATAR}" class="avatar">
+                <div class="chat-bubble-ai">{dynamic_html}</div>
+            </div>
+            """
+            st.markdown(html, unsafe_allow_html=True)
+
+
+
+        display_game_history()
+
 if not engine["story_log"]:
     with st.spinner("⏳ Simulating initial cosmos entry scene..."):
         master_prompt = (
@@ -544,16 +567,39 @@ if user_action:
             stream=True
         )
         
-        # Break the incoming text stream down letter-by-letter with a steady human tempo
-        def generate_typewriter_chunks():
-            for chunk in stream_response:
-                if chunk.choices and chunk.choices[0].delta.content:
-                    text_content = chunk.choices[0].delta.content
-                    for character in text_content:
-                        yield character
-                        time.sleep(0.015)  # Perfect conversational typing pace
+               # --- NEW CLEAN STREAMING CONTROLLER ---
+        
+        # 1. Define your profile picture links (Replace these with your actual image paths)
+        USER_AVATAR = "https://w3schools.com"
+        AI_AVATAR = "https://w3schools.com"
+
+        # 2. Build the live placeholder row container before the typing starts
+        row_placeholder = st.empty()
+        raw_ai_text = ""
+
+        # 3. Type it out letter-by-letter directly inside the bubble framework
+        for chunk in stream_response:
+            if chunk.choices and chunk.choices[0].delta.content:
+                text_content = chunk.choices[0].delta.content
+                
+                # Split down to the individual character for that steady human tempo
+                for character in text_content:
+                    raw_ai_text += character
+                    time.sleep(0.015)  # Your perfect conversational typing pace
                     
-        raw_ai_text = st.write_stream(generate_typewriter_chunks())
+                    # Color-code the narrative vs character voices on the fly
+                    dynamic_html = parse_voices(raw_ai_text)
+                    
+                    # Package it beautifully with the profile picture anchored
+                    bubble_html = f"""
+                    <div class="chat-row ai-row">
+                        <img src="{AI_AVATAR}" class="avatar">
+                        <div class="chat-bubble-ai">{dynamic_html}</div>
+                    </div>
+                    """
+                    # Push it live onto the canvas instantly
+                    row_placeholder.markdown(bubble_html, unsafe_allow_html=True)
+
         
     loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
     for item in loot_matches:
