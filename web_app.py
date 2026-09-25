@@ -246,10 +246,15 @@ if not engine["world_name"]:
             if w_name and w_genre and c_name:
                 if "user" in st.session_state:
                     try:
-                        # Explicitly inject the active user ID string to guarantee RLS clearance
-                        user_id = st.session_state.user.id if "user" in st.session_state else None
+                        # Force the app to fetch your exact verified user authentication ID
+                        active_user_id = st.session_state.user.id if "user" in st.session_state else None
+                        
+                        if not active_user_id:
+                            st.error("🔒 Security Block: You must be logged into an account profile to write to the database matrix!")
+                            st.stop()
+                            
                         supabase_client.table("worlds").insert({
-                            "creator_id": user_id,
+                            "creator_id": active_user_id,
                             "world_name": w_name,
                             "world_genre": w_genre
                         }).execute()
@@ -257,6 +262,7 @@ if not engine["world_name"]:
                     except Exception as e:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
+
 
                 
                 engine["world_name"] = w_name
