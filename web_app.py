@@ -353,9 +353,19 @@ if not engine["world_name"]:
 # 6. ACTIVE ADVENTURE STORY LAYER
 st.title(f"🎬 {engine['world_name'].upper()}")
 
-if "user" in st.session_state and not getattr(st.session_state, 'is_premium', False):
+if "user" in st.session_state:
+    # 👑 MASTER ADMIN OVERRIDE FOR YOUR EXCLUSIVE ACCOUNT
+    # Change 'your_exact_admin_email@example.com' to your real master login email address!
+    if st.session_state.user.email == "your_exact_admin_email@example.com":
+        st.session_state.is_premium = True
+
+# THE UNIVERSAL PLAYER LOCK: The paywall ONLY activates if they aren't premium AND their actions hit 0
+is_premium_active = getattr(st.session_state, 'is_premium', False)
+has_trial_tokens = st.session_state.guest_tokens > 0
+
+if not is_premium_active and not has_trial_tokens:
     st.subheader("💳 Activate Subscription")
-    st.info("Unlock the $10/week Unlimited Pass to keep playing.")
+    st.info("Your free trial action points have been exhausted. Unlock the $10/week Unlimited Pass to continue your timeline.")
     if st.button("👑 Get Unlimited Pass ($10/wk)", type="primary", use_container_width=True):
         try:
             checkout_session = stripe.checkout.Session.create(
@@ -377,6 +387,7 @@ if "user" in st.session_state and not getattr(st.session_state, 'is_premium', Fa
         except Exception as e:
             st.error(f"Stripe Error: {e}")
     st.stop()
+
 
 if "user" not in st.session_state and st.session_state.guest_tokens <= 0:
     st.error("🛑 Free trial actions fully expended!")
