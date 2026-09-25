@@ -445,19 +445,21 @@ if user_action:
         
     engine["story_log"].append({"role": "user", "content": user_action})
     
+        import time
+
     master_prompt = (
         f"You are the master narrator for a text adventure game called Haymaker.\n"
         f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
         f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
         f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
-        f"⚠️ CRITICAL RULES:\n"
-        f"1. Be a concise, punchy narrator. Maximum 3-4 sentences per response.\n"
-        f"2. Never play FOR the user or decide their movements. Let the user drive completely.\n"
-        f"3. Speak cleanly for NPC characters if they are present in the immediate scene.\n"
+        f"⚠️ CRITICAL FORMATTING & COGNITIVE RULES:\n"
+        f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
+        f"2. Never play for the user or move their body. Let the user fully drive.\n"
+        f"3. COLOR CODE DIALOGUE: If a character speaks, wrap their exact spoken words in :orange[**\"Speech\"**] so dialogue stands out in bold orange. Keep narration text completely standard.\n"
         f"4. Append system tags at the absolute bottom if changes occur: [LOOT: item_name] or [HEALTH: -15]."
     )
     
-    # 🏎️ THE LIVE WORD-BY-WORD STREAMING ENGINE LOOP
+    # 🏎️ FINE-TUNED TYPEWRITER SPEED STREAMING LOOP
     with st.chat_message("assistant"):
         messages = [{"role": "system", "content": master_prompt}]
         for past_turn in engine["story_log"]:
@@ -466,17 +468,21 @@ if user_action:
         stream_response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
-            max_tokens=150,  # Strict limit to keep it fast, short, and punchy!
+            max_tokens=100,  # Hard locked to guarantee a short, detailed paragraph
             temperature=0.7,
             stream=True
         )
         
-        def generate_chunks():
+        # Break the incoming text stream down letter-by-letter with a steady human tempo
+        def generate_typewriter_chunks():
             for chunk in stream_response:
                 if chunk.choices and chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
+                    text_content = chunk.choices[0].delta.content
+                    for character in text_content:
+                        yield character
+                        time.sleep(0.015)  # Perfect conversational typing pace
                     
-        raw_ai_text = st.write_stream(generate_chunks())
+        raw_ai_text = st.write_stream(generate_typewriter_chunks())
         
     loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
     for item in loot_matches:
@@ -490,3 +496,4 @@ if user_action:
         
     engine["story_log"].append({"role": "assistant", "content": raw_ai_text})
     st.rerun()
+
