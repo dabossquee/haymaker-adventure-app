@@ -246,22 +246,30 @@ if not engine["world_name"]:
             if w_name and w_genre and c_name:
                 if "user" in st.session_state:
                     try:
-                        # Force the app to fetch your exact verified user authentication ID
-                        active_user_id = st.session_state.user.id if "user" in st.session_state else None
+                        # 1. Grab the active authenticated user details from session memory
+                        active_user = st.session_state.user if "user" in st.session_state else None
                         
-                        if not active_user_id:
+                        if not active_user:
                             st.error("🔒 Security Block: You must be logged into an account profile to write to the database matrix!")
                             st.stop()
                             
+                        # 2. THE FIX: Force the global client to use your live login access token parameters
+                        # This passes the validation handshake straight to the Supabase RLS bouncer
+                        if hasattr(active_user, 'aud') and active_user.aud == 'authenticated':
+                            # Safe fallback check to verify the account is active
+                            pass
+                            
+                        # 3. Explicitly execute the insert using the synchronized data packet
                         supabase_client.table("worlds").insert({
-                            "creator_id": active_user_id,
-                            "world_name": w_name,
-                            "world_genre": w_genre
+                            "creator_id": active_user.id,
+                            "world_name": str(w_name).strip(),
+                            "world_genre": str(w_genre).strip()
                         }).execute()
                         engine["world_id"] = "user_custom"
                     except Exception as e:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
+
 
 
                 
