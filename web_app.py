@@ -428,26 +428,30 @@ if not is_premium_active and not has_trial_tokens:
             st.error(f"Stripe Error: {e}")
     st.stop()
 
-# RENDERING THE NATIVE HISTORY LAYER WITH COHESIVE FLEX WRAPPERS
-for text_turn in engine["story_log"]:
-    if text_turn["role"] == "user":
-        if "[System Command]" in text_turn["content"]:
-            st.info(text_turn["content"])
-        else:
+# Create a dedicated layout context container to lock message execution ordering rules
+chat_canvas_context = st.container()
+
+with chat_canvas_context:
+    # RENDERING THE NATIVE HISTORY LAYER WITH COHESIVE FLEX WRAPPERS
+    for text_turn in engine["story_log"]:
+        if text_turn["role"] == "user":
+            if "[System Command]" in text_turn["content"]:
+                st.info(text_turn["content"])
+            else:
+                st.markdown(f"""
+                <div class="chat-row-user">
+                    <div class="glass-bubble-user">{text_turn["content"]}</div>
+                    <div class="avatar-box">👤</div>
+                </div>
+                """, unsafe_allow_html=True)
+        elif text_turn["role"] == "assistant":
+            clean_text = re.sub(r'\[.*?\]', '', text_turn["content"]).strip()
             st.markdown(f"""
-            <div class="chat-row-user">
-                <div class="glass-bubble-user">{text_turn["content"]}</div>
-                <div class="avatar-box">👤</div>
+            <div class="chat-row-ai">
+                <div class="avatar-box">🤖</div>
+                <div class="glass-bubble-ai">{clean_text}</div>
             </div>
             """, unsafe_allow_html=True)
-    elif text_turn["role"] == "assistant":
-        clean_text = re.sub(r'\[.*?\]', '', text_turn["content"]).strip()
-        st.markdown(f"""
-        <div class="chat-row-ai">
-            <div class="avatar-box">🤖</div>
-            <div class="glass-bubble-ai">{clean_text}</div>
-        </div>
-        """, unsafe_allow_html=True)
 
 # 7. CHRONOS SPACE MATRIX INITIAL SCENE SPARK
 if not engine["story_log"]:
@@ -460,7 +464,7 @@ if not engine["story_log"]:
             f"⚠️ CRITICAL GAMEPLAY & FORMATTING RULES:\n"
             f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
             f"2. Never play for the user or repeat their setup words. Establish the opening scene and stop instantly.\n"
-            f"3. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: :orange[**\"Dialogue text here\"**]. Keep normal narration paragraphs standard text colors."
+            f"3. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: **\"Dialogue text here\"** in standard bold. Do not use raw HTML style spans inside generation steps."
         )
         
         response = openai_client.chat.completions.create(
@@ -469,11 +473,10 @@ if not engine["story_log"]:
             max_tokens=100,
             temperature=0.7
         )
-        initial_story = response.choices[0].message.content
+        initial_story = response.choices.message.content
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
-
 
 user_action = st.chat_input("Describe your action or speak...")
 
@@ -492,12 +495,9 @@ if user_action:
         f"1. Be concise. Respond in exactly ONE high-impact paragraph. Maximum 3 sentences total.\n"
         f"2. NEVER repeat the user's input phrase or mirror their exact sentences back to them. Advance the plot immediately.\n"
         f"3. USER ACCESS CONTROLS: The user uses double quotes \" \" to speak in the world. If they talk to someone, you must handle the response for that character.\n"
-        f"4. NPC DIALOGUE SEPARATION: Keep your narrator descriptions standard. If an NPC character answers, wrap their speech in HTML markers exactly like this: CharacterName: <span style='color:#FF4B4B; font-weight:bold;'>\"Dialogue text here\"</span> to isolate dialogue cleanly in bold orange-red color. Do not use markdown tags like :orange[].\n"
+        f"4. NPC DIALOGUE SEPARATION: Keep your narrator descriptions standard. If an NPC character answers, place it on a clean line formatted exactly like this: CharacterName: **\"Dialogue text here\"** in standard bold markdown. Do not generate raw HTML spans directly in the stream.\n"
         f"5. Append system data tags at the absolute bottom if changes occur: [LOOT: item_name] or [HEALTH: -15]."
     )
-    
-    # TYPEWRITER CONTAINER SNAPPED DIRECTLY INSIDE NATIVE FLEX COLS
-    chat_placeholder = st.empty()
     
     messages = [{"role": "system", "content": master_prompt}]
     for past_turn in engine["story_log"]:
@@ -511,20 +511,31 @@ if user_action:
         stream=True
     )
     
-    raw_ai_text = ""
-    for chunk in stream_response:
-        if chunk.choices and len(chunk.choices) > 0 and chunk.choices[0].delta.content:
-            raw_ai_text += chunk.choices[0].delta.content
-            # Live container wrapper parsing raw HTML colors perfectly with a deeply slowed typing speed cadence
-            chat_placeholder.markdown(f"""
-            <div class="chat-row-ai">
-                <div class="avatar-box">🤖</div>
-                <div class="glass-bubble-ai">{raw_ai_text}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            time.sleep(0.07)  # Calibrated slow human-tempo typing delay
-
-            
+    # Render typewriter animations safely tucked inside our locked structural layout container
+    with chat_canvas_context:
+        chat_placeholder = st.empty()
+        raw_ai_text = ""
+        for chunk in stream_response:
+            if chunk.choices and len(chunk.choices) > 0 and chunk.choices.delta.content:
+                raw_ai_text += chunk.choices.delta.content
+                
+                # Convert the AI's standard markdown dialogue symbols to clean, display-ready HTML spans only after capturing full packets
+                processed_html_display = raw_ai_text
+                dialogue_blocks = re.findall(r'(\w+:\s*\".*?\")', processed_html_display)
+                for block in dialogue_blocks:
+                    speaker_name = block.split(":")[0]
+                    speech_content = block.split('"')[1]
+                    html_replacement = f"{speaker_name}: <span style='color:#FF4B4B; font-weight:bold;'>\"{speech_content}\"</span>"
+                    processed_html_display = processed_html_display.replace(block, html_replacement)
+                
+                chat_placeholder.markdown(f"""
+                <div class="chat-row-ai">
+                    <div class="avatar-box">🤖</div>
+                    <div class="glass-bubble-ai">{processed_html_display}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                time.sleep(0.07)  # Calibrated slow human-tempo typing delay
+                
     loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
     for item in loot_matches:
         if item.strip() not in char["inventory"]:
@@ -537,3 +548,4 @@ if user_action:
         
     engine["story_log"].append({"role": "assistant", "content": raw_ai_text})
     st.rerun()
+
