@@ -7,121 +7,111 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. CORE ENGINE PAGE INITIALIZATION (MATTE BLACK & LIQUID PURPLE RESKIN)
+# 1. CORE ENGINE PAGE INITIALIZATION (MANDARIN APP BACKPROPAGATION OVERHAUL)
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 
-# GLOBAL OVERRIDE: High-Contrast Modern Tech Aesthetic
+# GLOBAL THEME DESIGN: Liquid Obsidian Base with Dynamic Tab Genre Overlays
 st.markdown("""
 <style>
-    /* Global Background: Deep Charcoal Dark Space */
+    /* Global Canvas: High-End Matte Liquid Obsidian Wallpaper */
     .stApp {
-        background-color: #090611;
+        background-image: linear-gradient(180deg, rgba(9, 6, 17, 0.92) 0%, rgba(15, 10, 28, 0.96) 100%), 
+                          url('https://unsplash.com') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
         color: #f8fafc;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     
     /* 🪐 PITCH BLACK PREMIUM SIDEBAR MATRIX */
     [data-testid="stSidebar"] {
         background-color: #000000 !important;
+        background-image: none !important; /* Locks sidebar background strictly to solid pitch black */
         border-right: 1px solid #2e2352 !important;
-        box-shadow: 10px 0 30px rgba(0,0,0,0.6);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.7);
     }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h3 {
         color: #f1f5f9 !important;
         font-weight: 700 !important;
     }
     
-    /* 🗂️ MONOCHROME MATTE TABS HUB BLOCK */
+    /* Dynamic Structural Container Backdrops for Sub-Genres */
+    .genre-card-scifi {
+        background: linear-gradient(135deg, rgba(10, 25, 47, 0.75) 0%, rgba(2, 12, 27, 0.9) 100%),
+                    url('https://unsplash.com');
+        background-size: cover; background-position: center;
+        padding: 24px; border-radius: 20px; border: 1px solid rgba(0, 212, 184, 0.2);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
+    }
+    .genre-card-fantasy {
+        background: linear-gradient(135deg, rgba(26, 11, 19, 0.8) 0%, rgba(12, 5, 9, 0.95) 100%),
+                    url('https://unsplash.com');
+        background-size: cover; background-position: center;
+        padding: 24px; border-radius: 20px; border: 1px solid rgba(239, 68, 68, 0.15);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
+    }
+    .genre-card-cyber {
+        background: linear-gradient(135deg, rgba(19, 6, 38, 0.8) 0%, rgba(7, 2, 15, 0.95) 100%),
+                    url('https://unsplash.com');
+        background-size: cover; background-position: center;
+        padding: 24px; border-radius: 20px; border: 1px solid rgba(124, 93, 250, 0.2);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
+    }
+    
+    /* 🗂️ TI-SILVER MATTE NAVIGATION TABS HUB */
     .stTabs [data-baseweb="tab-list"] {
         gap: 14px;
-        background-color: #020005;
-        padding: 10px;
-        border-radius: 24px;
-        border: 1px solid #1e1538;
+        background-color: rgba(2, 0, 5, 0.7) !important;
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        padding: 10px; border-radius: 24px; border: 1px solid #1e1538;
         box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
     }
-    
     .stTabs [data-baseweb="tab"] {
-        /* Flat, high-end matte titanium-silver look for all inactive tabs */
-        background: linear-gradient(180deg, #cbd5e1 0%, #cbd5e1 100%) !important;
-        color: #0f172a !important;
-        font-weight: 700 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        font-size: 13px !important;
-        padding: 10px 24px !important;
-        
-        /* THE ORGANIC OLIVE EDGE: Softly elongated sideways curvatures */
-        border-radius: 20px !important;
-        
-        /* Subtle, premium 3D Bevel parameters (No loud lines) */
-        border-top: 1px solid #ffffff !important;
-        border-left: 1px solid #ffffff !important;
-        border-right: 2px solid #64748b !important;
-        border-bottom: 3px solid #475569 !important;
+        background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%) !important;
+        color: #0f172a !important; font-weight: 700 !important;
+        text-transform: uppercase; letter-spacing: 0.8px; font-size: 13px !important;
+        padding: 10px 24px !important; border-radius: 20px !important;
+        border-top: 1px solid #ffffff !important; border-left: 1px solid #ffffff !important;
+        border-right: 2px solid #64748b !important; border-bottom: 3px solid #475569 !important;
         box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 2px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important; margin-bottom: 2px !important;
     }
-    
-    /* Hover Glow Interactive States */
     .stTabs [data-baseweb="tab"]:hover {
         box-shadow: 0 0 15px rgba(124, 93, 250, 0.4) !important;
-        background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+        background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%) !important;
         transform: translateY(-1px);
     }
     
-    /* 👑 ACTIVE STATE: NOTICEABLY TALLER, DEEPER VIOLET FOCUS LOCK */
+    /* 👑 ACTIVE STATE: TALLER SIDEWAYS OLIVE INDIGO FOCUS LOCK */
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%) !important;
-        color: #ffffff !important;
-        
-        /* Forces the active tab to be physically taller and stand out */
-        padding: 14px 28px !important; 
-        
-        /* Depressed 3D Bevel parameters mimicking physical buttons */
-        border-top: 1px solid #7c5dfa !important;
-        border-left: 1px solid #7c5dfa !important;
-        border-right: 1px solid #0f172a !important;
-        border-bottom: 1px solid #0f172a !important;
+        color: #ffffff !important; padding: 14px 28px !important; 
+        border-top: 1px solid #7c5dfa !important; border-left: 1px solid #7c5dfa !important;
+        border-right: 1px solid #0f172a !important; border-bottom: 1px solid #0f172a !important;
         box-shadow: inset 0px 4px 10px rgba(0,0,0,0.8), 0 0 20px rgba(124, 93, 250, 0.3) !important;
         transform: translateY(2px) !important;
     }
 
-    /* 🎛️ PREMIUM MATTE PLATFORM BUTTON DESIGN (OLIVE CURVATURES ACCENT) */
+    /* MATTE INTUITIVE PLATFORM INTERACTION BUTTONS */
     .stButton > button {
         background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%) !important;
-        color: #0f172a !important;
-        font-weight: 700 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-radius: 18px !important; /* Soft sideways curve accents */
-        border-top: 1px solid #ffffff !important;
-        border-left: 1px solid #ffffff !important;
-        border-right: 2px solid #475569 !important;
-        border-bottom: 4px solid #334155 !important;
+        color: #0f172a !important; font-weight: 700 !important; text-transform: uppercase;
+        letter-spacing: 0.5px; border-radius: 18px !important;
+        border-top: 1px solid #ffffff !important; border-left: 1px solid #ffffff !important;
+        border-right: 2px solid #475569 !important; border-bottom: 4px solid #334155 !important;
         box-shadow: 0 4px 6px rgba(0,0,0,0.2) !important;
-        transition: all 0.12s ease-in-out !important;
-        padding: 8px 18px !important;
+        transition: all 0.12s ease-in-out !important; padding: 8px 18px !important;
     }
-    
     .stButton > button:hover {
-        color: #ffffff !important;
-        background: linear-gradient(180deg, #7c5dfa 0%, #5b21b6 100%) !important;
-        border-top: 1px solid #a78bfa !important;
-        border-left: 1px solid #a78bfa !important;
-        border-right: 1px solid #3b0764 !important;
-        border-bottom: 4px solid #2e1065 !important;
+        color: #ffffff !important; background: linear-gradient(180deg, #7c5dfa 0%, #5b21b6 100%) !important;
+        border-top: 1px solid #a78bfa !important; border-left: 1px solid #a78bfa !important;
+        border-right: 1px solid #3b0764 !important; border-bottom: 4px solid #2e1065 !important;
         box-shadow: 0 0 15px rgba(124, 93, 250, 0.5) !important;
-    }
-    
-    .stButton > button:active {
-        transform: translateY(1px) !important;
-        border-bottom: 1px solid #2e1065 !important;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.6) !important;
     }
 </style>
 """, unsafe_allow_html=True)
+
 
 load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -239,59 +229,68 @@ if not engine["world_name"]:
 
         
         with sub_scifi:
+            # Custom container wrapping the Sci-Fi realities inside their cosmic nebulous card wrapper
+            st.markdown('<div class="genre-card-scifi">', unsafe_allow_html=True)
             st.markdown("### Pre-Made Sci-Fi Realities")
-            cols = st.columns(2)
-            with cols[0]:
-                st.markdown("#### 🚀 SECTOR 7 NOMAD")
+            cols_scifi = st.columns(2)
+            with cols_scifi[0]:
+                st.markdown("#### SECTOR 7 NOMAD")
                 st.caption("Grit, survival, and starship dogfights across an outlaw solar system.")
-                if st.button("🎮 Launch Sector 7", use_container_width=True):
+                if st.button("Launch Sector 7", use_container_width=True):
                     engine["world_id"] = "pre_scifi_1"
                     engine["world_name"] = "Sector 7 Nomad"
                     engine["world_genre"] = "Sci-Fi"
                     char["name"] = "Pilot Vance"
                     char["backstory"] = "A disgraced military pilot running illicit scrap metal through deep-space asteroid fields to stay hidden."
                     st.rerun()
-            with cols[1]:
-                st.markdown("#### 🛰️ CHRONOS STATION")
+            with cols_scifi[1]:
+                st.markdown("#### CHRONOS STATION")
                 st.caption("A psychological thriller aboard a deep-space station stuck in a time anomaly.")
-                if st.button("🎮 Launch Chronos", use_container_width=True):
+                if st.button("Launch Chronos", use_container_width=True):
                     engine["world_id"] = "pre_scifi_2"
                     engine["world_name"] = "Chronos Station"
                     engine["world_genre"] = "Sci-Fi"
                     char["name"] = "Dr. Aris"
                     char["backstory"] = "The chief quantum technician investigating a strange radiation pulse that locked the entire station loop."
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
                     
         with sub_fantasy:
+            # Custom container wrapping Dark Fantasy inside its smoky gothic card wrapper
+            st.markdown('<div class="genre-card-fantasy">', unsafe_allow_html=True)
             st.markdown("### Pre-Made Dark Fantasy Realities")
-            cols = st.columns(2)
-            with cols[0]:
-                st.markdown("#### 🧛 VAMPIRE NOMAD")
+            cols_fant = st.columns(2)
+            with cols_fant[0]:
+                st.markdown("#### VAMPIRE NOMAD")
                 st.caption("Navigate exile, bloodlines, and dark covens in a gothic world of endless night.")
-                if st.button("🎮 Launch Vampire Nomad", use_container_width=True):
+                if st.button("Launch Vampire Nomad", use_container_width=True):
                     engine["world_id"] = "pre_fant_1"
                     engine["world_name"] = "Vampire Nomad"
                     engine["world_genre"] = "Dark Fantasy"
                     char["name"] = "Kaelen Voss"
                     char["backstory"] = "An ancient rogue vampire cast out of the High Court, struggling to survive among deadly monster hunters."
                     st.rerun()
-            with cols[1]:
-                st.markdown("#### ⚔️ ASHELANDS RENEGADE")
+            with cols_fant[1]:
+                st.markdown("#### ASHELANDS RENEGADE")
                 st.caption("A tactical swords-and-sorcery survival gauntlet across a ruined kingdom.")
-                if st.button("🎮 Launch Ashelands", use_container_width=True):
+                if st.button("Launch Ashelands", use_container_width=True):
                     engine["world_id"] = "pre_fant_2"
                     engine["world_name"] = "Ashelands Renegade"
                     engine["world_genre"] = "Dark Fantasy"
                     char["name"] = "Gideon Black"
                     char["backstory"] = "A weathered mercenary carrying the broken sword of his king across fields contaminated by volcanic ash."
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+
         with sub_cyberpunk:
+            # Custom container wrapping Cyberpunk inside its neon synthwave card wrapper
+            st.markdown('<div class="genre-card-cyber">', unsafe_allow_html=True)
             st.markdown("### Pre-Made Cyberpunk Realities")
             cols_cyber = st.columns(2)
             with cols_cyber[0]:
-                st.markdown("#### 🏙️ NEO-TOKYO RUNNER")
+                st.markdown("#### NEO-TOKYO RUNNER")
                 st.caption("High-stakes tech espionage, corporate warfare, and neon-lit street racing.")
-                if st.button("🎮 Launch Neo-Tokyo", use_container_width=True):
+                if st.button("Launch Neo-Tokyo", use_container_width=True):
                     engine["world_id"] = "pre_cyber_1"
                     engine["world_name"] = "Neo-Tokyo Runner"
                     engine["world_genre"] = "Cyberpunk"
@@ -299,15 +298,17 @@ if not engine["world_name"]:
                     char["backstory"] = "A skilled street racer running data modifications inside a hidden neural link to pay off yakuza syndicates."
                     st.rerun()
             with cols_cyber[1]:
-                st.markdown("#### ⛓️ GRIDLOCK UNDERGROUND")
+                st.markdown("#### GRIDLOCK UNDERGROUND")
                 st.caption("Hack deep mainframe grids and lead a digital rebellion against mega-corps.")
-                if st.button("🎮 Launch Gridlock", use_container_width=True):
+                if st.button("Launch Gridlock", use_container_width=True):
                     engine["world_id"] = "pre_cyber_2"
                     engine["world_name"] = "Gridlock Underground"
                     engine["world_genre"] = "Cyberpunk"
                     char["name"] = "Echo"
                     char["backstory"] = "A phantom hacker who lives entirely inside deep mainframe server nodes, wiping dirty corporate banks."
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+
 
 
         with sub_ai:
