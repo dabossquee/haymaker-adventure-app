@@ -84,42 +84,18 @@ st.markdown("""
         transform: translateY(2px) !important;
     }
 
-        /* 🎴 UNIFIED CINEMATIC VISUAL DISCOVERY CARD FRAME */
+    /* 🎴 MATTE METALLIC UNIFIED AVATAR STYLED DISCOVERY CARDS */
     .premium-discovery-card {
-        background: #110c1f !important;
+        background: linear-gradient(135deg, #161026 0%, #0d0818 100%) !important;
         border-radius: 20px !important;
+        padding: 20px !important;
         border-top: 1px solid #3b2c63 !important;
         border-left: 1px solid #3b2c63 !important;
         border-right: 2px solid #05020a !important;
         border-bottom: 4px solid #05020a !important;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
-        margin-bottom: 24px !important;
-        overflow: hidden !important; /* Clips custom graphics cleanly inside the rounded corners */
-        display: flex !important;
-        flex-direction: column !important;
-        height: 100% !important; /* Synchronizes equal heights across cards side-by-side */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.4) !important;
+        margin-bottom: 20px !important;
     }
-
-    /* Middle-To-Top Visual Window Area */
-    .card-visual-header {
-        width: 100% !important;
-        height: 160px !important; /* Fixed viewport height for absolute layout consistency */
-        background: linear-gradient(180deg, #1d1533 0%, #110c1f 100%) !important;
-        border-bottom: 1px solid rgba(124, 93, 250, 0.15) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    /* Bottom Deck Content Wrapper */
-    .card-bottom-deck {
-        padding: 16px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        flex-grow: 1 !important;
-        justify-content: space-between !important;
-    }
-
 
     /* UNIVERSAL PLATFORM INTERACTION BUTTON DESIGN */
     .stButton > button {
@@ -266,6 +242,7 @@ if not engine["world_name"]:
     ])
     
     with tab_explore:
+        # 2-Column Card Categories Sorted Cleanly in Alphabetical Order
         sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs([
             "Community & AI", "Cyberpunk", "Dark Fantasy", "Horror", "Romance", "Sci-Fi"
         ])
@@ -280,16 +257,9 @@ if not engine["world_name"]:
                         with cols_ai[index % 2]:
                             st.markdown(f"""
                             <div class="premium-discovery-card">
-                                <div class="card-visual-header">
-                                    <span style='font-size: 40px; opacity: 0.6;'>🪐</span>
-                                </div>
-                                <div class="card-bottom-deck">
-                                    <div>
-                                        <h4 style='margin:0 0 6px 0;'>{world_row['world_name'].upper()}</h4>
-                                        <p style='color: #a78bfa; font-size: 12px; font-weight: bold; margin:0 0 10px 0;'>THEMATIC GENRE: {world_row['world_genre'].upper()}</p>
-                                        <p style='color: #94a3b8; font-size: 14px; margin:0 0 16px 0;'>A custom alternate timeline forged by an active player sandbox node.</p>
-                                    </div>
-                                </div>
+                                <h4>🪐 {world_row['world_name'].upper()}</h4>
+                                <p style='color: #a78bfa; font-size: 13px; font-weight: bold;'>THEMATIC GENRE: {world_row['world_genre'].upper()}</p>
+                                <p style='color: #94a3b8; font-size: 14px;'>A custom alternate timeline forged by an active player sandbox node.</p>
                             </div>
                             """, unsafe_allow_html=True)
                             if st.button("🎮 Enter Community Universe", key=f"pub_{world_row['id']}_{index}", use_container_width=True):
@@ -317,15 +287,8 @@ if not engine["world_name"]:
                 with cols_cyber[index % 2]:
                     st.markdown(f"""
                     <div class="premium-discovery-card">
-                        <div class="card-visual-header">
-                            <span style='font-size: 40px; opacity: 0.6;'>🏙️</span>
-                        </div>
-                        <div class="card-bottom-deck">
-                            <div>
-                                <h4 style='margin:0 0 10px 0;'>{p['name'].upper()}</h4>
-                                <p style='color: #94a3b8; font-size: 14px; margin:0 0 16px 0;'>{p['bio']}</p>
-                            </div>
-                        </div>
+                        <h4>🏙️ {p['name'].upper()}</h4>
+                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
                     </div>
                     """, unsafe_allow_html=True)
                     if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
@@ -335,7 +298,6 @@ if not engine["world_name"]:
                         char["name"] = p["char"]
                         char["backstory"] = p["story"]
                         st.rerun()
-
         with sub_fantasy:
             st.markdown("### Curated Dark Fantasy Realities")
             fantasy_presets = [
@@ -349,15 +311,8 @@ if not engine["world_name"]:
                 with cols_fant[index % 2]:
                     st.markdown(f"""
                     <div class="premium-discovery-card">
-                        <div class="card-visual-header">
-                            <span style='font-size: 40px; opacity: 0.6;'>🧙</span>
-                        </div>
-                        <div class="card-bottom-deck">
-                            <div>
-                                <h4 style='margin:0 0 10px 0;'>{p['name'].upper()}</h4>
-                                <p style='color: #94a3b8; font-size: 14px; margin:0 0 16px 0;'>{p['bio']}</p>
-                            </div>
-                        </div>
+                        <h4>🧙 {p['name'].upper()}</h4>
+                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
                     </div>
                     """, unsafe_allow_html=True)
                     if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
@@ -381,15 +336,8 @@ if not engine["world_name"]:
                 with cols_horror[index % 2]:
                     st.markdown(f"""
                     <div class="premium-discovery-card">
-                        <div class="card-visual-header">
-                            <span style='font-size: 40px; opacity: 0.6;'>🩸</span>
-                        </div>
-                        <div class="card-bottom-deck">
-                            <div>
-                                <h4 style='margin:0 0 10px 0;'>{p['name'].upper()}</h4>
-                                <p style='color: #94a3b8; font-size: 14px; margin:0 0 16px 0;'>{p['bio']}</p>
-                            </div>
-                        </div>
+                        <h4>🩸 {p['name'].upper()}</h4>
+                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
                     </div>
                     """, unsafe_allow_html=True)
                     if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
@@ -402,92 +350,52 @@ if not engine["world_name"]:
 
         with sub_romance:
             st.markdown("### Curated Romance Realities")
-            # =====================================================================
-# CURATED PRESETS SECTOR (ROMANCE & SCI-FI GENRES)
-# =====================================================================
-
-# 1. ROMANCE PRESET ARCHITECTURE GRID
-romance_presets = [
-    {"id": "r1", "name": "Neon Heartbeats", "bio": "A high-stakes corporate romance tangled inside a Tokyo cyber espionage ring.", "char": "Leo Cruz", "story": "A security auditor falling for the rival terminal hacker assigned to clear his deck.", "placeholder": "[ NEON HEARTBEATS MATRIX ]"},
-    {"id": "r2", "name": "Starlight Station", "bio": "Find love and connection at the absolute edge of an expanding galaxy.", "char": "Elena", "story": "A deep-space botanist stationed on a lonely supply node with a rogue freighter captain.", "placeholder": "[ STARLIGHT STATION ART ]"},
-    {"id": "r3", "name": "Gothic Bloodlines", "bio": "An intense, dangerous alliance formed between rival vampire clans.", "char": "Valen", "story": "A noble court guard forced to partner with an exiled outland royal to save his house.", "placeholder": "[ GOTHIC BLOODLINES MATTE ]"},
-    {"id": "r4", "name": "Time Traveler's Vow", "bio": "Track down your soulmate across multiple centuries before timelines fracture.", "char": "Clara", "story": "A timeline archivist jumping eras to locate a partner who forgets her every jump.", "placeholder": "[ TIME TRAVELERS VOW VISTA ]"}
-]
-
-cols_romance = st.columns(2)
-for index, p in enumerate(romance_presets):
-    with cols_romance[index % 2]:
-        # Open layout box shell
-        st.markdown('<div class="unified-selection-card">', unsafe_allow_html=True)
-        
-        # Middle to Top: Visual Sector (Ready for actual image assets later)
-        st.markdown('<div class="card-visual-frame">', unsafe_allow_html=True)
-        st.markdown(f'<div class="visual-placeholder">{p["placeholder"]}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Bottom Sector: Title and Description text grouped together
-        st.markdown('<div class="card-bottom-container">', unsafe_allow_html=True)
-        st.markdown('<div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="font-weight: 700; color: #ffffff; font-size: 16px; margin-bottom: 4px;">❤️ {p["name"].upper()}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="card-description-text">{p["bio"]}<br><br><b>Character:</b> {p["char"]}<br><b>Story:</b> {p["story"]}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Launch Button anchored cleanly at the absolute base
-        if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
-            st.session_state.engine_state["world_id"] = f"pre_rom_{p['id']}"
-            st.session_state.engine_state["world_name"] = p["name"]
-            st.session_state.engine_state["world_genre"] = "Romance"
-            st.session_state.character["name"] = p["char"]
-            st.session_state.character["backstory"] = p["story"]
-            st.session_state.engine_state["story_locked"] = True
-            st.rerun()
-            
-        st.markdown('</div>', unsafe_allow_html=True) # Close bottom container
-        st.markdown('</div>', unsafe_allow_html=True) # Close main card shell
-
-
-# 2. SCI-FI PRESET ARCHITECTURE GRID
-with sub_scifi:
-    st.markdown("### Curated Sci-Fi Realities")
-    scifi_presets = [
-        {"id": "s1", "name": "Sector 7 Nomad", "bio": "Grit, survival, and starship dogfights across an outlaw solar system.", "char": "Pilot Vance", "story": "A disgraced military pilot running illicit scrap metal through asteroid fields.", "placeholder": "[ SECTOR 7 ASSETS ]"},
-        {"id": "s2", "name": "Chronos Station", "bio": "A psychological thriller aboard a deep-space station stuck in a time anomaly.", "char": "Dr. Aris", "story": "The chief technician investigating a quantum pulse that locked the terminal clock.", "placeholder": "[ CHRONOS CORRIDORS ]"},
-        {"id": "s3", "name": "Void Wanderer", "bio": "Pilot a lone exploration vessel drifting into the absolute center of a supermassive black hole.", "char": "Captain Thorne", "story": "An explorer searching for a signature signal inside a heavy gravitational ring.", "placeholder": "[ VOID HORIZON VECTORS ]"},
-        {"id": "s4", "name": "Orion Rebellion", "bio": "Lead a tactical worker revolt inside a heavily armed methane mining moon colony.", "char": "Marcus Vance", "story": "A heavy excavation engineer orchestrating a defense framework against corporate enforcers.", "placeholder": "[ ORION MOON SURFACE ]"}
-    ]
-
-    cols_scifi = st.columns(2)
-    for index, p in enumerate(scifi_presets):
-        with cols_scifi[index % 2]:
-            # Open layout box shell
-            st.markdown('<div class="unified-selection-card">', unsafe_allow_html=True)
-            
-            # Middle to Top: Visual Sector
-            st.markdown('<div class="card-visual-frame">', unsafe_allow_html=True)
-            st.markdown(f'<div class="visual-placeholder">{p["placeholder"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Bottom Sector: Title and Description text grouped together
-            st.markdown('<div class="card-bottom-container">', unsafe_allow_html=True)
-            st.markdown('<div>', unsafe_allow_html=True)
-            st.markdown(f'<div style="font-weight: 700; color: #ffffff; font-size: 16px; margin-bottom: 4px;">🚀 {p["name"].upper()}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="card-description-text">{p["bio"]}<br><br><b>Character:</b> {p["char"]}<br><b>Story:</b> {p["story"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Launch Button anchored cleanly at the absolute base
-            if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
-                st.session_state.engine_state["world_id"] = f"pre_scifi_{p['id']}"
-                st.session_state.engine_state["world_name"] = p["name"]
-                st.session_state.engine_state["world_genre"] = "Sci-Fi"
-                st.session_state.character["name"] = p["char"]
-                st.session_state.character["backstory"] = p["story"]
-                st.session_state.engine_state["story_locked"] = True
-                st.rerun()
-                
-            st.markdown('</div>', unsafe_allow_html=True) # Close bottom container
-            st.markdown('</div>', unsafe_allow_html=True) # Close main card shell
-
-
+            romance_presets = [
+                {"id": "r1", "name": "Neon Heartbeats", "bio": "A high-stakes corporate romance tangled inside a Tokyo cyber espionage ring.", "char": "Leo Cruz", "story": "A security auditor falling for the rival terminal hacker assigned to clear his deck."},
+                {"id": "r2", "name": "Starlight Station", "bio": "Find love and connection at the absolute edge of an expanding galaxy.", "char": "Elena", "story": "A deep-space botanist stationed on a lonely supply node with a rogue freighter captain."},
+                {"id": "r3", "name": "Gothic Bloodlines", "bio": "An intense, dangerous alliance formed between rival vampire clans.", "char": "Valen", "story": "A noble court guard forced to partner with an exiled outland royal to save his house."},
+                {"id": "r4", "name": "Time Traveler's Vow", "bio": "Track down your soulmate across multiple centuries before timelines fracture.", "char": "Clara", "story": "A timeline archivist jumping eras to locate a partner who forgets her every jump."}
+            ]
+            cols_romance = st.columns(2)
+            for index, p in enumerate(romance_presets):
+                with cols_romance[index % 2]:
+                    st.markdown(f"""
+                    <div class="premium-discovery-card">
+                        <h4>❤️ {p['name'].upper()}</h4>
+                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
+                        engine["world_id"] = f"pre_rom_{p['id']}"
+                        engine["world_name"] = p["name"]
+                        engine["world_genre"] = "Romance"
+                        char["name"] = p["char"]
+                        char["backstory"] = p["story"]
+                        st.rerun()
+        with sub_scifi:
+            st.markdown("### Curated Sci-Fi Realities")
+            scifi_presets = [
+                {"id": "s1", "name": "Sector 7 Nomad", "bio": "Grit, survival, and starship dogfights across an outlaw solar system.", "char": "Pilot Vance", "story": "A disgraced military pilot running illicit scrap metal through asteroid fields."},
+                {"id": "s2", "name": "Chronos Station", "bio": "A psychological thriller aboard a deep-space station stuck in a time anomaly.", "char": "Dr. Aris", "story": "The chief technician investigating a quantum pulse that locked the terminal clock."},
+                {"id": "s3", "name": "Void Wanderer", "bio": "Pilot a lone exploration vessel drifting into the absolute center of a supermassive black hole.", "char": "Captain Thorne", "story": "An explorer searching for a signature signal inside a heavy gravitational ring."},
+                {"id": "s4", "name": "Orion Rebellion", "bio": "Lead a tactical worker revolt inside a heavily armed methane mining moon colony.", "char": "Marcus Vance", "story": "A heavy excavation engineer orchestrating a defense framework against corporate enforcers."}
+            ]
+            cols_scifi = st.columns(2)
+            for index, p in enumerate(scifi_presets):
+                with cols_scifi[index % 2]:
+                    st.markdown(f"""
+                    <div class="premium-discovery-card">
+                        <h4>🚀 {p['name'].upper()}</h4>
+                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
+                        engine["world_id"] = f"pre_scifi_{p['id']}"
+                        engine["world_name"] = p["name"]
+                        engine["world_genre"] = "Sci-Fi"
+                        char["name"] = p["char"]
+                        char["backstory"] = p["story"]
+                        st.rerun()
             
     with tab_my_creations:
         st.markdown("### Your Private Universes")
@@ -553,7 +461,7 @@ with sub_scifi:
         st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
         
         cols_avatars = st.columns(3)
-        with cols_avatars[0]:
+        with cols_avatars:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
             st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
@@ -565,7 +473,7 @@ with sub_scifi:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
-        with cols_avatars[1]:
+        with cols_avatars:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
             st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
@@ -577,7 +485,7 @@ with sub_scifi:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
-        with cols_avatars[2]:
+        with cols_avatars:
             st.markdown("#### 👤 VALERIUS THE EXILE")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
             st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
@@ -589,7 +497,6 @@ with sub_scifi:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
-
                 
     with tab_profile:
         st.markdown("### User Authentication Center")
