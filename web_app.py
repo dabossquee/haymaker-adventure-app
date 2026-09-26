@@ -478,13 +478,25 @@ if not engine["story_log"]:
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
 
+
 user_action = st.chat_input("Describe your action or speak...")
 
 if user_action:
     if "user" not in st.session_state:
         st.session_state.guest_tokens -= 1
         
+    # 1. Instantly append the user's action to the log history array
     engine["story_log"].append({"role": "user", "content": user_action})
+    
+    # 2. THE CHOSEN FIX: Visually render the player's text bubble onto the display canvas FIRST 
+    # This prevents the AI from jumping above your input while it typewrites live!
+    with chat_canvas_context:
+        st.markdown(f"""
+        <div class="chat-row-user">
+            <div class="glass-bubble-user">{user_action}</div>
+            <div class="avatar-box">👤</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     master_prompt = (
         f"You are the master narrator for a text adventure game called Haymaker.\n"
@@ -510,6 +522,7 @@ if user_action:
         temperature=0.7,
         stream=True
     )
+
     
     # Render typewriter animations safely tucked inside our locked structural layout container
     with chat_canvas_context:
