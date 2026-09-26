@@ -342,9 +342,28 @@ if not engine["world_name"]:
                     except Exception as e:
                         st.error(f"Error: {e}")
     st.stop()
-# 6. ACTIVE ADVENTURE STYLING OVERLAY (GLASSMORPHISM RESPONSIVE WRAPPERS)
+# 6. ACTIVE ADVENTURE STYLING OVERLAY (iOS COHESIVE FLEX INTERFACE)
 st.markdown("""
 <style>
+    .chat-row-user {
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-start;
+        margin: 10px 0px;
+        gap: 10px;
+    }
+    .chat-row-ai {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        margin: 10px 0px;
+        gap: 10px;
+    }
+    .avatar-box {
+        font-size: 24px;
+        padding-top: 4px;
+        user-select: none;
+    }
     .glass-bubble-user {
         background-color: rgba(255, 75, 75, 0.12);
         backdrop-filter: blur(8px);
@@ -354,8 +373,9 @@ st.markdown("""
         padding: 12px 16px;
         color: #ffffff;
         font-size: 15px;
-        width: 100%;
+        max-width: 70%;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        text-align: left;
     }
     .glass-bubble-ai {
         background-color: rgba(255, 255, 255, 0.05);
@@ -366,8 +386,9 @@ st.markdown("""
         padding: 12px 16px;
         color: #f0f2f6;
         font-size: 15px;
-        width: 100%;
+        max-width: 70%;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        text-align: left;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -407,24 +428,26 @@ if not is_premium_active and not has_trial_tokens:
             st.error(f"Stripe Error: {e}")
     st.stop()
 
-# RENDERING THE NATIVE HISTORY LAYER WITH AVATARS + GLASS CHAT BUBBLES
+# RENDERING THE NATIVE HISTORY LAYER WITH COHESIVE FLEX WRAPPERS
 for text_turn in engine["story_log"]:
     if text_turn["role"] == "user":
         if "[System Command]" in text_turn["content"]:
             st.info(text_turn["content"])
         else:
-            cols = st.columns([1, 4, 1])
-            with cols[2]:
-                st.markdown("### 👤")
-            with cols[1]:
-                st.markdown(f'<div class="glass-bubble-user">{text_turn["content"]}</div>', unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="chat-row-user">
+                <div class="glass-bubble-user">{text_turn["content"]}</div>
+                <div class="avatar-box">👤</div>
+            </div>
+            """, unsafe_allow_html=True)
     elif text_turn["role"] == "assistant":
         clean_text = re.sub(r'\[.*?\]', '', text_turn["content"]).strip()
-        cols = st.columns([1, 4, 1])
-        with cols[0]:
-            st.markdown("### 🤖")
-        with cols[1]:
-            st.markdown(f'<div class="glass-bubble-ai">{clean_text}</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="chat-row-ai">
+            <div class="avatar-box">🤖</div>
+            <div class="glass-bubble-ai">{clean_text}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # 7. CHRONOS SPACE MATRIX INITIAL SCENE SPARK
 if not engine["story_log"]:
@@ -434,10 +457,10 @@ if not engine["story_log"]:
             f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
             f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
             f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
-            f"⚠️ CRITICAL RULES:\n"
+            f"⚠️ CRITICAL GAMEPLAY & FORMATTING RULES:\n"
             f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
-            f"2. Never play for the user or decide their actions. Establish the scene and stop talking immediately.\n"
-            f"3. COLOR CODE DIALOGUE: Wrap all character dialogue in :orange[**\"Speech\"**] to pop in bold orange. Keep basic narration standard."
+            f"2. Never play for the user or repeat their setup words. Establish the opening scene and stop instantly.\n"
+            f"3. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: :orange[**\"Dialogue text here\"**]. Keep normal narration paragraphs standard text colors."
         )
         
         response = openai_client.chat.completions.create(
@@ -446,10 +469,11 @@ if not engine["story_log"]:
             max_tokens=100,
             temperature=0.7
         )
-        initial_story = response.choices[0].message.content
+        initial_story = response.choices.message.content
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
+
 
 user_action = st.chat_input("Describe your action or speak...")
 
