@@ -488,40 +488,42 @@ if user_action:
         f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
         f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
         f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
-        f"⚠️ CRITICAL FORMATTING & COGNITIVE RULES:\n"
-        f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
-        f"2. Never play for the user or move their body. Let the user fully drive.\n"
-        f"3. COLOR CODE DIALOGUE: If a character speaks, wrap their exact spoken words in :orange[**\"Speech\"**] so dialogue stands out in bold orange. Keep narration text completely standard.\n"
-        f"4. Append system tags at the absolute bottom if changes occur: [LOOT: item_name] or [HEALTH: -15]."
+        f"⚠️ CRITICAL NARRATOR & DIALOGUE ENFORCEMENT RULES:\n"
+        f"1. Be concise. Respond in exactly ONE high-impact paragraph. Maximum 3 sentences total.\n"
+        f"2. NEVER repeat the user's input phrase or mirror their exact sentences back to them. Advance the plot immediately.\n"
+        f"3. USER ACCESS CONTROLS: The user uses double quotes \" \" to speak in the world. If they talk to someone, you must handle the response for that character.\n"
+        f"4. NPC DIALOGUE SEPARATION: Keep your narrator descriptions standard. If an NPC character answers, wrap their speech in HTML markers exactly like this: CharacterName: <span style='color:#FF4B4B; font-weight:bold;'>\"Dialogue text here\"</span> to isolate dialogue cleanly in bold orange-red color. Do not use markdown tags like :orange[].\n"
+        f"5. Append system data tags at the absolute bottom if changes occur: [LOOT: item_name] or [HEALTH: -15]."
     )
     
-    # RENDER TYPEWRITER CONTAINER DIRECTLY ALONGSIDE THE ROBOT AVATAR WITH NO GHOST DUPLICATES
-    cols = st.columns([1, 4, 1])
-    with cols[0]:
-        st.markdown("### 🤖")
-    with cols[1]:
-        chat_placeholder = st.empty()
+    # TYPEWRITER CONTAINER SNAPPED DIRECTLY INSIDE NATIVE FLEX COLS
+    chat_placeholder = st.empty()
+    
+    messages = [{"role": "system", "content": master_prompt}]
+    for past_turn in engine["story_log"]:
+        messages.append({"role": past_turn["role"], "content": past_turn["content"]})
         
-        messages = [{"role": "system", "content": master_prompt}]
-        for past_turn in engine["story_log"]:
-            messages.append({"role": past_turn["role"], "content": past_turn["content"]})
+    stream_response = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=120,
+        temperature=0.7,
+        stream=True
+    )
+    
+    raw_ai_text = ""
+    for chunk in stream_response:
+        if chunk.choices and chunk.choices.delta.content:
+            raw_ai_text += chunk.choices.delta.content
+            # Live container wrapper parsing raw HTML colors perfectly with a deeply slowed typing speed cadence
+            chat_placeholder.markdown(f"""
+            <div class="chat-row-ai">
+                <div class="avatar-box">🤖</div>
+                <div class="glass-bubble-ai">{raw_ai_text}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            time.sleep(0.07)  # Calibrated slow human-tempo typing delay
             
-        stream_response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            max_tokens=100,
-            temperature=0.7,
-            stream=True
-        )
-        
-        raw_ai_text = ""
-        for chunk in stream_response:
-            if chunk.choices and chunk.choices[0].delta.content:
-                raw_ai_text += chunk.choices[0].delta.content
-                # Update the custom glass container block character-by-character live
-                chat_placeholder.markdown(f'<div class="glass-bubble-ai">{raw_ai_text}</div>', unsafe_allow_html=True)
-                time.sleep(0.01)
-                
     loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
     for item in loot_matches:
         if item.strip() not in char["inventory"]:
