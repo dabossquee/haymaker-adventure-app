@@ -513,8 +513,8 @@ if user_action:
     
     raw_ai_text = ""
     for chunk in stream_response:
-        if chunk.choices and chunk.choices.delta.content:
-            raw_ai_text += chunk.choices.delta.content
+        if chunk.choices and len(chunk.choices) > 0 and chunk.choices[0].delta.content:
+            raw_ai_text += chunk.choices[0].delta.content
             # Live container wrapper parsing raw HTML colors perfectly with a deeply slowed typing speed cadence
             chat_placeholder.markdown(f"""
             <div class="chat-row-ai">
@@ -523,6 +523,7 @@ if user_action:
             </div>
             """, unsafe_allow_html=True)
             time.sleep(0.07)  # Calibrated slow human-tempo typing delay
+
             
     loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
     for item in loot_matches:
