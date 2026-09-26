@@ -516,8 +516,8 @@ if user_action:
         chat_placeholder = st.empty()
         raw_ai_text = ""
         for chunk in stream_response:
-            if chunk.choices and len(chunk.choices) > 0 and chunk.choices.delta.content:
-                raw_ai_text += chunk.choices.delta.content
+            if chunk.choices and len(chunk.choices) > 0 and chunk.choices[0].delta.content:
+                raw_ai_text += chunk.choices[0].delta.content
                 
                 # Convert the AI's standard markdown dialogue symbols to clean, display-ready HTML spans only after capturing full packets
                 processed_html_display = raw_ai_text
