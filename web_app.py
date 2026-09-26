@@ -7,28 +7,23 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. CORE ENGINE PAGE INITIALIZATION (MANDARIN APP BACKPROPAGATION OVERHAUL)
+# 1. CORE ENGINE PAGE INITIALIZATION (PURE CSS MATTE CONTEXT SKIN)
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 
-# GLOBAL THEME DESIGN: Liquid Obsidian Base with Dynamic Tab Genre Overlays
+# GLOBAL THEME DESIGN: High-Contrast Obsidian & Velvet Geometric Backdrops
 st.markdown("""
 <style>
-    /* Global Canvas: High-End Matte Liquid Obsidian Wallpaper */
+    /* Main Background: Soothing, deep liquid velvet obsidian using code gradients only */
     .stApp {
-        background-image: linear-gradient(180deg, rgba(9, 6, 17, 0.92) 0%, rgba(15, 10, 28, 0.96) 100%), 
-                          url('https://unsplash.com') !important;
-        background-size: cover !important;
-        background-position: center !important;
-        background-attachment: fixed !important;
+        background: radial-gradient(circle at 50% 50%, #110a24 0%, #06040a 100%) !important;
         color: #f8fafc;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
-    /* 🪐 PITCH BLACK PREMIUM SIDEBAR MATRIX */
+    /* 🪐 SOLID PITCH BLACK SIDEBAR */
     [data-testid="stSidebar"] {
         background-color: #000000 !important;
-        background-image: none !important; /* Locks sidebar background strictly to solid pitch black */
-        border-right: 1px solid #2e2352 !important;
+        border-right: 1px solid #1f153a !important;
         box-shadow: 10px 0 30px rgba(0,0,0,0.7);
     }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h3 {
@@ -36,33 +31,33 @@ st.markdown("""
         font-weight: 700 !important;
     }
     
-    /* Dynamic Structural Container Backdrops for Sub-Genres */
+    /* Clean, Immersive 3D Matte Cards for Sub-Genres (No Emojis, High Contrast) */
     .genre-card-scifi {
-        background: linear-gradient(135deg, rgba(10, 25, 47, 0.75) 0%, rgba(2, 12, 27, 0.9) 100%),
-                    url('https://unsplash.com');
-        background-size: cover; background-position: center;
-        padding: 24px; border-radius: 20px; border: 1px solid rgba(0, 212, 184, 0.2);
+        background: linear-gradient(135deg, #07111e 0%, #02070f 100%);
+        padding: 24px; border-radius: 20px; 
+        border-top: 1px solid #1e3a8a; border-left: 1px solid #1e3a8a;
+        border-right: 2px solid #02070f; border-bottom: 4px solid #02070f;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
     }
     .genre-card-fantasy {
-        background: linear-gradient(135deg, rgba(26, 11, 19, 0.8) 0%, rgba(12, 5, 9, 0.95) 100%),
-                    url('https://unsplash.com');
-        background-size: cover; background-position: center;
-        padding: 24px; border-radius: 20px; border: 1px solid rgba(239, 68, 68, 0.15);
+        background: linear-gradient(135deg, #1b0a14 0%, #0a0307 100%);
+        padding: 24px; border-radius: 20px; 
+        border-top: 1px solid #581c87; border-left: 1px solid #581c87;
+        border-right: 2px solid #0a0307; border-bottom: 4px solid #0a0307;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
     }
     .genre-card-cyber {
-        background: linear-gradient(135deg, rgba(19, 6, 38, 0.8) 0%, rgba(7, 2, 15, 0.95) 100%),
-                    url('https://unsplash.com');
-        background-size: cover; background-position: center;
-        padding: 24px; border-radius: 20px; border: 1px solid rgba(124, 93, 250, 0.2);
+        background: linear-gradient(135deg, #120424 0%, #05010a 100%);
+        padding: 24px; border-radius: 20px; 
+        border-top: 1px solid #4c1d95; border-left: 1px solid #4c1d95;
+        border-right: 2px solid #05010a; border-bottom: 4px solid #05010a;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
     }
     
-    /* 🗂️ TI-SILVER MATTE NAVIGATION TABS HUB */
+    /* 🗂️ TI-SILVER NAVIGATION TABS HUB */
     .stTabs [data-baseweb="tab-list"] {
         gap: 14px;
-        background-color: rgba(2, 0, 5, 0.7) !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
         backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         padding: 10px; border-radius: 24px; border: 1px solid #1e1538;
         box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
@@ -83,7 +78,7 @@ st.markdown("""
         transform: translateY(-1px);
     }
     
-    /* 👑 ACTIVE STATE: TALLER SIDEWAYS OLIVE INDIGO FOCUS LOCK */
+    /* 👑 ACTIVE TALLER STATE */
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%) !important;
         color: #ffffff !important; padding: 14px 28px !important; 
@@ -93,7 +88,7 @@ st.markdown("""
         transform: translateY(2px) !important;
     }
 
-    /* MATTE INTUITIVE PLATFORM INTERACTION BUTTONS */
+    /* MATTE INTERACTION BUTTONS */
     .stButton > button {
         background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%) !important;
         color: #0f172a !important; font-weight: 700 !important; text-transform: uppercase;
@@ -111,6 +106,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 load_dotenv()
@@ -227,9 +223,7 @@ if not engine["world_name"]:
          "Sci-Fi", "Dark Fantasy", "Cyberpunk", "Community & AI"
      ])
 
-        
         with sub_scifi:
-            # Custom container wrapping the Sci-Fi realities inside their cosmic nebulous card wrapper
             st.markdown('<div class="genre-card-scifi">', unsafe_allow_html=True)
             st.markdown("### Pre-Made Sci-Fi Realities")
             cols_scifi = st.columns(2)
@@ -256,7 +250,6 @@ if not engine["world_name"]:
             st.markdown('</div>', unsafe_allow_html=True)
                     
         with sub_fantasy:
-            # Custom container wrapping Dark Fantasy inside its smoky gothic card wrapper
             st.markdown('<div class="genre-card-fantasy">', unsafe_allow_html=True)
             st.markdown("### Pre-Made Dark Fantasy Realities")
             cols_fant = st.columns(2)
@@ -283,7 +276,6 @@ if not engine["world_name"]:
             st.markdown('</div>', unsafe_allow_html=True)
 
         with sub_cyberpunk:
-            # Custom container wrapping Cyberpunk inside its neon synthwave card wrapper
             st.markdown('<div class="genre-card-cyber">', unsafe_allow_html=True)
             st.markdown("### Pre-Made Cyberpunk Realities")
             cols_cyber = st.columns(2)
@@ -308,6 +300,7 @@ if not engine["world_name"]:
                     char["backstory"] = "A phantom hacker who lives entirely inside deep mainframe server nodes, wiping dirty corporate banks."
                     st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 
