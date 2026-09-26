@@ -7,92 +7,111 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. CORE ENGINE PAGE INITIALIZATION (SILVER & PURPLE RE-SKIN MATRIX)
+# 1. CORE ENGINE PAGE INITIALIZATION (MANDARIN APP GLASS & MATTE OVERHAUL)
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 
-# GLOBAL STRIPED CLASS INJECTIONS FOR BEVELED 3D PURPLE & SILVER LAYOUT
+# GLOBAL THEME DESIGN: Organic Olive Bevels with Darkening Variable Elevation Gates
 st.markdown("""
 <style>
-    /* Global Background and Text Balance */
+    /* Global Canvas Dark Mode Polish */
     .stApp {
-        background-color: #0b0713;
-        color: #e2e8f0;
+        background-color: #0d091a;
+        color: #f1f5f9;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
-    /* 🪐 PREMIUM BEVELED SIDEBAR MATRIX */
+    /* 🪐 ULTRAMODERN HIGH-VOLUME SIDEBAR MATRIX */
     [data-testid="stSidebar"] {
-        background-color: #171221 !important;
-        border-right: 3px solid #7c5dfa !important;
-        box-shadow: inset -4px 0px 10px rgba(0,0,0,0.5);
+        background-color: #120e24 !important;
+        border-right: 2px solid #5b21b6 !important;
+        box-shadow: 5px 0 25px rgba(0,0,0,0.5);
     }
     
-    /* 🗂️ SHINY SILVER & NEON PURPLE BEVELED TABS OVERRIDE */
-    button[data-testid="stMarkdownContainer"] p {
-        font-weight: 700 !important;
-    }
+    /* 🗂️ PRE-RENDERED ORGANIC OLIVE BEVELED TABS HUB */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 12px;
-        background-color: #120e1a;
-        padding: 8px;
-        border-radius: 10px;
-        border: 1px solid #312543;
+        gap: 16px;
+        background-color: #17122e;
+        padding: 12px;
+        border-radius: 20px; /* Aligns container frame curves */
+        border: 1px solid #2e2354;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
     }
+    
     .stTabs [data-baseweb="tab"] {
-        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%) !important;
-        color: #1e1b4b !important;
+        /* Permanent, pre-rendered matte silver luxury look for ALL base tabs */
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 45%, #cbd5e1 50%, #94a3b8 100%) !important;
+        color: #0f172a !important;
         font-weight: 800 !important;
-        padding: 10px 24px !important;
-        border-radius: 8px !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 28px !important;
+        
+        /* THE ORGANIC OLIVE SHAPE: Smoothly elongated sideways curves */
+        border-radius: 24px 24px 24px 24px !important;
+        
+        /* 3D Glass & Matte Structural Beveling */
         border-top: 2px solid #ffffff !important;
         border-left: 2px solid #ffffff !important;
         border-right: 3px solid #64748b !important;
-        border-bottom: 4px solid #475569 !important;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important;
-        transition: all 0.15s ease-in-out !important;
+        border-bottom: 5px solid #475569 !important;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.25) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin-bottom: 4px !important;
     }
-    /* Hover Glow States */
+    
+    /* Hover Glow Feedback States */
     .stTabs [data-baseweb="tab"]:hover {
-        box-shadow: 0 0 15px #7c5dfa !important;
-        transform: translateY(-1px);
+        box-shadow: 0 0 20px rgba(124, 93, 250, 0.5) !important;
+        transform: translateY(-2px);
     }
-    /* Click Visual Selection (Deep Darkened Purple Lock) */
+    
+    /* 👑 ACTIVE STATE OVERRIDE: TALLER, DEEPER, METALLIC PURPLE FOCUS LOCK */
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #4c1d95 0%, #31105e 100%) !important;
+        background: linear-gradient(135deg, #3b0764 0%, #1e1b4b 100%) !important;
         color: #ffffff !important;
+        
+        /* Makes the active tab noticeably taller and elevated */
+        padding: 16px 32px !important; 
+        
+        /* Pressed-in 3D Bevel parameters */
         border-top: 2px solid #7c5dfa !important;
         border-left: 2px solid #7c5dfa !important;
-        border-right: 3px solid #1e1b4b !important;
-        border-bottom: 2px solid #1e1b4b !important;
-        box-shadow: inset 0px 4px 8px rgba(0,0,0,0.7) !important;
+        border-right: 2px solid #0f172a !important;
+        border-bottom: 2px solid #0f172a !important;
+        box-shadow: inset 0px 6px 12px rgba(0,0,0,0.8), 0 0 15px rgba(124, 93, 250, 0.3) !important;
         transform: translateY(2px) !important;
     }
 
-    /* 🎛️ UNIVERSAL PLATFORM BUTTON BEVEL Overrides */
+    /* 🎛️ UNIVERSAL PLATFORM BUTTON BEVELS (OLIVE RADII SYNC) */
     .stButton > button {
-        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%) !important;
+        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%) !important;
         color: #0f172a !important;
-        font-weight: 700 !important;
-        border-radius: 6px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        border-radius: 20px !important; /* Matte sideways curve matching */
         border-top: 2px solid #ffffff !important;
         border-left: 2px solid #ffffff !important;
         border-right: 3px solid #475569 !important;
-        border-bottom: 4px solid #334155 !important;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2) !important;
-        transition: all 0.1s ease !important;
+        border-bottom: 5px solid #334155 !important;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2) !important;
+        transition: all 0.15s ease !important;
+        padding: 10px 20px !important;
     }
+    
     .stButton > button:hover {
         color: #ffffff !important;
-        background: linear-gradient(135deg, #7c5dfa 0%, #5b21b6 100%) !important;
+        background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%) !important;
         border-top: 2px solid #a78bfa !important;
         border-left: 2px solid #a78bfa !important;
-        border-right: 3px solid #4c1d95 !important;
-        border-bottom: 4px solid #2e1065 !important;
-        box-shadow: 0 0 12px rgba(124, 93, 250, 0.6) !important;
+        border-right: 3px solid #3b0764 !important;
+        border-bottom: 5px solid #2e1065 !important;
+        box-shadow: 0 0 15px rgba(109, 40, 217, 0.7) !important;
     }
+    
     .stButton > button:active {
         transform: translateY(2px) !important;
         border-bottom: 2px solid #2e1065 !important;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.4) !important;
+        box-shadow: inset 0 4px 6px rgba(0,0,0,0.5) !important;
     }
 </style>
 """, unsafe_allow_html=True)
