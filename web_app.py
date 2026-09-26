@@ -7,57 +7,59 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. CORE ENGINE PAGE INITIALIZATION (PURE CSS MATTE CONTEXT SKIN)
+# 1. CORE ENGINE PAGE INITIALIZATION (BADASS DREAMER MATRIX)
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 
-# GLOBAL THEME DESIGN: High-Contrast Obsidian & Velvet Geometric Backdrops
+# GLOBAL VIEWPORT OVERRIDE: Piercing the Streamlit CSS Safety Lockdown
 st.markdown("""
 <style>
-    /* Main Background: Soothing, deep liquid velvet obsidian using code gradients only */
-    .stApp {
-        background: radial-gradient(circle at 50% 50%, #110a24 0%, #06040a 100%) !important;
-        color: #f8fafc;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    /* 🌌 THE DEFINITIVE BADASS DREAMER BACKGROUND OVERRIDE */
+    html, body, [data-testid="stAppViewContainer"], .stApp {
+        background: linear-gradient(135deg, #05020a 0%, #0d071e 40%, #15092a 70%, #05020a 100%) !important;
+        background-size: 400% 400% !important;
+        color: #f8fafc !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
     }
     
-    /* 🪐 SOLID PITCH BLACK SIDEBAR */
+    /* 🪐 SOLID ONYX BLACK SIDEBAR OVERWATCH PANEL */
     [data-testid="stSidebar"] {
         background-color: #000000 !important;
-        border-right: 1px solid #1f153a !important;
-        box-shadow: 10px 0 30px rgba(0,0,0,0.7);
+        background-image: none !important;
+        border-right: 1px solid #231645 !important;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.85) !important;
     }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h3 {
         color: #f1f5f9 !important;
         font-weight: 700 !important;
     }
     
-    /* Clean, Immersive 3D Matte Cards for Sub-Genres (No Emojis, High Contrast) */
+    /* PREMIUM MATTE TEXTURE CARDS FOR GENRE SUB-TABS */
     .genre-card-scifi {
-        background: linear-gradient(135deg, #07111e 0%, #02070f 100%);
+        background: linear-gradient(135deg, rgba(7, 17, 30, 0.85) 0%, rgba(2, 7, 15, 0.95) 100%) !important;
         padding: 24px; border-radius: 20px; 
-        border-top: 1px solid #1e3a8a; border-left: 1px solid #1e3a8a;
-        border-right: 2px solid #02070f; border-bottom: 4px solid #02070f;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
+        border-top: 1px solid #1e3a8a !important; border-left: 1px solid #1e3a8a !important;
+        border-right: 2px solid #02070f !important; border-bottom: 4px solid #02070f !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important; margin-bottom: 20px;
     }
     .genre-card-fantasy {
-        background: linear-gradient(135deg, #1b0a14 0%, #0a0307 100%);
+        background: linear-gradient(135deg, rgba(27, 10, 20, 0.85) 0%, rgba(10, 3, 7, 0.95) 100%) !important;
         padding: 24px; border-radius: 20px; 
-        border-top: 1px solid #581c87; border-left: 1px solid #581c87;
-        border-right: 2px solid #0a0307; border-bottom: 4px solid #0a0307;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
+        border-top: 1px solid #581c87 !important; border-left: 1px solid #581c87 !important;
+        border-right: 2px solid #0a0307 !important; border-bottom: 4px solid #0a0307 !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important; margin-bottom: 20px;
     }
     .genre-card-cyber {
-        background: linear-gradient(135deg, #120424 0%, #05010a 100%);
+        background: linear-gradient(135deg, rgba(18, 4, 36, 0.85) 0%, rgba(5, 1, 10, 0.95) 100%) !important;
         padding: 24px; border-radius: 20px; 
-        border-top: 1px solid #4c1d95; border-left: 1px solid #4c1d95;
-        border-right: 2px solid #05010a; border-bottom: 4px solid #05010a;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
+        border-top: 1px solid #4c1d95 !important; border-left: 1px solid #4c1d95 !important;
+        border-right: 2px solid #05010a !important; border-bottom: 4px solid #05010a !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important; margin-bottom: 20px;
     }
     
     /* 🗂️ TI-SILVER NAVIGATION TABS HUB */
     .stTabs [data-baseweb="tab-list"] {
         gap: 14px;
-        background-color: rgba(0, 0, 0, 0.6) !important;
+        background-color: rgba(0, 0, 0, 0.7) !important;
         backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         padding: 10px; border-radius: 24px; border: 1px solid #1e1538;
         box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
@@ -78,7 +80,7 @@ st.markdown("""
         transform: translateY(-1px);
     }
     
-    /* 👑 ACTIVE TALLER STATE */
+    /* 👑 ACTIVE STATE: TALLER OLIVE PURPLE LOCK STATE */
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%) !important;
         color: #ffffff !important; padding: 14px 28px !important; 
@@ -106,8 +108,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
-
 
 load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
