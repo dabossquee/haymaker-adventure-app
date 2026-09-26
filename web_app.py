@@ -175,8 +175,8 @@ if not engine["world_name"]:
                     st.rerun()
         with sub_cyberpunk:
             st.markdown("### Pre-Made Cyberpunk Realities")
-            cols = st.columns(2)
-            with cols:
+            cols_cyber = st.columns(2)
+            with cols_cyber[0]:
                 st.markdown("#### 🏙️ NEO-TOKYO RUNNER")
                 st.caption("High-stakes tech espionage, corporate warfare, and neon-lit street racing.")
                 if st.button("🎮 Launch Neo-Tokyo", use_container_width=True):
@@ -186,7 +186,7 @@ if not engine["world_name"]:
                     char["name"] = "Ren 'Zero' Tanaka"
                     char["backstory"] = "A skilled street racer running data modifications inside a hidden neural link to pay off yakuza syndicates."
                     st.rerun()
-            with cols:
+            with cols_cyber[1]:
                 st.markdown("#### ⛓️ GRIDLOCK UNDERGROUND")
                 st.caption("Hack deep mainframe grids and lead a digital rebellion against mega-corps.")
                 if st.button("🎮 Launch Gridlock", use_container_width=True):
@@ -196,6 +196,7 @@ if not engine["world_name"]:
                     char["name"] = "Echo"
                     char["backstory"] = "A phantom hacker who lives entirely inside deep mainframe server nodes, wiping dirty corporate banks."
                     st.rerun()
+
 
         with sub_ai:
             st.markdown("### Community & AI Generated Universes")
