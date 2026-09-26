@@ -7,8 +7,95 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. CORE ENGINE PAGE INITIALIZATION
-st.set_page_config(page_title="Haymaker Engine", page_icon="🪐", layout="wide")
+# 1. CORE ENGINE PAGE INITIALIZATION (SILVER & PURPLE RE-SKIN MATRIX)
+st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
+
+# GLOBAL STRIPED CLASS INJECTIONS FOR BEVELED 3D PURPLE & SILVER LAYOUT
+st.markdown("""
+<style>
+    /* Global Background and Text Balance */
+    .stApp {
+        background-color: #0b0713;
+        color: #e2e8f0;
+    }
+    
+    /* 🪐 PREMIUM BEVELED SIDEBAR MATRIX */
+    [data-testid="stSidebar"] {
+        background-color: #171221 !important;
+        border-right: 3px solid #7c5dfa !important;
+        box-shadow: inset -4px 0px 10px rgba(0,0,0,0.5);
+    }
+    
+    /* 🗂️ SHINY SILVER & NEON PURPLE BEVELED TABS OVERRIDE */
+    button[data-testid="stMarkdownContainer"] p {
+        font-weight: 700 !important;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 12px;
+        background-color: #120e1a;
+        padding: 8px;
+        border-radius: 10px;
+        border: 1px solid #312543;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%) !important;
+        color: #1e1b4b !important;
+        font-weight: 800 !important;
+        padding: 10px 24px !important;
+        border-radius: 8px !important;
+        border-top: 2px solid #ffffff !important;
+        border-left: 2px solid #ffffff !important;
+        border-right: 3px solid #64748b !important;
+        border-bottom: 4px solid #475569 !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+    /* Hover Glow States */
+    .stTabs [data-baseweb="tab"]:hover {
+        box-shadow: 0 0 15px #7c5dfa !important;
+        transform: translateY(-1px);
+    }
+    /* Click Visual Selection (Deep Darkened Purple Lock) */
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #4c1d95 0%, #31105e 100%) !important;
+        color: #ffffff !important;
+        border-top: 2px solid #7c5dfa !important;
+        border-left: 2px solid #7c5dfa !important;
+        border-right: 3px solid #1e1b4b !important;
+        border-bottom: 2px solid #1e1b4b !important;
+        box-shadow: inset 0px 4px 8px rgba(0,0,0,0.7) !important;
+        transform: translateY(2px) !important;
+    }
+
+    /* 🎛️ UNIVERSAL PLATFORM BUTTON BEVEL Overrides */
+    .stButton > button {
+        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%) !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        border-radius: 6px !important;
+        border-top: 2px solid #ffffff !important;
+        border-left: 2px solid #ffffff !important;
+        border-right: 3px solid #475569 !important;
+        border-bottom: 4px solid #334155 !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2) !important;
+        transition: all 0.1s ease !important;
+    }
+    .stButton > button:hover {
+        color: #ffffff !important;
+        background: linear-gradient(135deg, #7c5dfa 0%, #5b21b6 100%) !important;
+        border-top: 2px solid #a78bfa !important;
+        border-left: 2px solid #a78bfa !important;
+        border-right: 3px solid #4c1d95 !important;
+        border-bottom: 4px solid #2e1065 !important;
+        box-shadow: 0 0 12px rgba(124, 93, 250, 0.6) !important;
+    }
+    .stButton > button:active {
+        transform: translateY(2px) !important;
+        border-bottom: 2px solid #2e1065 !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.4) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -22,9 +109,6 @@ if not API_KEY or not SUPABASE_URL or not SUPABASE_KEY:
 
 openai_client = OpenAI(api_key=API_KEY)
 supabase_client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-if STRIPE_SECRET:
-    stripe.api_key = STRIPE_SECRET
 
 # POP-UP INSPECTOR WINDOW GATEWAY
 if "active_modal" in st.session_state and st.session_state.active_modal:
@@ -63,7 +147,7 @@ char = engine["player_character"]
 
 # 4. SIDEBAR STATUS OVERWATCH PANEL
 with st.sidebar:
-    st.title("📊 STATUS CONTROL")
+    st.title("STATUS CONTROL")
     
     if engine["world_name"]:
         if st.button("🚪 ABANDON TIMELINE (HOME HUB)", type="secondary", use_container_width=True):
@@ -118,13 +202,15 @@ if not engine["world_name"]:
     st.subheader("Explore alternate realities or forge your own timeline")
     
     tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
-        "🪐 Explore Universes", "🏗️ My Creations", "🪄 Create a World", "🎭 Community Avatars", "👤 Account Profile"
-    ])
+     "Explore Universes", "My Creations", "Create a World", "Community Avatars", "Account Profile"
+ ])
+
     
     with tab_explore:
         sub_scifi, sub_fantasy, sub_cyberpunk, sub_ai = st.tabs([
-            "🚀 Sci-Fi", "🧙 Dark Fantasy", "🏙️ Cyberpunk", "🤖 Community & AI"
-        ])
+         "Sci-Fi", "Dark Fantasy", "Cyberpunk", "Community & AI"
+     ])
+
         
         with sub_scifi:
             st.markdown("### Pre-Made Sci-Fi Realities")
