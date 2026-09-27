@@ -351,7 +351,7 @@ if not engine["world_name"]:
     st.subheader("Explore alternate realities or forge your own timeline")
     
     # Core main navigation elements defined cleanly inside the home block scope
-       tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
+    tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
         "Explore Universes", "My Creations", "Create a World", "Community Avatars", "Account Profile"
     ])
 
