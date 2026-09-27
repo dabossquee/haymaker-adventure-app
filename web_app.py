@@ -280,15 +280,84 @@ if not engine["world_name"]:
     if "active_tab_idx" not in st.session_state:
         st.session_state.active_tab_idx = 0
 
-        tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
+       # 5. SIDEBAR STATUS OVERWATCH PANEL (DYNAMIC CLOUD GATES)
+with st.sidebar:
+    st.title("STATUS CONTROL")
+    st.divider()
+    
+    # RESTORING THE ACTIVE TOKEN STATUS CONTROL GATES
+    if "user" in st.session_state:
+        st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
+    else:
+        if st.session_state.guest_tokens > 0:
+            st.warning(f"⏳ TRIAL ACTIVE: {st.session_state.guest_tokens} Actions Left")
+        else:
+            st.error("🔒 Action Pool Depleted!")
+            
+    st.divider()
+    
+    # THE NATIVE ORGANIC HOUSING FRAME FOR PLAYER PICTURES
+    avatar_display = "👤" if not engine["world_name"] else "🎭"
+    st.markdown(f'<div class="sidebar-avatar-frame">{avatar_display}</div>', unsafe_allow_html=True)
+    
+    # THE DYNAMIC USERNAME TRACKER CELL
+    display_username = char["name"] if char["name"] else "Wanderer"
+    st.markdown(f"<p style='text-align: center; font-size: 16px; margin: 0;'>Dreamer: <span style='font-weight: 800; color: #4c1d95;'>{display_username}</span></p>", unsafe_allow_html=True)
+    
+    st.divider()
+    
+    # DYNAMIC COMMUNTY DEPLOYMENT MANAGER
+    if engine["world_name"] and "user" in st.session_state:
+        st.subheader("COMMUNITY PLATFORM")
+        if st.button("📢 PUBLISH TO COMMUNITY", key="publish_current_to_comm", use_container_width=True):
+            try:
+                existing = supabase_client.table("worlds").select("*").eq("world_name", engine["world_name"]).execute()
+                if not existing.data:
+                    supabase_client.table("worlds").insert({
+                        "creator_id": st.session_state.user.id,
+                        "world_name": engine["world_name"],
+                        "world_genre": engine["world_genre"]
+                    }).execute()
+                    st.toast("🟢 Alternate timeline successfully published to the global discovery matrix!")
+                else:
+                    st.warning("This timeline name has already been logged by the grid core.")
+            except Exception as e:
+                st.error(f"Publish Error: {e}")
+        st.divider()
+    
+    # HIGH-CONTRAST SECURE APPLICATION PARAMETERS TAB
+    with st.expander("⚙️ SETTINGS CONTROL"):
+        st.caption("🔒 Sandbox Platform Environment Stable")
+        st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
+        
+    st.divider()
+    
+    # DYNAMIC AUTHENTICATION ACTION DECK FOR SIDEBAR
+    if "user" in st.session_state:
+        if st.button("🚪 LOG OUT ACCOUNT", type="primary", key="sidebar_logout_gate", use_container_width=True):
+            supabase_client.auth.sign_out()
+            st.session_state.clear()
+            st.rerun()
+    else:
+        st.info("💡 Want unlimited actions or to save custom timelines?")
+        if st.button("🔑 SIGN IN / SIGN UP", key="sidebar_auth_gateway_redirect", use_container_width=True):
+            st.toast("⚡ Gateway Opened! Head over to your 'Account Profile' hub tab right on the main panel to log in or register instantly.")
+
+# 6. BALA DISCOVERY CORE ARCHITECTURE
+if not engine["world_name"]:
+    st.title("🪐 Haymaker Industry Hub")
+    st.subheader("Explore alternate realities or forge your own timeline")
+    
+    # Core main navigation elements defined cleanly inside the home block scope
+    tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
         "Explore Universes", "My Creations", "Create a World", "Community Avatars", "Account Profile"
     ])
-
-
     
     with tab_explore:
-        # 2-Column Card Categories Sorted Cleanly in Alphabetical Order
-        
+        # Multi-genre discovery selection tabs initialized directly within the explore scope
+        sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs([
+            "Community & AI", "Cyberpunk", "Dark Fantasy", "Horror", "Romance", "Sci-Fi"
+        ])
         
         with sub_ai:
             st.markdown("### Public Community Timelines")
@@ -300,9 +369,16 @@ if not engine["world_name"]:
                         with cols_ai[index % 2]:
                             st.markdown(f"""
                             <div class="premium-discovery-card">
-                                <h4>🪐 {world_row['world_name'].upper()}</h4>
-                                <p style='color: #a78bfa; font-size: 13px; font-weight: bold;'>THEMATIC GENRE: {world_row['world_genre'].upper()}</p>
-                                <p style='color: #94a3b8; font-size: 14px;'>A custom alternate timeline forged by an active player sandbox node.</p>
+                                <div class="card-visual-header">
+                                    <span style='font-size: 40px; opacity: 0.6;'>🪐</span>
+                                </div>
+                                <div class="card-bottom-deck">
+                                    <div>
+                                        <h4 style='margin:0 0 6px 0;'>{world_row['world_name'].upper()}</h4>
+                                        <p style='color: #a78bfa; font-size: 12px; font-weight: bold; margin:0 0 10px 0;'>THEMATIC GENRE: {world_row['world_genre'].upper()}</p>
+                                        <p style='color: #94a3b8; font-size: 14px; margin:0 0 16px 0;'>A custom alternate timeline forged by an active player sandbox node.</p>
+                                    </div>
+                                </div>
                             </div>
                             """, unsafe_allow_html=True)
                             if st.button("🎮 Enter Community Universe", key=f"pub_{world_row['id']}_{index}", use_container_width=True):
@@ -330,8 +406,15 @@ if not engine["world_name"]:
                 with cols_cyber[index % 2]:
                     st.markdown(f"""
                     <div class="premium-discovery-card">
-                        <h4>🏙️ {p['name'].upper()}</h4>
-                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
+                        <div class="card-visual-header">
+                            <span style='font-size: 40px; opacity: 0.6;'>🏙️</span>
+                        </div>
+                        <div class="card-bottom-deck">
+                            <div>
+                                <h4 style='margin:0 0 10px 0;'>{p['name'].upper()}</h4>
+                                <p style='color: #94a3b8; font-size: 14px; margin:0 0 16px 0;'>{p['bio']}</p>
+                            </div>
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
                     if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
@@ -341,104 +424,7 @@ if not engine["world_name"]:
                         char["name"] = p["char"]
                         char["backstory"] = p["story"]
                         st.rerun()
-        with sub_fantasy:
-            st.markdown("### Curated Dark Fantasy Realities")
-            fantasy_presets = [
-                {"id": "f1", "name": "Vampire Nomad", "bio": "Navigate exile, bloodlines, and dark covens in a gothic world of endless night.", "char": "Kaelen Voss", "story": "An ancient rogue vampire cast out of the High Court, hunting bounty squads."},
-                {"id": "f2", "name": "Ashelands Renegade", "bio": "A tactical swords-and-sorcery survival gauntlet across a ruined kingdom.", "char": "Gideon Black", "story": "A weathered mercenary carrying a broken crown across fields of ash."},
-                {"id": "f3", "name": "Eldritch Eclipse", "bio": "Survive madness and cosmic horrors in a coastal fishing village locked in darkness.", "char": "Silas Dyer", "story": "A stray scholar investigating ancient monolith symbols along the coast."},
-                {"id": "f4", "name": "Runebound Outcast", "bio": "Harness volatile, illegal sorcery while being hunted by corrupted holy knights.", "char": "Lyra", "story": "An elemental mage tracking down missing spell books in hidden ruins."}
-            ]
-            cols_fant = st.columns(2)
-            for index, p in enumerate(fantasy_presets):
-                with cols_fant[index % 2]:
-                    st.markdown(f"""
-                    <div class="premium-discovery-card">
-                        <h4>🧙 {p['name'].upper()}</h4>
-                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
-                        engine["world_id"] = f"pre_fant_{p['id']}"
-                        engine["world_name"] = p["name"]
-                        engine["world_genre"] = "Dark Fantasy"
-                        char["name"] = p["char"]
-                        char["backstory"] = p["story"]
-                        st.rerun()
 
-        with sub_horror:
-            st.markdown("### Curated Horror Realities")
-            horror_presets = [
-                {"id": "h1", "name": "Asylum Phantoms", "bio": "Escape an abandoned psychiatric hospital while tracking sanity meters.", "char": "Arthur Vance", "story": "An investigative journalist locked inside an asylum wing with moving shadows."},
-                {"id": "h2", "name": "Cabin Isolation", "bio": "Survive a night in a remote woodland estate stalked by masked cultists.", "char": "Sarah", "story": "A standard hiker forced to fortify a hunting cabin before midnight strikes."},
-                {"id": "h3", "name": "Deep Sea Derelict", "bio": "Investigate a silent deep-sea drilling rig that breached a deep ocean rift.", "char": "Chief Miller", "story": "A heavy industrial diver trapped on a sinking platform with an unknown presence."},
-                {"id": "h4", "name": "Skinwalker Ridge", "bio": "Track anomalies and missing park rangers across a cold desert reserve.", "char": "Ranger Cole", "story": "A veteran wildlife protector navigating a canyon with mimicking vocal frequencies."}
-            ]
-            cols_horror = st.columns(2)
-            for index, p in enumerate(horror_presets):
-                with cols_horror[index % 2]:
-                    st.markdown(f"""
-                    <div class="premium-discovery-card">
-                        <h4>🩸 {p['name'].upper()}</h4>
-                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
-                        engine["world_id"] = f"pre_horror_{p['id']}"
-                        engine["world_name"] = p["name"]
-                        engine["world_genre"] = "Horror"
-                        char["name"] = p["char"]
-                        char["backstory"] = p["story"]
-                        st.rerun()
-
-        with sub_romance:
-            st.markdown("### Curated Romance Realities")
-            romance_presets = [
-                {"id": "r1", "name": "Neon Heartbeats", "bio": "A high-stakes corporate romance tangled inside a Tokyo cyber espionage ring.", "char": "Leo Cruz", "story": "A security auditor falling for the rival terminal hacker assigned to clear his deck."},
-                {"id": "r2", "name": "Starlight Station", "bio": "Find love and connection at the absolute edge of an expanding galaxy.", "char": "Elena", "story": "A deep-space botanist stationed on a lonely supply node with a rogue freighter captain."},
-                {"id": "r3", "name": "Gothic Bloodlines", "bio": "An intense, dangerous alliance formed between rival vampire clans.", "char": "Valen", "story": "A noble court guard forced to partner with an exiled outland royal to save his house."},
-                {"id": "r4", "name": "Time Traveler's Vow", "bio": "Track down your soulmate across multiple centuries before timelines fracture.", "char": "Clara", "story": "A timeline archivist jumping eras to locate a partner who forgets her every jump."}
-            ]
-            cols_romance = st.columns(2)
-            for index, p in enumerate(romance_presets):
-                with cols_romance[index % 2]:
-                    st.markdown(f"""
-                    <div class="premium-discovery-card">
-                        <h4>❤️ {p['name'].upper()}</h4>
-                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
-                        engine["world_id"] = f"pre_rom_{p['id']}"
-                        engine["world_name"] = p["name"]
-                        engine["world_genre"] = "Romance"
-                        char["name"] = p["char"]
-                        char["backstory"] = p["story"]
-                        st.rerun()
-        with sub_scifi:
-            st.markdown("### Curated Sci-Fi Realities")
-            scifi_presets = [
-                {"id": "s1", "name": "Sector 7 Nomad", "bio": "Grit, survival, and starship dogfights across an outlaw solar system.", "char": "Pilot Vance", "story": "A disgraced military pilot running illicit scrap metal through asteroid fields."},
-                {"id": "s2", "name": "Chronos Station", "bio": "A psychological thriller aboard a deep-space station stuck in a time anomaly.", "char": "Dr. Aris", "story": "The chief technician investigating a quantum pulse that locked the terminal clock."},
-                {"id": "s3", "name": "Void Wanderer", "bio": "Pilot a lone exploration vessel drifting into the absolute center of a supermassive black hole.", "char": "Captain Thorne", "story": "An explorer searching for a signature signal inside a heavy gravitational ring."},
-                {"id": "s4", "name": "Orion Rebellion", "bio": "Lead a tactical worker revolt inside a heavily armed methane mining moon colony.", "char": "Marcus Vance", "story": "A heavy excavation engineer orchestrating a defense framework against corporate enforcers."}
-            ]
-            cols_scifi = st.columns(2)
-            for index, p in enumerate(scifi_presets):
-                with cols_scifi[index % 2]:
-                    st.markdown(f"""
-                    <div class="premium-discovery-card">
-                        <h4>🚀 {p['name'].upper()}</h4>
-                        <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
-                        engine["world_id"] = f"pre_scifi_{p['id']}"
-                        engine["world_name"] = p["name"]
-                        engine["world_genre"] = "Sci-Fi"
-                        char["name"] = p["char"]
-                        char["backstory"] = p["story"]
-                        st.rerun()
             
     with tab_my_creations:
         st.markdown("### Your Private Universes")
