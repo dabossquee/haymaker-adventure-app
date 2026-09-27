@@ -353,7 +353,8 @@ if not engine["world_name"]:
     # Core main navigation elements defined cleanly inside the home block scope
     tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
         "Explore Universes", "My Creations", "Create a World", "Community Avatars", "Account Profile"
-    ])
+    ], value=st.session_state.active_tab_idx)
+
     
     with tab_explore:
         # Multi-genre discovery selection tabs initialized directly within the explore scope
