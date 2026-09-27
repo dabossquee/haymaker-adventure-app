@@ -20,17 +20,36 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
-    /* 🪐 PITCH BLACK PREMIUM SIDEBAR MATRIX */
+        /* 🪐 PREMIUM MATTE SILVER BEVELED SIDEBAR MATRIX OVERRIDE */
     [data-testid="stSidebar"] {
-        background-color: #000000 !important;
-        background-image: none !important;
-        border-right: 1px solid #1e1538 !important;
-        box-shadow: 10px 0 30px rgba(0,0,0,0.6);
+        background: linear-gradient(180deg, #cbd5e1 0%, #a2adb9 50%, #788596 100%) !important;
+        border-right: 2px solid #2e1566 !important;
+        box-shadow: inset -4px 0px 12px rgba(0,0,0,0.25), 4px 0px 20px rgba(0,0,0,0.4) !important;
     }
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h3 {
-        color: #f1f5f9 !important;
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] label {
+        color: #0f172a !important; /* Locks sharp dark text readability against the matte background */
         font-weight: 700 !important;
     }
+    
+    /* 👤 ORGANIC SIDEWAYS-OLIVE PROFILE IMAGE CONTAINER */
+    .sidebar-avatar-frame {
+        width: 130px;
+        height: 130px;
+        background-color: #161026;
+        border-radius: 40px !important; /* Soft organic curvature matching your olive active tabs */
+        border-top: 2px solid #ffffff;
+        border-left: 2px solid #ffffff;
+        border-right: 2px solid #475569;
+        border-bottom: 4px solid #1e293b;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        margin: 16px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        user-select: none;
+    }
+
     
     /* 🗂️ FLAT TITANIUM-SILVER NAVIGATION TABS CONTROLLER */
     .stTabs [data-baseweb="tab-list"] {
@@ -185,53 +204,29 @@ char = engine["player_character"]
 with st.sidebar:
     st.title("STATUS CONTROL")
     
-    if engine["world_name"]:
-        if st.button("🚪 ABANDON TIMELINE (HOME HUB)", type="secondary", use_container_width=True):
-            st.session_state.world_engine = {
-                "world_id": None, "world_name": "", "world_genre": "",
-                "player_character": {"name": "", "backstory": "", "health": 100, "inventory": ["survival gear"]},
-                "story_log": []
-            }
-            st.rerun()
-            
-    if "user" in st.session_state:
-        st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
-    else:
-        if st.session_state.guest_tokens > 0:
-            st.warning(f"⏳ TRIAL ACTIVE: {st.session_state.guest_tokens} Actions Left")
-        else:
-            st.error("🔒 Action Pool Depleted!")
-            
+# 5. SIDEBAR STATUS OVERWATCH PANEL (MATTE SILVER ACCENT CORE)
+with st.sidebar:
+    st.title("STATUS CONTROL")
+    
     st.divider()
-    if engine["world_name"]:
-        st.markdown(f"**🪐 WORLD:** {engine['world_name'].upper()}")
-        st.markdown(f"**🎭 GENRE:** {engine['world_genre'].upper()}")
-        st.divider()
-        st.markdown(f"### 👤 {char['name']}")
-        
-        health_pct = max(0, min(100, char["health"]))
-        st.progress(health_pct / 100, text=f"❤️ Health Pool: {health_pct}/100")
-        
-        st.markdown("### 🎒 Inventory Pack")
-        for item in char["inventory"]:
-            st.markdown(f"- 📦 {item}")
-            
-        st.divider()
-        btn_disabled = "user" not in st.session_state and st.session_state.guest_tokens <= 0
-        if st.button("🔧 Call Engineer (Heal to 100)", use_container_width=True, disabled=btn_disabled):
-            char["health"] = 100
-            if "user" not in st.session_state:
-                st.session_state.guest_tokens -= 1
-            engine["story_log"].append({"role": "user", "content": "🛠 Limiting Command Order: Ship armor plates patched back to baseline."})
-            st.rerun()
-    else:
-        st.subheader("📡 CONSOLE PARAMETERS")
-        st.caption("No active universe initialized yet. Choose an experience or build one inside the landing tabs.")
-        
-        if st.button("⚡ Test Cloud Telemetry", use_container_width=True):
-            st.toast("🟢 Cloud Matrix Online. Handshake with Supabase database stable.")
-        if st.button("📰 View Engine Logs", use_container_width=True):
-            st.info("System Patch: Version 2.4.0 Active. 2-Column Responsive Card Grids compiled flawlessly. Inbound Token Handshakes synchronized globally.")
+    
+    # 1. THE NATIVE ORGANIC HOUSING FRAME FOR PLAYER PICTURES
+    # This architecture uses a default avatar proxy that hooks directly into character states
+    avatar_display = "👤" if not engine["world_name"] else "🎭"
+    st.markdown(f'<div class="sidebar-avatar-frame">{avatar_display}</div>', unsafe_allow_html=True)
+    
+    # 2. THE DYNAMIC USERNAME TRACKER CELL
+    display_username = char["name"] if char["name"] else "Wanderer"
+    st.markdown(f"<p style='text-align: center; font-size: 16px; margin: 0;'>Dreamer: <span style='font-weight: 800; color: #4c1d95;'>{display_username}</span></p>", unsafe_allow_html=True)
+    
+    st.divider()
+    
+    # 3. HIGH-CONTRAST SECURE APPLICATION PARAMETERS TAB
+    with st.expander("⚙️ SETTINGS CONTROL"):
+        st.caption("🔒 Sandbox Platform Environment Stable")
+        # Empty placeholder vectors reserved for incoming data protection policies and legal regulatory paperwork
+        st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
+
 # 6. BALA DISCOVERY PORTAL CORE LATTICE
 if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
