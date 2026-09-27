@@ -334,7 +334,8 @@ with st.sidebar:
     
     # DYNAMIC AUTHENTICATION ACTION DECK FOR SIDEBAR
     if "user" in st.session_state:
-        if st.button("🚪 LOG OUT ACCOUNT", type="primary", key="sidebar_logout_gate", use_container_width=True):
+        if st.button("🚪 LOG OUT ACCOUNT", type="primary", key="main_hub_profile_logout_gate"
+, use_container_width=True):
             supabase_client.auth.sign_out()
             st.session_state.clear()
             st.rerun()
