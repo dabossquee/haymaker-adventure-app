@@ -266,7 +266,7 @@ with st.sidebar:
             st.rerun()
     else:
         st.info("💡 Want unlimited actions or to save custom timelines?")
-        if st.button("🔑 SIGN IN / SIGN UP", key="sidebar_auth_gateway_redirect", use_container_width=True):
+        if st.button("🔑 SIGN IN / SIGN UP", key="main_hub_auth_gateway_redirect", use_container_width=True):
             st.toast("⚡ Gateway Opened! Head over to your 'Account Profile' hub tab right on the main panel to log in or register instantly.")
 
 
