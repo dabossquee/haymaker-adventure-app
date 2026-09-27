@@ -202,8 +202,7 @@ else:
 
 engine = st.session_state.world_engine
 char = engine["player_character"]
-
-# 5. SIDEBAR STATUS OVERWATCH PANEL (PREMIUM LIGHTING OVERLAY)
+# 5. SIDEBAR STATUS OVERWATCH PANEL (DYNAMIC CLOUD GATES)
 with st.sidebar:
     st.title("STATUS CONTROL")
     st.divider()
@@ -229,6 +228,26 @@ with st.sidebar:
     
     st.divider()
     
+    # DYNAMIC COMMUNTY DEPLOYMENT MANAGER
+    if engine["world_name"] and "user" in st.session_state:
+        st.subheader("COMMUNITY PLATFORM")
+        if st.button("📢 PUBLISH TO COMMUNITY", key="publish_current_to_comm", use_container_width=True):
+            try:
+                # Direct check verifying if this world timeline isn't already logged on the public board
+                existing = supabase_client.table("worlds").select("*").eq("world_name", engine["world_name"]).execute()
+                if not existing.data:
+                    supabase_client.table("worlds").insert({
+                        "creator_id": st.session_state.user.id,
+                        "world_name": engine["world_name"],
+                        "world_genre": engine["world_genre"]
+                    }).execute()
+                    st.toast("🟢 Alternate timeline successfully published to the global discovery matrix!")
+                else:
+                    st.warning("This timeline name has already been logged by the grid core.")
+            except Exception as e:
+                st.error(f"Publish Error: {e}")
+        st.divider()
+    
     # HIGH-CONTRAST SECURE APPLICATION PARAMETERS TAB
     with st.expander("⚙️ SETTINGS CONTROL"):
         st.caption("🔒 Sandbox Platform Environment Stable")
@@ -238,25 +257,30 @@ with st.sidebar:
     
     # DYNAMIC AUTHENTICATION ACTION DECK FOR SIDEBAR
     if "user" in st.session_state:
-        # Secure Log Out Gate for authenticated accounts
         if st.button("🚪 LOG OUT ACCOUNT", type="primary", key="sidebar_logout_gate", use_container_width=True):
             supabase_client.auth.sign_out()
             st.session_state.clear()
             st.rerun()
     else:
-        # Secure Quick-Link to jump straight into the Account Profile configuration tab
         st.info("💡 Want unlimited actions or to save custom timelines?")
         if st.button("🔑 SIGN IN / SIGN UP", key="sidebar_auth_gateway_redirect", use_container_width=True):
-            st.toast("⚡ Gateway Opened! Flip over to your 'Account Profile' hub tab to authorize or sign up instantly.")
+            st.session_state.active_tab_idx = 4
+            st.rerun()
+
 
 # 6. BALA DISCOVERY PORTAL CORE LATTICE
 if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
     st.subheader("Explore alternate realities or forge your own timeline")
     
+        # Initializes a safe cache memory space to track active tab selections
+    if "active_tab_idx" not in st.session_state:
+        st.session_state.active_tab_idx = 0
+
     tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
         "Explore Universes", "My Creations", "Create a World", "Community Avatars", "Account Profile"
-    ])
+    ], selected_index=st.session_state.active_tab_idx)
+
     
     with tab_explore:
         # 2-Column Card Categories Sorted Cleanly in Alphabetical Order
@@ -417,18 +441,23 @@ if not engine["world_name"]:
     with tab_my_creations:
         st.markdown("### Your Private Universes")
         if "user" in st.session_state:
+            # Enforce an explicit tab focus reset the second they load into their space panels
+            st.session_state.active_tab_idx = 1
             try:
                 my_worlds = supabase_client.table("worlds").select("*").eq("creator_id", st.session_state.user.id).order("created_at", desc=True).execute()
                 if my_worlds.data:
-                    cols_resume = st.columns(2)
                     for index, my_row in enumerate(my_worlds.data):
-                        with cols_resume[index % 2]:
-                            st.markdown(f"""
-                            <div class="premium-discovery-card">
-                                <h4>🪐 {my_row['world_name'].upper()}</h4>
-                                <p style='color: #a78bfa; font-size: 13px; font-weight: bold;'>THEMATIC GENRE: {my_row['world_genre'].upper()}</p>
+                        st.markdown(f"""
+                        <div class="premium-discovery-card">
+                            <div class="card-bottom-deck">
+                                <h4 style='margin:0 0 6px 0;'>🪐 {my_row['world_name'].upper()}</h4>
+                                <p style='color: #a78bfa; font-size: 13px; font-weight: bold; margin:0;'>THEMATIC GENRE: {my_row['world_genre'].upper()}</p>
                             </div>
-                            """, unsafe_allow_html=True)
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        cols_actions = st.columns(2)
+                        with cols_actions[0]:
                             if st.button("🎮 Resume Timeline", key=f"resume_{my_row['id']}_{index}", use_container_width=True):
                                 engine["world_id"] = my_row["id"]
                                 engine["world_name"] = my_row["world_name"]
@@ -436,12 +465,23 @@ if not engine["world_name"]:
                                 char["name"] = "Unknown Wanderer"
                                 char["backstory"] = "A traveler stepping directly back into their verified alternate reality timeline checkpoint."
                                 st.rerun()
+                        with cols_actions[1]:
+                            # THE ULTIMATE HARD PURGE GATEWAY: Destroys user saves AND community references at once
+                            if st.button("🗑️ Delete World", key=f"purge_{my_row['id']}_{index}", type="primary", use_container_width=True):
+                                try:
+                                    supabase_client.table("worlds").delete().eq("id", my_row["id"]).execute()
+                                    st.toast("💥 Timeline completely erased from the local vault and public community servers!")
+                                    st.rerun()
+                                except Exception as err:
+                                    st.error(f"Purge Fault: {err}")
+                        st.divider()
                 else:
                     st.info("You haven't deployed any permanent universes yet. Forge one inside the 'Create a World' tab!")
             except Exception as e:
                 st.error(f"Vault Connection Error: {e}")
         else:
             st.warning("🔒 Please sign in via the 'Account Profile' tab to look inside your private creation vault.")
+
     with tab_create:
         st.markdown("### Universe Architect Form")
         w_name = st.text_input("Name your universe:", placeholder="e.g., Sector 7, Neo-Tokyo")
