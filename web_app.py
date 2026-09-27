@@ -14,11 +14,14 @@ st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 st.markdown("""
 <style>
     /* Global Canvas Background */
+        /* Main Background Canvas: High-End Matte Midnight Ink-Black */
     .stApp {
-        background-color: #090611 !important;
-        color: #f8fafc !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #05030a !important; /* Noticeably darker than your sidebar matte tint! */
+        background-image: none !important;
+        color: #f8fafc;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     }
+
     
         /* 🪐 PREMIUM MATTE SILVER BEVELED SIDEBAR MATRIX OVERRIDE */
     [data-testid="stSidebar"] {
@@ -200,32 +203,51 @@ else:
 engine = st.session_state.world_engine
 char = engine["player_character"]
 
-# 5. SIDEBAR STATUS OVERWATCH PANEL (PITCH BLACK CONTRAST ACCENT)
+# 5. SIDEBAR STATUS OVERWATCH PANEL (PREMIUM LIGHTING OVERLAY)
 with st.sidebar:
     st.title("STATUS CONTROL")
-    
-# 5. SIDEBAR STATUS OVERWATCH PANEL (MATTE SILVER ACCENT CORE)
-with st.sidebar:
-    st.title("STATUS CONTROL")
-    
     st.divider()
     
-    # 1. THE NATIVE ORGANIC HOUSING FRAME FOR PLAYER PICTURES
-    # This architecture uses a default avatar proxy that hooks directly into character states
+    # RESTORING THE ACTIVE TOKEN STATUS CONTROL GATES
+    if "user" in st.session_state:
+        st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
+    else:
+        if st.session_state.guest_tokens > 0:
+            st.warning(f"⏳ TRIAL ACTIVE: {st.session_state.guest_tokens} Actions Left")
+        else:
+            st.error("🔒 Action Pool Depleted!")
+            
+    st.divider()
+    
+    # THE NATIVE ORGANIC HOUSING FRAME FOR PLAYER PICTURES
     avatar_display = "👤" if not engine["world_name"] else "🎭"
     st.markdown(f'<div class="sidebar-avatar-frame">{avatar_display}</div>', unsafe_allow_html=True)
     
-    # 2. THE DYNAMIC USERNAME TRACKER CELL
+    # THE DYNAMIC USERNAME TRACKER CELL
     display_username = char["name"] if char["name"] else "Wanderer"
     st.markdown(f"<p style='text-align: center; font-size: 16px; margin: 0;'>Dreamer: <span style='font-weight: 800; color: #4c1d95;'>{display_username}</span></p>", unsafe_allow_html=True)
     
     st.divider()
     
-    # 3. HIGH-CONTRAST SECURE APPLICATION PARAMETERS TAB
+    # HIGH-CONTRAST SECURE APPLICATION PARAMETERS TAB
     with st.expander("⚙️ SETTINGS CONTROL"):
         st.caption("🔒 Sandbox Platform Environment Stable")
-        # Empty placeholder vectors reserved for incoming data protection policies and legal regulatory paperwork
         st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
+        
+    st.divider()
+    
+    # DYNAMIC AUTHENTICATION ACTION DECK FOR SIDEBAR
+    if "user" in st.session_state:
+        # Secure Log Out Gate for authenticated accounts
+        if st.button("🚪 LOG OUT ACCOUNT", type="primary", key="sidebar_logout_gate", use_container_width=True):
+            supabase_client.auth.sign_out()
+            st.session_state.clear()
+            st.rerun()
+    else:
+        # Secure Quick-Link to jump straight into the Account Profile configuration tab
+        st.info("💡 Want unlimited actions or to save custom timelines?")
+        if st.button("🔑 SIGN IN / SIGN UP", key="sidebar_auth_gateway_redirect", use_container_width=True):
+            st.toast("⚡ Gateway Opened! Flip over to your 'Account Profile' hub tab to authorize or sign up instantly.")
 
 # 6. BALA DISCOVERY PORTAL CORE LATTICE
 if not engine["world_name"]:
