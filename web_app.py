@@ -203,6 +203,9 @@ else:
 engine = st.session_state.world_engine
 char = engine["player_character"]
 # 5. SIDEBAR STATUS OVERWATCH PANEL (DYNAMIC CLOUD GATES)
+sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs([
+            "Community & AI", "Cyberpunk", "Dark Fantasy", "Horror", "Romance", "Sci-Fi"
+        ])
 with st.sidebar:
     st.title("STATUS CONTROL")
     st.divider()
@@ -285,9 +288,7 @@ if not engine["world_name"]:
     
     with tab_explore:
         # 2-Column Card Categories Sorted Cleanly in Alphabetical Order
-        sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs([
-            "Community & AI", "Cyberpunk", "Dark Fantasy", "Horror", "Romance", "Sci-Fi"
-        ])
+        
         
         with sub_ai:
             st.markdown("### Public Community Timelines")
