@@ -7,147 +7,70 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. CORE ENGINE PAGE INITIALIZATION (MANDARIN APP BALA SKIN)
+# 1. CORE ENGINE PAGE INITIALIZATION
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 
-# GLOBAL STRUCTURAL OVERRIDE: High-Contrast Modern Tech Dynamic UI Skin
+# GLOBAL THEME DESIGN: High-Contrast Modern Tech Dynamic UI Skin
 st.markdown("""
 <style>
-    /* Global Canvas Background */
-        /* Main Background Canvas: High-End Matte Midnight Ink-Black */
     .stApp {
-        background-color: #05030a !important; /* Noticeably darker than your sidebar matte tint! */
+        background-color: #05030a !important;
         background-image: none !important;
-        color: #f8fafc;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #f8fafc !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-
-    
-        /* 🪐 PREMIUM MATTE SILVER BEVELED SIDEBAR MATRIX OVERRIDE */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #cbd5e1 0%, #a2adb9 50%, #788596 100%) !important;
         border-right: 2px solid #2e1566 !important;
         box-shadow: inset -4px 0px 12px rgba(0,0,0,0.25), 4px 0px 20px rgba(0,0,0,0.4) !important;
     }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] label {
-        color: #0f172a !important; /* Locks sharp dark text readability against the matte background */
-        font-weight: 700 !important;
+        color: #0f172a !important; font-weight: 700 !important;
     }
-    
-    /* 👤 ORGANIC SIDEWAYS-OLIVE PROFILE IMAGE CONTAINER */
-    .sidebar-avatar-frame {
-        width: 130px;
-        height: 130px;
-        background-color: #161026;
-        border-radius: 40px !important; /* Soft organic curvature matching your olive active tabs */
-        border-top: 2px solid #ffffff;
-        border-left: 2px solid #ffffff;
-        border-right: 2px solid #475569;
-        border-bottom: 4px solid #1e293b;
-        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-        margin: 16px auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 50px;
-        user-select: none;
-    }
-
-    
-    /* 🗂️ FLAT TITANIUM-SILVER NAVIGATION TABS CONTROLLER */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 14px;
-        background-color: #020005 !important;
-        padding: 10px;
-        border-radius: 24px;
-        border: 1px solid #1e1538;
-        box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
+        gap: 14px; background-color: #020005 !important; padding: 10px;
+        border-radius: 24px; border: 1px solid #1e1538; box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
     }
-    
     .stTabs [data-baseweb="tab"] {
         background: linear-gradient(180deg, #cbd5e1 0%, #cbd5e1 100%) !important;
-        color: #0f172a !important;
-        font-weight: 700 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        font-size: 13px !important;
-        padding: 10px 24px !important;
-        
-        /* THE ORGANIC OLIVE EDGE: Softly elongated sideways curvatures */
-        border-radius: 20px !important;
-        
-        /* 3D Modern Bevel Framing Matrix */
-        border-top: 1px solid #ffffff !important;
-        border-left: 1px solid #ffffff !important;
-        border-right: 2px solid #64748b !important;
-        border-bottom: 3px solid #475569 !important;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 2px !important;
+        color: #0f172a !important; font-weight: 700 !important; text-transform: uppercase;
+        letter-spacing: 0.8px; font-size: 13px !important; padding: 10px 24px !important;
+        border-radius: 20px !important; border-top: 1px solid #ffffff !important;
+        border-left: 1px solid #ffffff !important; border-right: 2px solid #64748b !important;
+        border-bottom: 3px solid #475569 !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important; margin-bottom: 2px !important;
     }
-    
-    /* Hover Glow Interactive States */
-    .stTabs [data-baseweb="tab"]:hover {
-        box-shadow: 0 0 15px rgba(124, 93, 250, 0.4) !important;
-        background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%) !important;
-        transform: translateY(-1px);
-    }
-    
-    /* 👑 ACTIVE STATE: NOTICEABLY TALLER, DEEPER VIOLET FOCUS LOCK */
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%) !important;
-        color: #ffffff !important;
-        padding: 14px 28px !important; /* Makes active tab stand out vertically */
-        border-top: 1px solid #7c5dfa !important;
-        border-left: 1px solid #7c5dfa !important;
-        border-right: 1px solid #0f172a !important;
-        border-bottom: 1px solid #0f172a !important;
+        color: #ffffff !important; padding: 14px 28px !important; 
+        border-top: 1px solid #7c5dfa !important; border-left: 1px solid #7c5dfa !important;
+        border-right: 1px solid #0f172a !important; border-bottom: 1px solid #0f172a !important;
         box-shadow: inset 0px 4px 10px rgba(0,0,0,0.8), 0 0 20px rgba(124, 93, 250, 0.3) !important;
         transform: translateY(2px) !important;
     }
-
-    /* 🎴 MATTE METALLIC UNIFIED AVATAR STYLED DISCOVERY CARDS */
     .premium-discovery-card {
-        background: linear-gradient(135deg, #161026 0%, #0d0818 100%) !important;
-        border-radius: 20px !important;
-        padding: 20px !important;
-        border-top: 1px solid #3b2c63 !important;
-        border-left: 1px solid #3b2c63 !important;
-        border-right: 2px solid #05020a !important;
-        border-bottom: 4px solid #05020a !important;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.4) !important;
-        margin-bottom: 20px !important;
+        background: #110c1f !important; border-radius: 20px !important;
+        border-top: 1px solid #3b2c63 !important; border-left: 1px solid #3b2c63 !important;
+        border-right: 2px solid #05020a !important; border-bottom: 4px solid #05020a !important;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important; margin-bottom: 24px !important;
+        overflow: hidden !important; display: flex !important; flex-direction: column;
     }
-
-    /* UNIVERSAL PLATFORM INTERACTION BUTTON DESIGN */
+    .sidebar-avatar-frame {
+        width: 130px; height: 130px; background-color: #161026; border-radius: 40px !important;
+        border-top: 2px solid #ffffff; border-left: 2px solid #ffffff;
+        border-right: 2px solid #475569; border-bottom: 4px solid #1e293b;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3); margin: 16px auto;
+        display: flex; align-items: center; justify-content: center; font-size: 50px;
+    }
     .stButton > button {
         background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%) !important;
-        color: #0f172a !important;
-        font-weight: 700 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-radius: 18px !important; /* Matches sideways curve theme */
-        border-top: 1px solid #ffffff !important;
-        border-left: 1px solid #ffffff !important;
-        border-right: 2px solid #475569 !important;
-        border-bottom: 4px solid #334155 !important;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2) !important;
-        transition: all 0.12s ease-in-out !important;
-        padding: 8px 18px !important;
+        color: #0f172a !important; font-weight: 700 !important; text-transform: uppercase;
+        letter-spacing: 0.5px; border-radius: 18px !important; border-top: 1px solid #ffffff !important;
+        border-left: 1px solid #ffffff !important; border-right: 2px solid #475569 !important;
+        border-bottom: 4px solid #334155 !important; box-shadow: 0 4px 6px rgba(0,0,0,0.2) !important;
     }
     .stButton > button:hover {
-        color: #ffffff !important;
-        background: linear-gradient(180deg, #7c5dfa 0%, #5b21b6 100%) !important;
-        border-top: 1px solid #a78bfa !important;
-        border-left: 1px solid #a78bfa !important;
-        border-right: 1px solid #3b0764 !important;
-        border-bottom: 4px solid #2e1065 !important;
-        box-shadow: 0 0 15px rgba(124, 93, 250, 0.5) !important;
-    }
-    .stButton > button:active {
-        transform: translateY(1px) !important;
-        border-bottom: 1px solid #2e1065 !important;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.6) !important;
+        color: #ffffff !important; background: linear-gradient(180deg, #7c5dfa 0%, #5b21b6 100%) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -168,7 +91,7 @@ supabase_client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 if STRIPE_SECRET:
     stripe.api_key = STRIPE_SECRET
 
-# 2. POP-UP MODAL FILE INSPECTOR WINDOW GATEWAY
+# POP-UP MODAL WINDOW GATEWAY
 if "active_modal" in st.session_state and st.session_state.active_modal:
     modal = st.session_state.active_modal
     @st.dialog(modal["title"])
@@ -181,13 +104,12 @@ if "active_modal" in st.session_state and st.session_state.active_modal:
             st.rerun()
     render_modal_window()
 
-# 3. CAPTURE ACTIVE STRIPE PAYWALL REDIRECTS
-query_params = st.query_params
-if "success" in query_params and query_params["success"] == "true":
+# STRIPE SUITE CHECKS
+if "success" in st.query_params and st.query_params["success"] == "true":
     st.session_state.is_premium = True
     st.toast("👑 Premium Unlimited Pass Activated Successfully!")
 
-# 4. SET BASE TRIAL THRESHOLDS & CACHE MEMORY
+# TRIAL VARIABLES STORAGE INITIALIZATION
 if "user" not in st.session_state:
     if "guest_tokens" not in st.session_state:
         st.session_state.guest_tokens = 3  
@@ -202,15 +124,12 @@ else:
 
 engine = st.session_state.world_engine
 char = engine["player_character"]
-# 5. SIDEBAR STATUS OVERWATCH PANEL (DYNAMIC CLOUD GATES)
-sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs([
-            "Community & AI", "Cyberpunk", "Dark Fantasy", "Horror", "Romance", "Sci-Fi"
-        ])
+# 5. DYNAMIC SIDEBAR OVERWATCH PANEL
 with st.sidebar:
     st.title("STATUS CONTROL")
     st.divider()
     
-    # RESTORING THE ACTIVE TOKEN STATUS CONTROL GATES
+    # TOKEN COUNTER CHECKS
     if "user" in st.session_state:
         st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
     else:
@@ -221,130 +140,33 @@ with st.sidebar:
             
     st.divider()
     
-    # THE NATIVE ORGANIC HOUSING FRAME FOR PLAYER PICTURES
+    # HOUSING FRAME FOR PLAYER PROFILE IMAGE
     avatar_display = "👤" if not engine["world_name"] else "🎭"
     st.markdown(f'<div class="sidebar-avatar-frame">{avatar_display}</div>', unsafe_allow_html=True)
     
-    # THE DYNAMIC USERNAME TRACKER CELL
+    # USERNAME DISPLAY TRACKER
     display_username = char["name"] if char["name"] else "Wanderer"
     st.markdown(f"<p style='text-align: center; font-size: 16px; margin: 0;'>Dreamer: <span style='font-weight: 800; color: #4c1d95;'>{display_username}</span></p>", unsafe_allow_html=True)
     
     st.divider()
     
-    # DYNAMIC COMMUNTY DEPLOYMENT MANAGER
-    if engine["world_name"] and "user" in st.session_state:
-        st.subheader("COMMUNITY PLATFORM")
-        if st.button("📢 PUBLISH TO COMMUNITY", key="publish_current_to_comm", use_container_width=True):
-            try:
-                # Direct check verifying if this world timeline isn't already logged on the public board
-                existing = supabase_client.table("worlds").select("*").eq("world_name", engine["world_name"]).execute()
-                if not existing.data:
-                    supabase_client.table("worlds").insert({
-                        "creator_id": st.session_state.user.id,
-                        "world_name": engine["world_name"],
-                        "world_genre": engine["world_genre"]
-                    }).execute()
-                    st.toast("🟢 Alternate timeline successfully published to the global discovery matrix!")
-                else:
-                    st.warning("This timeline name has already been logged by the grid core.")
-            except Exception as e:
-                st.error(f"Publish Error: {e}")
-        st.divider()
-    
-    # HIGH-CONTRAST SECURE APPLICATION PARAMETERS TAB
+    # SETTINGS SUB CONTAINER
     with st.expander("⚙️ SETTINGS CONTROL"):
         st.caption("🔒 Sandbox Platform Environment Stable")
         st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
         
     st.divider()
     
-    # DYNAMIC AUTHENTICATION ACTION DECK FOR SIDEBAR
+    # SIDEBAR LOGIN & LOGOUT TOGGLE CONTROLS
     if "user" in st.session_state:
         if st.button("🚪 LOG OUT ACCOUNT", type="primary", key="sidebar_logout_gate", use_container_width=True):
             supabase_client.auth.sign_out()
             st.session_state.clear()
             st.rerun()
     else:
-        st.info("💡 Want unlimited actions or to save custom timelines?")
-        if st.button("🔑 SIGN IN / SIGN UP", key="main_hub_auth_gateway_redirect", use_container_width=True):
-            st.toast("⚡ Gateway Opened! Head over to your 'Account Profile' hub tab right on the main panel to log in or register instantly.")
-
-
-
-# 6. BALA DISCOVERY PORTAL CORE LATTICE
-if not engine["world_name"]:
-    st.title("🪐 Haymaker Industry Hub")
-    st.subheader("Explore alternate realities or forge your own timeline")
-    
-        # Initializes a safe cache memory space to track active tab selections
-    if "active_tab_idx" not in st.session_state:
-        st.session_state.active_tab_idx = 0
-
-       # 5. SIDEBAR STATUS OVERWATCH PANEL (DYNAMIC CLOUD GATES)
-with st.sidebar:
-    st.title("STATUS CONTROL")
-    st.divider()
-    
-    # RESTORING THE ACTIVE TOKEN STATUS CONTROL GATES
-    if "user" in st.session_state:
-        st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
-    else:
-        if st.session_state.guest_tokens > 0:
-            st.warning(f"⏳ TRIAL ACTIVE: {st.session_state.guest_tokens} Actions Left")
-        else:
-            st.error("🔒 Action Pool Depleted!")
-            
-    st.divider()
-    
-    # THE NATIVE ORGANIC HOUSING FRAME FOR PLAYER PICTURES
-    avatar_display = "👤" if not engine["world_name"] else "🎭"
-    st.markdown(f'<div class="sidebar-avatar-frame">{avatar_display}</div>', unsafe_allow_html=True)
-    
-    # THE DYNAMIC USERNAME TRACKER CELL
-    display_username = char["name"] if char["name"] else "Wanderer"
-    st.markdown(f"<p style='text-align: center; font-size: 16px; margin: 0;'>Dreamer: <span style='font-weight: 800; color: #4c1d95;'>{display_username}</span></p>", unsafe_allow_html=True)
-    
-    st.divider()
-    
-    # DYNAMIC COMMUNTY DEPLOYMENT MANAGER
-    if engine["world_name"] and "user" in st.session_state:
-        st.subheader("COMMUNITY PLATFORM")
-        if st.button("📢 PUBLISH TO COMMUNITY", key="publish_current_to_comm", use_container_width=True):
-            try:
-                existing = supabase_client.table("worlds").select("*").eq("world_name", engine["world_name"]).execute()
-                if not existing.data:
-                    supabase_client.table("worlds").insert({
-                        "creator_id": st.session_state.user.id,
-                        "world_name": engine["world_name"],
-                        "world_genre": engine["world_genre"]
-                    }).execute()
-                    st.toast("🟢 Alternate timeline successfully published to the global discovery matrix!")
-                else:
-                    st.warning("This timeline name has already been logged by the grid core.")
-            except Exception as e:
-                st.error(f"Publish Error: {e}")
-        st.divider()
-    
-    # HIGH-CONTRAST SECURE APPLICATION PARAMETERS TAB
-    with st.expander("⚙️ SETTINGS CONTROL"):
-        st.caption("🔒 Sandbox Platform Environment Stable")
-        st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
-        
-    st.divider()
-    
-    # DYNAMIC AUTHENTICATION ACTION DECK FOR SIDEBAR
-    if "user" in st.session_state:
-        if st.button("🚪 LOG OUT ACCOUNT", type="primary", key="main_hub_profile_logout_gate"
-, use_container_width=True):
-            supabase_client.auth.sign_out()
-            st.session_state.clear()
-            st.rerun()
-    else:
-        st.info("💡 Want unlimited actions or to save custom timelines?")
+        st.info("💡 Want unlimited actions?")
         if st.button("🔑 SIGN IN / SIGN UP", key="sidebar_auth_gateway_redirect", use_container_width=True):
-            st.session_state.active_tab_idx = 4
-            st.rerun()
-
+            st.toast("⚡ Head over to your 'Account Profile' hub tab right on the main panel to log in or register instantly.")
 # 6. BALA DISCOVERY CORE ARCHITECTURE
 if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
@@ -354,7 +176,6 @@ if not engine["world_name"]:
     tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
         "Explore Universes", "My Creations", "Create a World", "Community Avatars", "Account Profile"
     ])
-
     
     with tab_explore:
         # Multi-genre discovery selection tabs initialized directly within the explore scope
@@ -372,15 +193,10 @@ if not engine["world_name"]:
                         with cols_ai[index % 2]:
                             st.markdown(f"""
                             <div class="premium-discovery-card">
-                                <div class="card-visual-header">
-                                    <span style='font-size: 40px; opacity: 0.6;'>🪐</span>
-                                </div>
-                                <div class="card-bottom-deck">
-                                    <div>
-                                        <h4 style='margin:0 0 6px 0;'>{world_row['world_name'].upper()}</h4>
-                                        <p style='color: #a78bfa; font-size: 12px; font-weight: bold; margin:0 0 10px 0;'>THEMATIC GENRE: {world_row['world_genre'].upper()}</p>
-                                        <p style='color: #94a3b8; font-size: 14px; margin:0 0 16px 0;'>A custom alternate timeline forged by an active player sandbox node.</p>
-                                    </div>
+                                <div style="padding:20px;">
+                                    <h4>🪐 {world_row['world_name'].upper()}</h4>
+                                    <p style='color: #a78bfa; font-size: 12px; font-weight: bold;'>THEMATIC GENRE: {world_row['world_genre'].upper()}</p>
+                                    <p style='color: #94a3b8; font-size: 14px;'>A custom alternate timeline forged by an active player sandbox node.</p>
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
@@ -400,23 +216,16 @@ if not engine["world_name"]:
             st.markdown("### Curated Cyberpunk Realities")
             cyber_presets = [
                 {"id": "c1", "name": "Neo-Tokyo Runner", "bio": "High-stakes tech espionage, corporate warfare, and neon-lit street racing.", "char": "Ren Tanaka", "story": "A street racer with a corporate data package hardwired into his skull."},
-                {"id": "c2", "name": "Gridlock Underground", "bio": "Hack deep mainframe grids and lead a digital rebellion against mega-corps.", "char": "Echo", "story": "A phantom hacker who lives inside deep mainframe server nodes."},
-                {"id": "c3", "name": "Synapse Overdrive", "bio": "Infiltrate neural networks inside a rain-slicked mega city.", "char": "Vector", "story": "A rogue matrix decker searching for a wiped memory file."},
-                {"id": "c4", "name": "Neon Syndicate", "bio": "Navigate black markets and yakuza backrooms to secure illicit tech implants.", "char": "Jaxon", "story": "A street-level fixer brokering dirty bio-mods to local crews."}
+                {"id": "c2", "name": "Gridlock Underground", "bio": "Hack deep mainframe grids and lead a digital rebellion against mega-corps.", "char": "Echo", "story": "A phantom hacker who lives inside deep mainframe server nodes."}
             ]
             cols_cyber = st.columns(2)
             for index, p in enumerate(cyber_presets):
                 with cols_cyber[index % 2]:
                     st.markdown(f"""
                     <div class="premium-discovery-card">
-                        <div class="card-visual-header">
-                            <span style='font-size: 40px; opacity: 0.6;'>🏙️</span>
-                        </div>
-                        <div class="card-bottom-deck">
-                            <div>
-                                <h4 style='margin:0 0 10px 0;'>{p['name'].upper()}</h4>
-                                <p style='color: #94a3b8; font-size: 14px; margin:0 0 16px 0;'>{p['bio']}</p>
-                            </div>
+                        <div style="padding:20px;">
+                            <h4>🏙️ {p['name'].upper()}</h4>
+                            <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -428,21 +237,116 @@ if not engine["world_name"]:
                         char["backstory"] = p["story"]
                         st.rerun()
 
-            
+        with sub_fantasy:
+            st.markdown("### Curated Dark Fantasy Realities")
+            fantasy_presets = [
+                {"id": "f1", "name": "Vampire Nomad", "bio": "Navigate exile, bloodlines, and dark covens in a gothic world of endless night.", "char": "Kaelen Voss", "story": "An ancient rogue vampire cast out of the High Court, hunting bounty squads."},
+                {"id": "f2", "name": "Ashelands Renegade", "bio": "A tactical swords-and-sorcery survival gauntlet across a ruined kingdom.", "char": "Gideon Black", "story": "A weathered mercenary carrying a broken crown across fields of ash."}
+            ]
+            cols_fant = st.columns(2)
+            for index, p in enumerate(fantasy_presets):
+                with cols_fant[index % 2]:
+                    st.markdown(f"""
+                    <div class="premium-discovery-card">
+                        <div style="padding:20px;">
+                            <h4>🧙 {p['name'].upper()}</h4>
+                            <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
+                        engine["world_id"] = f"pre_fant_{p['id']}"
+                        engine["world_name"] = p["name"]
+                        engine["world_genre"] = "Dark Fantasy"
+                        char["name"] = p["char"]
+                        char["backstory"] = p["story"]
+                        st.rerun()
+        with sub_horror:
+            st.markdown("### Curated Horror Realities")
+            horror_presets = [
+                {"id": "h1", "name": "Asylum Phantoms", "bio": "Escape an abandoned psychiatric hospital while tracking sanity meters.", "char": "Arthur Vance", "story": "An investigative journalist locked inside an asylum wing with moving shadows."},
+                {"id": "h2", "name": "Cabin Isolation", "bio": "Survive a night in a remote woodland estate stalked by masked cultists.", "char": "Sarah", "story": "A standard hiker forced to fortify a hunting cabin before midnight strikes."}
+            ]
+            cols_horror = st.columns(2)
+            for index, p in enumerate(horror_presets):
+                with cols_horror[index % 2]:
+                    st.markdown(f"""
+                    <div class="premium-discovery-card">
+                        <div style="padding:20px;">
+                            <h4>🩸 {p['name'].upper()}</h4>
+                            <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
+                        engine["world_id"] = f"pre_horror_{p['id']}"
+                        engine["world_name"] = p["name"]
+                        engine["world_genre"] = "Horror"
+                        char["name"] = p["char"]
+                        char["backstory"] = p["story"]
+                        st.rerun()
+
+        with sub_romance:
+            st.markdown("### Curated Romance Realities")
+            romance_presets = [
+                {"id": "r1", "name": "Neon Heartbeats", "bio": "A high-stakes corporate romance tangled inside a Tokyo cyber espionage ring.", "char": "Leo Cruz", "story": "A security auditor falling for the rival terminal hacker assigned to clear his deck."},
+                {"id": "r2", "name": "Starlight Station", "bio": "Find love and connection at the absolute edge of an expanding galaxy.", "char": "Elena", "story": "A deep-space botanist stationed on a lonely supply node with a rogue freighter captain."}
+            ]
+            cols_romance = st.columns(2)
+            for index, p in enumerate(romance_presets):
+                with cols_romance[index % 2]:
+                    st.markdown(f"""
+                    <div class="premium-discovery-card">
+                        <div style="padding:20px;">
+                            <h4>❤️ {p['name'].upper()}</h4>
+                            <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
+                        engine["world_id"] = f"pre_rom_{p['id']}"
+                        engine["world_name"] = p["name"]
+                        engine["world_genre"] = "Romance"
+                        char["name"] = p["char"]
+                        char["backstory"] = p["story"]
+                        st.rerun()
+
+        with sub_scifi:
+            st.markdown("### Curated Sci-Fi Realities")
+            scifi_presets = [
+                {"id": "s1", "name": "Sector 7 Nomad", "bio": "Grit, survival, and starship dogfights across an outlaw solar system.", "char": "Pilot Vance", "story": "A disgraced military pilot running illicit scrap metal through asteroid fields."},
+                {"id": "s2", "name": "Chronos Station", "bio": "A psychological thriller aboard a deep-space station stuck in a time anomaly.", "char": "Dr. Aris", "story": "The chief technician investigating a quantum pulse that locked the terminal clock."}
+            ]
+            cols_scifi = st.columns(2)
+            for index, p in enumerate(scifi_presets):
+                with cols_scifi[index % 2]:
+                    st.markdown(f"""
+                    <div class="premium-discovery-card">
+                        <div style="padding:20px;">
+                            <h4>🚀 {p['name'].upper()}</h4>
+                            <p style='color: #94a3b8; font-size: 14px;'>{p['bio']}</p>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("Launch Scenario", key=f"btn_{p['id']}", use_container_width=True):
+                        engine["world_id"] = f"pre_scifi_{p['id']}"
+                        engine["world_name"] = p["name"]
+                        engine["world_genre"] = "Sci-Fi"
+                        char["name"] = p["char"]
+                        char["backstory"] = p["story"]
+                        st.rerun()
     with tab_my_creations:
         st.markdown("### Your Private Universes")
         if "user" in st.session_state:
-            # Enforce an explicit tab focus reset the second they load into their space panels
-            st.session_state.active_tab_idx = 1
             try:
                 my_worlds = supabase_client.table("worlds").select("*").eq("creator_id", st.session_state.user.id).order("created_at", desc=True).execute()
                 if my_worlds.data:
                     for index, my_row in enumerate(my_worlds.data):
                         st.markdown(f"""
                         <div class="premium-discovery-card">
-                            <div class="card-bottom-deck">
-                                <h4 style='margin:0 0 6px 0;'>🪐 {my_row['world_name'].upper()}</h4>
-                                <p style='color: #a78bfa; font-size: 13px; font-weight: bold; margin:0;'>THEMATIC GENRE: {my_row['world_genre'].upper()}</p>
+                            <div style="padding:20px;">
+                                <h4>🪐 {my_row['world_name'].upper()}</h4>
+                                <p style='color: #a78bfa; font-size: 13px; font-weight: bold;'>THEMATIC GENRE: {my_row['world_genre'].upper()}</p>
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -457,7 +361,6 @@ if not engine["world_name"]:
                                 char["backstory"] = "A traveler stepping directly back into their verified alternate reality timeline checkpoint."
                                 st.rerun()
                         with cols_actions[1]:
-                            # THE ULTIMATE HARD PURGE GATEWAY: Destroys user saves AND community references at once
                             if st.button("🗑️ Delete World", key=f"purge_{my_row['id']}_{index}", type="primary", use_container_width=True):
                                 try:
                                     supabase_client.table("worlds").delete().eq("id", my_row["id"]).execute()
@@ -545,13 +448,12 @@ if not engine["world_name"]:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
-
                 
     with tab_profile:
         st.markdown("### User Authentication Center")
         if "user" in st.session_state:
             st.success(f"👑 Secure Profile Synchronized: `{st.session_state.user.email}`")
-            if st.button("🚪 Log Out of Platform Account", type="primary", key="logout_btn_main", use_container_width=True):
+            if st.button("🚪 Log Out of Platform Account", type="primary", key="main_hub_profile_logout_gate", use_container_width=True):
                 supabase_client.auth.sign_out()
                 st.session_state.clear()
                 st.rerun()
@@ -568,7 +470,7 @@ if not engine["world_name"]:
                     except Exception as e:
                         st.error(f"Error: {e}")
             elif auth_mode == "Sign In":
-                if st.button("🔓 Authenticate Profile", use_container_width=True):
+                if st.button("🔓 Authenticate Profile", key="main_hub_auth_gateway_redirect", use_container_width=True):
                     try:
                         session_data = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
                         st.session_state.user = session_data.user
@@ -582,49 +484,21 @@ if not engine["world_name"]:
 st.markdown("""
 <style>
     .chat-row-user {
-        display: flex;
-        justify-content: flex-end;
-        align-items: flex-start;
-        margin: 10px 0px;
-        gap: 10px;
+        display: flex; justify-content: flex-end; align-items: flex-start; margin: 10px 0px; gap: 10px;
     }
     .chat-row-ai {
-        display: flex;
-        justify-content: flex-start;
-        align-items: flex-start;
-        margin: 10px 0px;
-        gap: 10px;
+        display: flex; justify-content: flex-start; align-items: flex-start; margin: 10px 0px; gap: 10px;
     }
-    .avatar-box {
-        font-size: 24px;
-        padding-top: 4px;
-        user-select: none;
-    }
+    .avatar-box { font-size: 24px; padding-top: 4px; user-select: none; }
     .glass-bubble-user {
-        background-color: rgba(255, 75, 75, 0.12);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 75, 75, 0.2);
-        border-radius: 16px 16px 2px 16px;
-        padding: 12px 16px;
-        color: #ffffff;
-        font-size: 15px;
-        max-width: 70%;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        text-align: left;
+        background-color: rgba(255, 75, 75, 0.12); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 75, 75, 0.2); border-radius: 16px 16px 2px 16px;
+        padding: 12px 16px; color: #ffffff; font-size: 15px; max-width: 70%; text-align: left;
     }
     .glass-bubble-ai {
-        background-color: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px 16px 16px 2px;
-        padding: 12px 16px;
-        color: #f0f2f6;
-        font-size: 15px;
-        max-width: 70%;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        text-align: left;
+        background-color: rgba(255, 255, 255, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px 16px 16px 2px;
+        padding: 12px 16px; color: #f0f2f6; font-size: 15px; max-width: 70%; text-align: left;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -645,8 +519,7 @@ if not is_premium_active and not has_trial_tokens:
                     'price_data': {
                         'currency': 'usd',
                         'product_data': {'name': 'Haymaker Unlimited Pass'},
-                        'unit_amount': 1000, 
-                        'recurring': {'interval': 'week'} 
+                        'unit_amount': 1000, 'recurring': {'interval': 'week'}
                     },
                     'quantity': 1,
                 }],
@@ -682,7 +555,6 @@ with chat_canvas_context:
                 <div class="glass-bubble-ai">{clean_text}</div>
             </div>
             """, unsafe_allow_html=True)
-
 # 8. INITIAL COSMOS ENTRY SCENE SPARK (VERIFIED ZERO-INDEX CHOICE MAPPING)
 if not engine["story_log"]:
     with st.spinner("⏳ Simulating initial cosmos entry scene..."):
@@ -703,7 +575,7 @@ if not engine["story_log"]:
             max_tokens=100,
             temperature=0.7
         )
-        initial_story = response.choices[0].message.content
+        initial_story = response.choices.message.content
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
@@ -754,8 +626,8 @@ if user_action:
         chat_placeholder = st.empty()
         raw_ai_text = ""
         for chunk in stream_response:
-            if chunk.choices and len(chunk.choices) > 0 and chunk.choices[0].delta.content:
-                raw_ai_text += chunk.choices[0].delta.content
+            if chunk.choices and len(chunk.choices) > 0 and chunk.choices.delta.content:
+                raw_ai_text += chunk.choices.delta.content
                 # Synchronous UI typewriter engine feeding the flexbox wrappers live
                 chat_placeholder.markdown(f"""
                 <div class="chat-row-ai">
