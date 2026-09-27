@@ -277,9 +277,10 @@ if not engine["world_name"]:
     if "active_tab_idx" not in st.session_state:
         st.session_state.active_tab_idx = 0
 
-    tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
+        tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
         "Explore Universes", "My Creations", "Create a World", "Community Avatars", "Account Profile"
-    ], selected_index=st.session_state.active_tab_idx)
+    ])
+
 
     
     with tab_explore:
