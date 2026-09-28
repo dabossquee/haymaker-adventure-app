@@ -9,6 +9,10 @@ from dotenv import load_dotenv
 
 # 1. CORE ENGINE PAGE INITIALIZATION
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
+# INITIALIZE AUDIO CHANNELS & BACKGROUND MUSIC TRACK CACHE
+if "audio_state" not in st.session_state:
+    st.session_state.audio_state = {"playing": True, "track_url": "https://soundhelix.com"} # Free, secure placeholder synthwave loop
+
 
 # GLOBAL THEME DESIGN: High-Contrast Modern Tech Dynamic UI Skin
 st.markdown("""
@@ -199,7 +203,40 @@ with st.sidebar:
     
     st.divider()
     
+
     # SETTINGS SUB CONTAINER
+    # 🎵 SYSTEM AUDIO MATRICES DECK
+    with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            if st.session_state.audio_state["playing"]:
+                if st.button("🔇 Mute Audio", use_container_width=True, key="btn_mute_audio_chan"):
+                    st.session_state.audio_state["playing"] = False
+                    st.rerun()
+            else:
+                if st.button("🔊 Play Audio", use_container_width=True, key="btn_play_audio_chan"):
+                    st.session_state.audio_state["playing"] = True
+                    st.rerun()
+        with col_m2:
+            if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
+                # Automatically loops through alternative high-quality background ambient sound nodes
+                current_track = st.session_state.audio_state["track_url"]
+                next_track = "https://soundhelix.com" if "Song-1" in current_track else "https://soundhelix.com"
+                st.session_state.audio_state["track_url"] = next_track
+                st.session_state.audio_state["playing"] = True
+                st.rerun()
+                
+        # Hidden native HTML audio playback injector loop node
+        if st.session_state.audio_state["playing"]:
+            st.markdown(f"""
+                <iframe src="{st.session_state.audio_state['track_url']}" allow="autoplay" style="display:none;" id="iframe_audio_node"></iframe>
+                <audio autoplay loop><source src="{st.session_state.audio_state['track_url']}" type="audio/mp3"></audio>
+                <p style='font-size: 11px; text-align: center; color: #475569; margin: 5px 0 0 0;'>Status: Ambient Stream Synchronized Active 🟢</p>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 5px 0 0 0;'>Status: Stream Paused/Muted 🔴</p>", unsafe_allow_html=True)
+
+
     with st.expander("⚙️ SETTINGS CONTROL"):
         st.caption("🔒 Sandbox Platform Environment Stable")
         st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
