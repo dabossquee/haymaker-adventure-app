@@ -190,7 +190,8 @@ with st.sidebar:
     
     st.divider()
 
-    # 🎵 SYSTEM AUDIO MATRICES DECK
+    
+        # 🎵 SYSTEM AUDIO MATRICES DECK (ADVANCED CONTINUOUS BACKGROUND CAMPAIGN STREAMER)
     with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
         col_m1, col_m2 = st.columns(2)
         with col_m1:
@@ -210,20 +211,43 @@ with st.sidebar:
                 st.session_state.audio_state["playing"] = True
                 st.rerun()
                 
+        # Advanced Persisted Session HTML5 Injection Framework to track audio timestamps across page reruns
         if st.session_state.audio_state["playing"]:
-            st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
-            st.caption("🔊 Press play above to authorize your custom stream")
+            track_source = st.session_state.audio_state['track_url']
+            st.markdown(f"""
+                <div style="text-align: center; margin-top: 10px;">
+                    <audio id="global-ambient-deck" src="{track_source}" controls loop style="width: 100%; max-height: 32px;"></audio>
+                    <p style='font-size: 11px; color: #334155; font-weight: bold; margin: 8px 0 0 0;'>🔊 Audio stream synchronized and locked active</p>
+                    <script>
+                        var audioEl = document.getElementById("global-ambient-deck");
+                        if (audioEl) {{
+                            // Retrieve exact audio timestamp and volume state from current browser session cache
+                            var savedTime = sessionStorage.getItem("haymaker_audio_time");
+                            var savedSrc = sessionStorage.getItem("haymaker_audio_src");
+                            
+                            // Re-apply past timeline tracking coordinates seamlessly if the track matching is identical
+                            if (savedSrc === "{track_source}" && savedTime) {{
+                                audioEl.currentTime = parseFloat(savedTime);
+                            }}
+                            
+                            // Auto-authorize execution streams instantly upon browser container approval
+                            audioEl.play().catch(function(e) {{ console.log("Autoplay approval pending"); }});
+                            
+                            // Continually save active tracking positions across every microsecond to protect against page updates
+                            setInterval(function() {{
+                                if (!audioEl.paused) {{
+                                    sessionStorage.setItem("haymaker_audio_time", audioEl.currentTime);
+                                    sessionStorage.setItem("haymaker_audio_src", "{track_source}");
+                                }}
+                            }}, 250);
+                        }}
+                    </script>
+                </div>
+            """, unsafe_allow_html=True)
         else:
             st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
+            st.markdown("""<script>sessionStorage.removeItem("haymaker_audio_time");</script>""", unsafe_allow_html=True)
 
-    st.divider()
-    
-    # SETTINGS SUB CONTAINER
-    with st.expander("⚙️ SETTINGS CONTROL"):
-        st.caption("🔒 Sandbox Platform Environment Stable")
-        st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
-        
-    st.divider()
     
     # SIDEBAR LOGIN & LOGOUT TOGGLE CONTROLS
     if "user" in st.session_state:
