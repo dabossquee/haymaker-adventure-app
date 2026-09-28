@@ -208,19 +208,8 @@ with st.sidebar:
     
 
     # SETTINGS SUB CONTAINER
-    # 🎵 SYSTEM AUDIO MATRICES DECK
-    with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            if st.session_state.audio_state["playing"]:
-                if st.button("🔇 Mute Audio", use_container_width=True, key="btn_mute_audio_chan"):
-                    st.session_state.audio_state["playing"] = False
-                    st.rerun()
-            else:
-                if st.button("🔊 Play Audio", use_container_width=True, key="btn_play_audio_chan"):
-                    st.session_state.audio_state["playing"] = True
-                    st.rerun()
-        with col_m2:
+  
+    with col_m2:
             if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
                 # Automatically loops through alternative high-quality background ambient sound nodes
                 current_track = st.session_state.audio_state["track_url"]
@@ -231,12 +220,12 @@ with st.sidebar:
                 
         # Hidden native HTML audio playback injector loop node
                         # 🎛️ NATIVE AUDIO INTERFACE CONTROL BOARD
-        if st.session_state.audio_state["playing"]:
+    if st.session_state.audio_state["playing"]:
             # Streamlit's official built-in player that safely streams web tracks with zero errors
             st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
             st.caption("🔊 Click play on the official media deck above to activate audio")
-        else:
-            st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
+    else:
+        st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
 
 
     with st.expander("⚙️ SETTINGS CONTROL"):
