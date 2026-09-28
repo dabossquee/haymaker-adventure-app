@@ -227,14 +227,17 @@ with st.sidebar:
                 st.rerun()
                 
         # Hidden native HTML audio playback injector loop node
+                # 🎛️ NATIVE AUDIO INTERFACE CONTROL BOARD
         if st.session_state.audio_state["playing"]:
             st.markdown(f"""
-                <iframe src="{st.session_state.audio_state['track_url']}" allow="autoplay" style="display:none;" id="iframe_audio_node"></iframe>
-                <audio autoplay loop><source src="{st.session_state.audio_state['track_url']}" type="audio/mp3"></audio>
-                <p style='font-size: 11px; text-align: center; color: #475569; margin: 5px 0 0 0;'>Status: Ambient Stream Synchronized Active 🟢</p>
+                <div style="text-align: center; margin-top: 10px;">
+                    <audio src="{st.session_state.audio_state['track_url']}" controls loop style="width: 100%; max-height: 32px;"></audio>
+                    <p style='font-size: 11px; color: #334155; font-weight: bold; margin: 8px 0 0 0;'>🔊 Click play above to authorize audio channel</p>
+                </div>
             """, unsafe_allow_html=True)
         else:
-            st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 5px 0 0 0;'>Status: Stream Paused/Muted 🔴</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
+
 
 
     with st.expander("⚙️ SETTINGS CONTROL"):
