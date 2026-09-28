@@ -9,13 +9,13 @@ from dotenv import load_dotenv
 
 # 1. CORE ENGINE PAGE INITIALIZATION
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
+
 # 🎵 LOCAL CUSTOM AUDIOSCAPE STORAGE INITIALIZATION
 if "audio_state" not in st.session_state:
     st.session_state.audio_state = {
         "playing": True, 
-        "track_url": "assets/menu_theme.mp3"  # Points to your custom local file!
+        "track_url": "assets/menu_theme.mp3"  # Points to your fresh custom campaign file!
     }
-
 
 # GLOBAL THEME DESIGN: High-Contrast Modern Tech Dynamic UI Skin
 st.markdown("""
@@ -79,17 +79,7 @@ st.markdown("""
     .stButton > button:hover {
         color: #ffffff !important; background: linear-gradient(180deg, #7c5dfa 0%, #5b21b6 100%) !important;
     }
-        /* 🎬 CINEMATIC WIDESCREEN LIVE CANVAS COVER ART */
-    .live-canvas-cover {
-        width: 100% !important;
-        max-height: 280px !important;
-        object-fit: cover !important;
-        border-radius: 18px !important;
-        border: 1px solid rgba(124, 93, 250, 0.2);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-        margin-bottom: 20px !important;
-    }
-        /* 🌌 IMMERSIVE LIVE CANVAS BACKGROUND OVERLAY MATRIX */
+    /* 🌌 IMMERSIVE LIVE CANVAS BACKGROUND OVERLAY MATRIX */
     .immersive-chat-viewport {
         background-position: center !important;
         background-size: cover !important;
@@ -100,7 +90,6 @@ st.markdown("""
         box-shadow: inset 0 0 100px rgba(0,0,0,0.85), 0 20px 40px rgba(0,0,0,0.6) !important;
         margin-top: 16px !important;
     }
-
     /* Translucent frosted glass effect to keep reading text crisp and legible over any artwork */
     .glass-frosted-scroller {
         background-color: rgba(5, 3, 10, 0.75) !important;
@@ -110,8 +99,6 @@ st.markdown("""
         padding: 20px !important;
         border: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
-
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -168,8 +155,8 @@ char = engine["player_character"]
 with st.sidebar:
     st.title("STATUS CONTROL")
     st.divider()
-
-        # 🚪 HOME TERMINAL ESCAPE GATEWAY
+    
+    # 🚪 HOME TERMINAL ESCAPE GATEWAY
     if engine["world_name"]:
         if st.button("🚪 ABANDON TIMELINE (HOME HUB)", type="secondary", key="sidebar_exit_timeline_gate", use_container_width=True):
             st.session_state.world_engine = {
@@ -177,14 +164,11 @@ with st.sidebar:
                 "player_character": {"name": "", "backstory": "", "health": 100, "inventory": ["survival gear"]},
                 "story_log": []
             }
-            # Cleanly wipe the active visual background cover cache upon exiting the space
             if "world_cover_url" in st.session_state:
                 st.session_state.world_cover_url = "https://picsum.photos"
             st.rerun()
-            
         st.divider()
-
-    
+        
     # TOKEN COUNTER CHECKS
     if "user" in st.session_state:
         st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
@@ -205,32 +189,9 @@ with st.sidebar:
     st.markdown(f"<p style='text-align: center; font-size: 16px; margin: 0;'>Dreamer: <span style='font-weight: 800; color: #4c1d95;'>{display_username}</span></p>", unsafe_allow_html=True)
     
     st.divider()
-    
 
-    # SETTINGS SUB CONTAINER
-  
-    with col_m2:
-            if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
-                # Automatically loops through alternative high-quality background ambient sound nodes
-                current_track = st.session_state.audio_state["track_url"]
-                next_track = "https://google.com" if "ambient_hum" in current_track else "https://google.com"
-                st.session_state.audio_state["track_url"] = next_track
-                st.session_state.audio_state["playing"] = True
-                st.rerun()
-                
-        # Hidden native HTML audio playback injector loop node
-                        # 🎛️ NATIVE AUDIO INTERFACE CONTROL BOARD
-    if st.session_state.audio_state["playing"]:
-            # Streamlit's official built-in player that safely streams web tracks with zero errors
-            st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
-            st.caption("🔊 Click play on the official media deck above to activate audio")
-    else:
-        st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
-
-
-    with st.expander("⚙️ SETTINGS CONTROL"):
-            # 🎵 SYSTEM AUDIO MATRICES DECK
-     with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
+    # 🎵 SYSTEM AUDIO MATRICES DECK
+    with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
         col_m1, col_m2 = st.columns(2)
         with col_m1:
             if st.session_state.audio_state["playing"]:
@@ -244,19 +205,21 @@ with st.sidebar:
         with col_m2:
             if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
                 current_track = st.session_state.audio_state["track_url"]
-                # Seamlessly swaps between your two custom local files
                 next_track = "assets/adventure_loop.mp3" if "menu_theme" in current_track else "assets/menu_theme.mp3"
                 st.session_state.audio_state["track_url"] = next_track
                 st.session_state.audio_state["playing"] = True
                 st.rerun()
                 
-        # Native Streamlit audio player optimized for local repository tracks
         if st.session_state.audio_state["playing"]:
             st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
             st.caption("🔊 Press play above to authorize your custom stream")
         else:
             st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
 
+    st.divider()
+    
+    # SETTINGS SUB CONTAINER
+    with st.expander("⚙️ SETTINGS CONTROL"):
         st.caption("🔒 Sandbox Platform Environment Stable")
         st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
         
@@ -511,13 +474,12 @@ if not engine["world_name"]:
                 st.rerun()
             else:
                 st.warning("⚠️ Fill out the architectural inputs to launch.")
-                
     with tab_avatars:
         st.markdown("### Community Avatars Portal")
         st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
         
         cols_avatars = st.columns(3)
-        with cols_avatars[0]:
+        with cols_avatars:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
             st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
@@ -529,7 +491,7 @@ if not engine["world_name"]:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
-        with cols_avatars[1]:
+        with cols_avatars:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
             st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
@@ -541,7 +503,7 @@ if not engine["world_name"]:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
-        with cols_avatars[2]:
+        with cols_avatars:
             st.markdown("#### 👤 VALERIUS THE EXILE")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
             st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
@@ -575,7 +537,7 @@ if not engine["world_name"]:
                     except Exception as e:
                         st.error(f"Error: {e}")
             elif auth_mode == "Sign In":
-                if st.button("🔓 Authenticate Profile", key="main_hub_auth_gateway_redirect", use_container_width=True):
+                if st.button("🔓 Authenticate Profile", key="main_hub_auth_gateway_click", use_container_width=True):
                     try:
                         session_data = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
                         st.session_state.user = session_data.user
@@ -636,7 +598,7 @@ if not is_premium_active and not has_trial_tokens:
 # 8. INITIAL COSMOS ENTRY SCENE SPARK (WITH VALID DALL-E 3 GENERATION)
 if not engine["story_log"]:
     if "world_cover_url" not in st.session_state:
-        st.session_state.world_cover_url = "https://picsum.photos" # Default clean fallback state
+        st.session_state.world_cover_url = "https://picsum.photos"
 
     with st.spinner("⏳ Simulating initial cosmos entry scene & forging visual assets..."):
         try:
@@ -649,7 +611,6 @@ if not engine["story_log"]:
                 quality="standard"
             )
             st.session_state.world_cover_url = img_response.data[0].url
-
         except Exception as img_err:
             st.warning(f"Visual Grid Warning: Defaulting to standard theme skin. ({img_err})")
 
@@ -772,5 +733,4 @@ if user_action:
     engine["story_log"].append({"role": "assistant", "content": raw_ai_text})
     st.rerun()
 
-# Cleanly seal our custom HTML viewport scroller tags at script termination
 st.markdown('</div></div>', unsafe_allow_html=True)
