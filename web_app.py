@@ -191,13 +191,11 @@ with st.sidebar:
     st.divider()
 
     
-               # 🎵 DYNAMIC SYSTEM AUDIO MATRICES DECK
+       # 🎵 DYNAMIC SYSTEM AUDIO MATRICES DECK
     with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
         if not engine["world_name"]:
-            # Displayed ONLY on the main menu hub screen to keep the interface clean
             st.markdown("<p style='text-align: center; font-size: 13px; color: #334155; font-weight: bold; margin: 5px 0;'>✨ To listen to music, join or forge a world timeline</p>", unsafe_allow_html=True)
         else:
-            # Active controls unlock seamlessly the exact millisecond a user launches a scenario
             col_m1, col_m2 = st.columns(2)
             with col_m1:
                 if st.session_state.audio_state["playing"]:
@@ -208,37 +206,34 @@ with st.sidebar:
                     if st.button("🔊 Play Audio", use_container_width=True, key="btn_play_audio_chan"):
                         st.session_state.audio_state["playing"] = True
                         st.rerun()
-        with col_m2:
-            if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
-                # Define our master 11-track general post-rock campaign playlist map array
-                playlist_deck = [
-                    "assets/menu_theme.mp3",
-                    "assets/adventure_loop.mp3",
-                    "assets/track_1.mp3", "assets/track_2.mp3", 
-                    "assets/track_3.mp3", "assets/track_4.mp3",
-                    "assets/track_5.mp3", "assets/track_6.mp3",
-                    "assets/track_7.mp3", "assets/track_8.mp3"
-                ]
-                
-                # Check what song is playing, find its position, and slide to the next track index cleanly
-                current_track = st.session_state.audio_state["track_url"]
-                try:
-                    current_index = playlist_deck.index(current_track)
-                    next_index = (current_index + 1) % len(playlist_deck)
-                except ValueError:
-                    next_index = 0 # Safe fallback position if state hits an unmapped path
-                
-                # Verify the file actually exists inside the assets folder before trying to load it
-                chosen_track = playlist_deck[next_index]
-                if os.path.exists(chosen_track):
-                    st.session_state.audio_state["track_url"] = chosen_track
-                else:
-                    # If any track hasn't been copied over yet, safely snap back to your primary theme track loop
-                    st.session_state.audio_state["track_url"] = "assets/menu_theme.mp3"
+                        
+            with col_m2:
+                if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
+                    # Define our master 11-track general post-rock campaign playlist map array
+                    playlist_deck = [
+                        "assets/menu_theme.mp3",
+                        "assets/adventure_loop.mp3",
+                        "assets/track_1.mp3", "assets/track_2.mp3", 
+                        "assets/track_3.mp3", "assets/track_4.mp3",
+                        "assets/track_5.mp3", "assets/track_6.mp3",
+                        "assets/track_7.mp3", "assets/track_8.mp3"
+                    ]
                     
-                st.session_state.audio_state["playing"] = True
-                st.rerun()
-
+                    current_track = st.session_state.audio_state["track_url"]
+                    try:
+                        current_index = playlist_deck.index(current_track)
+                        next_index = (current_index + 1) % len(playlist_deck)
+                    except ValueError:
+                        next_index = 0
+                    
+                    chosen_track = playlist_deck[next_index]
+                    if os.path.exists(chosen_track):
+                        st.session_state.audio_state["track_url"] = chosen_track
+                    else:
+                        st.session_state.audio_state["track_url"] = "assets/menu_theme.mp3"
+                        
+                    st.session_state.audio_state["playing"] = True
+                    st.rerun()
                     
             if st.session_state.audio_state["playing"]:
                 st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
