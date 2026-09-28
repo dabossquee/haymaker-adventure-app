@@ -226,17 +226,13 @@ with st.sidebar:
                 st.rerun()
                 
         # Hidden native HTML audio playback injector loop node
-                # 🎛️ NATIVE AUDIO INTERFACE CONTROL BOARD
+                        # 🎛️ NATIVE AUDIO INTERFACE CONTROL BOARD
         if st.session_state.audio_state["playing"]:
-            st.markdown(f"""
-                <div style="text-align: center; margin-top: 10px;">
-                    <audio src="{st.session_state.audio_state['track_url']}" controls loop style="width: 100%; max-height: 32px;"></audio>
-                    <p style='font-size: 11px; color: #334155; font-weight: bold; margin: 8px 0 0 0;'>🔊 Click play above to authorize audio channel</p>
-                </div>
-            """, unsafe_allow_html=True)
+            # Streamlit's official built-in player that safely streams web tracks with zero errors
+            st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
+            st.caption("🔊 Click play on the official media deck above to activate audio")
         else:
             st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
-
 
 
     with st.expander("⚙️ SETTINGS CONTROL"):
