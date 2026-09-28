@@ -191,69 +191,36 @@ with st.sidebar:
     st.divider()
 
     
-            # 🎵 SYSTEM AUDIO MATRICES DECK (ADVANCED CONTINUOUS BACKGROUND CAMPAIGN STREAMER)
+               # 🎵 DYNAMIC SYSTEM AUDIO MATRICES DECK
     with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            if st.session_state.audio_state["playing"]:
-                if st.button("🔇 Mute Audio", use_container_width=True, key="btn_mute_audio_chan"):
-                    st.session_state.audio_state["playing"] = False
-                    st.rerun()
-            else:
-                if st.button("🔊 Play Audio", use_container_width=True, key="btn_play_audio_chan"):
+        if not engine["world_name"]:
+            # Displayed ONLY on the main menu hub screen to keep the interface clean
+            st.markdown("<p style='text-align: center; font-size: 13px; color: #334155; font-weight: bold; margin: 5px 0;'>✨ To listen to music, join or forge a world timeline</p>", unsafe_allow_html=True)
+        else:
+            # Active controls unlock seamlessly the exact millisecond a user launches a scenario
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                if st.session_state.audio_state["playing"]:
+                    if st.button("🔇 Mute Audio", use_container_width=True, key="btn_mute_audio_chan"):
+                        st.session_state.audio_state["playing"] = False
+                        st.rerun()
+                else:
+                    if st.button("🔊 Play Audio", use_container_width=True, key="btn_play_audio_chan"):
+                        st.session_state.audio_state["playing"] = True
+                        st.rerun()
+            with col_m2:
+                if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
+                    current_track = st.session_state.audio_state["track_url"]
+                    next_track = "assets/adventure_loop.mp3" if "menu_theme" in current_track else "assets/menu_theme.mp3"
+                    st.session_state.audio_state["track_url"] = next_track
                     st.session_state.audio_state["playing"] = True
                     st.rerun()
-        with col_m2:
-            if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
-                current_track = st.session_state.audio_state["track_url"]
-                next_track = "assets/adventure_loop.mp3" if "menu_theme" in current_track else "assets/menu_theme.mp3"
-                st.session_state.audio_state["track_url"] = next_track
-                st.session_state.audio_state["playing"] = True
-                st.rerun()
-                
-        # Advanced Base64 Local File Injection Framework to prevent path errors and persist tracking timestamps across reruns
-        if st.session_state.audio_state["playing"]:
-            import base64
-            track_source = st.session_state.audio_state['track_url']
-            
-            try:
-                # Read the local file bytes and parse into secure inline stream strings to completely bypass browser blocks
-                with open(track_source, "rb") as f_audio:
-                    audio_bytes = f_audio.read()
-                audio_base64 = base64.b64encode(audio_bytes).decode()
-                audio_data_url = f"data:audio/mp3;base64,{audio_base64}"
-                
-                st.markdown(f"""
-                    <div style="text-align: center; margin-top: 10px;">
-                        <audio id="global-ambient-deck" src="{audio_data_url}" controls loop style="width: 100%; max-height: 32px;"></audio>
-                        <p style='font-size: 11px; color: #334155; font-weight: bold; margin: 8px 0 0 0;'>🔊 Audio stream synchronized and locked active</p>
-                        <script>
-                            var audioEl = document.getElementById("global-ambient-deck");
-                            if (audioEl) {{
-                                var savedTime = sessionStorage.getItem("haymaker_audio_time");
-                                var savedSrc = sessionStorage.getItem("haymaker_audio_src");
-                                
-                                if (savedSrc === "{track_source}" && savedTime) {{
-                                    audioEl.currentTime = parseFloat(savedTime);
-                                }}
-                                
-                                audioEl.play().catch(function(e) {{ console.log("Autoplay approval pending"); }});
-                                
-                                setInterval(function() {{
-                                    if (!audioEl.paused) {{
-                                        sessionStorage.setItem("haymaker_audio_time", audioEl.currentTime);
-                                        sessionStorage.setItem("haymaker_audio_src", "{track_source}");
-                                    }}
-                                }}, 250);
-                            }}
-                        </script>
-                    </div>
-                """, unsafe_allow_html=True)
-            except Exception as audio_err:
-                st.error(f"Audio Path Tracking Fault: {audio_err}")
-        else:
-            st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
-            st.markdown("""<script>sessionStorage.removeItem("haymaker_audio_time");</script>""", unsafe_allow_html=True)
+                    
+            if st.session_state.audio_state["playing"]:
+                st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
+                st.caption("🔊 Click play on the official deck to authorize stream")
+            else:
+                st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
 
     
     # SIDEBAR LOGIN & LOGOUT TOGGLE CONTROLS
