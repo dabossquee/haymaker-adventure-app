@@ -578,7 +578,7 @@ if not engine["story_log"]:
         try:
             image_prompt = f"Cinematic widescreen conceptual game concept art for a universe titled '{engine['world_name']}' in the genre of '{engine['world_genre']}'. Moody, atmospheric lighting, ultra-detailed matte painting style, vivid colors, no text, no letters."
             img_response = openai_client.images.generate(
-                model="dall-e-3",
+                model="dall-e-2",
                 prompt=image_prompt,
                 n=1,
                 size="1024x1024", # Returns high-res square master optimized for fluid responsive container clipping
@@ -608,7 +608,7 @@ if not engine["story_log"]:
             max_tokens=100,
             temperature=0.7
         )
-        initial_story = response.choices.message.content
+        initial_story = response.choices[0].message.content
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
