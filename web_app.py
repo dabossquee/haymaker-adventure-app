@@ -161,6 +161,22 @@ char = engine["player_character"]
 with st.sidebar:
     st.title("STATUS CONTROL")
     st.divider()
+
+        # 🚪 HOME TERMINAL ESCAPE GATEWAY
+    if engine["world_name"]:
+        if st.button("🚪 ABANDON TIMELINE (HOME HUB)", type="secondary", key="sidebar_exit_timeline_gate", use_container_width=True):
+            st.session_state.world_engine = {
+                "world_id": None, "world_name": "", "world_genre": "",
+                "player_character": {"name": "", "backstory": "", "health": 100, "inventory": ["survival gear"]},
+                "story_log": []
+            }
+            # Cleanly wipe the active visual background cover cache upon exiting the space
+            if "world_cover_url" in st.session_state:
+                st.session_state.world_cover_url = "https://picsum.photos"
+            st.rerun()
+            
+        st.divider()
+
     
     # TOKEN COUNTER CHECKS
     if "user" in st.session_state:
