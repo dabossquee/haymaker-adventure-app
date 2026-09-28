@@ -11,8 +11,7 @@ from dotenv import load_dotenv
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 # INITIALIZE AUDIO CHANNELS & BACKGROUND MUSIC TRACK CACHE
 if "audio_state" not in st.session_state:
-    st.session_state.audio_state = {"playing": True, "track_url": "https://soundhelix.com"} # Free, secure placeholder synthwave loop
-
+    st.session_state.audio_state = {"playing": True, "track_url": "https://google.com"} # Secure public cloud audio file
 
 # GLOBAL THEME DESIGN: High-Contrast Modern Tech Dynamic UI Skin
 st.markdown("""
@@ -221,7 +220,7 @@ with st.sidebar:
             if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
                 # Automatically loops through alternative high-quality background ambient sound nodes
                 current_track = st.session_state.audio_state["track_url"]
-                next_track = "https://soundhelix.com" if "Song-1" in current_track else "https://soundhelix.com"
+                next_track = "https://google.com" if "ambient_hum" in current_track else "https://google.com"
                 st.session_state.audio_state["track_url"] = next_track
                 st.session_state.audio_state["playing"] = True
                 st.rerun()
