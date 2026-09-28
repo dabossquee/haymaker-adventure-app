@@ -9,9 +9,13 @@ from dotenv import load_dotenv
 
 # 1. CORE ENGINE PAGE INITIALIZATION
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
-# INITIALIZE AUDIO CHANNELS & BACKGROUND MUSIC TRACK CACHE
+# 🎵 LOCAL CUSTOM AUDIOSCAPE STORAGE INITIALIZATION
 if "audio_state" not in st.session_state:
-    st.session_state.audio_state = {"playing": True, "track_url": "https://google.com"} # Secure public cloud audio file
+    st.session_state.audio_state = {
+        "playing": True, 
+        "track_url": "assets/menu_theme.mp3"  # Points to your custom local file!
+    }
+
 
 # GLOBAL THEME DESIGN: High-Contrast Modern Tech Dynamic UI Skin
 st.markdown("""
@@ -236,6 +240,34 @@ with st.sidebar:
 
 
     with st.expander("⚙️ SETTINGS CONTROL"):
+            # 🎵 SYSTEM AUDIO MATRICES DECK
+     with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            if st.session_state.audio_state["playing"]:
+                if st.button("🔇 Mute Audio", use_container_width=True, key="btn_mute_audio_chan"):
+                    st.session_state.audio_state["playing"] = False
+                    st.rerun()
+            else:
+                if st.button("🔊 Play Audio", use_container_width=True, key="btn_play_audio_chan"):
+                    st.session_state.audio_state["playing"] = True
+                    st.rerun()
+        with col_m2:
+            if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
+                current_track = st.session_state.audio_state["track_url"]
+                # Seamlessly swaps between your two custom local files
+                next_track = "assets/adventure_loop.mp3" if "menu_theme" in current_track else "assets/menu_theme.mp3"
+                st.session_state.audio_state["track_url"] = next_track
+                st.session_state.audio_state["playing"] = True
+                st.rerun()
+                
+        # Native Streamlit audio player optimized for local repository tracks
+        if st.session_state.audio_state["playing"]:
+            st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
+            st.caption("🔊 Press play above to authorize your custom stream")
+        else:
+            st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
+
         st.caption("🔒 Sandbox Platform Environment Stable")
         st.markdown("<p style='font-size: 13px; color: #334155; font-style: italic;'>No legal frameworks or terms protocols mapped to this local sandbox node yet.</p>", unsafe_allow_html=True)
         
