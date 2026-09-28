@@ -82,6 +82,28 @@ st.markdown("""
         box-shadow: 0 8px 24px rgba(0,0,0,0.6);
         margin-bottom: 20px !important;
     }
+        /* 🌌 IMMERSIVE LIVE CANVAS BACKGROUND OVERLAY MATRIX */
+    .immersive-chat-viewport {
+        background-position: center !important;
+        background-size: cover !important;
+        background-repeat: no-repeat !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        border: 1px solid rgba(124, 93, 250, 0.15) !important;
+        box-shadow: inset 0 0 100px rgba(0,0,0,0.85), 0 20px 40px rgba(0,0,0,0.6) !important;
+        margin-top: 16px !important;
+    }
+
+    /* Translucent frosted glass effect to keep reading text crisp and legible over any artwork */
+    .glass-frosted-scroller {
+        background-color: rgba(5, 3, 10, 0.75) !important;
+        backdrop-filter: blur(12px) saturate(160%);
+        -webkit-backdrop-filter: blur(12px) saturate(160%);
+        border-radius: 20px !important;
+        padding: 20px !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
 
 </style>
 """, unsafe_allow_html=True)
@@ -494,21 +516,17 @@ if not engine["world_name"]:
 # 7. ACTIVE NARRATIVE DISPLAY CANVAS (COHESIVE iOS FLEX WRAPPERS)
 st.markdown("""
 <style>
-    .chat-row-user {
-        display: flex; justify-content: flex-end; align-items: flex-start; margin: 10px 0px; gap: 10px;
-    }
-    .chat-row-ai {
-        display: flex; justify-content: flex-start; align-items: flex-start; margin: 10px 0px; gap: 10px;
-    }
+    .chat-row-user { display: flex; justify-content: flex-end; align-items: flex-start; margin: 10px 0px; gap: 10px; }
+    .chat-row-ai { display: flex; justify-content: flex-start; align-items: flex-start; margin: 10px 0px; gap: 10px; }
     .avatar-box { font-size: 24px; padding-top: 4px; user-select: none; }
     .glass-bubble-user {
-        background-color: rgba(255, 75, 75, 0.12); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 75, 75, 0.2); border-radius: 16px 16px 2px 16px;
+        background-color: rgba(255, 75, 75, 0.18); backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 75, 75, 0.3); border-radius: 16px 16px 2px 16px;
         padding: 12px 16px; color: #ffffff; font-size: 15px; max-width: 70%; text-align: left;
     }
     .glass-bubble-ai {
-        background-color: rgba(255, 255, 255, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px 16px 16px 2px;
+        background-color: rgba(255, 255, 255, 0.08); backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px 16px 16px 2px;
         padding: 12px 16px; color: #f0f2f6; font-size: 15px; max-width: 70%; text-align: left;
     }
 </style>
@@ -543,7 +561,53 @@ if not is_premium_active and not has_trial_tokens:
             st.error(f"Stripe Error: {e}")
     st.stop()
 
-# Dedicated structural container to force clean chronological rendering order
+# 8. INITIAL COSMOS ENTRY SCENE SPARK (WITH VALID DALL-E 3 GENERATION)
+if not engine["story_log"]:
+    if "world_cover_url" not in st.session_state:
+        st.session_state.world_cover_url = "https://picsum.photos" # Default clean fallback state
+
+    with st.spinner("⏳ Simulating initial cosmos entry scene & forging visual assets..."):
+        try:
+            image_prompt = f"Cinematic widescreen matte game concept background for an alternate reality adventure titled '{engine['world_name']}' in the genre of '{engine['world_genre']}'. Vivid colors, epic landscape, beautiful atmospheric light, zero text, zero labels, high resolution."
+            img_response = openai_client.images.generate(
+                model="dall-e-3",
+                prompt=image_prompt,
+                n=1,
+                size="1024x1024",
+                quality="standard"
+            )
+            st.session_state.world_cover_url = img_response.data[0].url
+        except Exception as img_err:
+            st.warning(f"Visual Grid Warning: Defaulting to standard theme skin. ({img_err})")
+
+        master_prompt = (
+            f"You are the master narrator for a text adventure game called Haymaker.\n"
+            f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
+            f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
+            f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
+            f"⚠️ CRITICAL GAMEPLAY & FORMATTING RULES:\n"
+            f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
+            f"2. Never play for the user or repeat their setup words. Establish the opening scene and stop instantly.\n"
+            f"3. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: **\"Dialogue text here\"** in standard bold."
+        )
+        
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "system", "content": master_prompt}, {"role": "user", "content": "Wake up and look around."}],
+            max_tokens=100,
+            temperature=0.7
+        )
+        initial_story = response.choices.message.content
+        engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
+        engine["story_log"].append({"role": "assistant", "content": initial_story})
+        st.rerun()
+
+# 9. INJECT DYNAMIC IMMERSIVE VISUAL BACKGROUND WINDOW WRAPPER
+bg_url = st.session_state.world_cover_url
+st.markdown(f'<div class="immersive-chat-viewport" style="background-image: url(\'{bg_url}\');">', unsafe_allow_html=True)
+st.markdown('<div class="glass-frosted-scroller">', unsafe_allow_html=True)
+
+# Dedicated structural container to force clean chronological rendering order inside the frosted scroller window
 chat_canvas_context = st.container()
 
 with chat_canvas_context:
@@ -566,57 +630,6 @@ with chat_canvas_context:
                 <div class="glass-bubble-ai">{clean_text}</div>
             </div>
             """, unsafe_allow_html=True)
-# 8. INITIAL COSMOS ENTRY SCENE SPARK (VERIFIED ZERO-INDEX CHOICE MAPPING)
-# 8. INITIAL COSMOS ENTRY SCENE SPARK (WITH AUTOMATED DALL-E 3 COVER GENERATION)
-if not engine["story_log"]:
-    # Check if a live scene cover asset is already cached in memory to save token credits
-    if "world_cover_url" not in st.session_state:
-        st.session_state.world_cover_url = None
-
-    with st.spinner("⏳ Simulating initial cosmos entry scene & forging visual assets..."):
-        # 🟢 ENGINE PASS 1: GENERATE CINEMATIC WIDESCREEN VISUAL COVER VIA DALL-E 3
-        try:
-            image_prompt = f"Cinematic widescreen conceptual game concept art for a universe titled '{engine['world_name']}' in the genre of '{engine['world_genre']}'. Moody, atmospheric lighting, ultra-detailed matte painting style, vivid colors, no text, no letters."
-            img_response = openai_client.images.generate(
-                model="dall-e-2",
-                prompt=image_prompt,
-                n=1,
-                size="1024x1024", # Returns high-res square master optimized for fluid responsive container clipping
-                quality="standard"
-            )
-            st.session_state.world_cover_url = img_response.data[0].url
-        except Exception as img_err:
-            st.warning(f"Visual Grid Warning: Image generation layer bypassed. ({img_err})")
-            # Safe localized stock fallback if your OpenAI key runs out of daily image credits
-            st.session_state.world_cover_url = "https://picsum.photos"
-
-        # 🟣 ENGINE PASS 2: GENERATE NARRATIVE INTRO VIA CHAT COMPLETIONS
-        master_prompt = (
-            f"You are the master narrator for a text adventure game called Haymaker.\n"
-            f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
-            f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
-            f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
-            f"⚠️ CRITICAL GAMEPLAY & FORMATTING RULES:\n"
-            f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
-            f"2. Never play for the user or repeat their setup words. Establish the opening scene and stop instantly.\n"
-            f"3. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: **\"Dialogue text here\"** in standard bold."
-        )
-        
-        response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "system", "content": master_prompt}, {"role": "user", "content": "Wake up and look around."}],
-            max_tokens=100,
-            temperature=0.7
-        )
-        initial_story = response.choices[0].message.content
-        engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
-        engine["story_log"].append({"role": "assistant", "content": initial_story})
-        st.rerun()
-
-# 9. RENDER THE GENERATED WORLD COVER AT THE TOP OF THE ACTIVE CHAT CANVASES
-if getattr(st.session_state, "world_cover_url", None):
-    st.image(st.session_state.world_cover_url, use_container_width=True, caption=f"🪐 Universe Visualizer Checkpoint: {engine['world_name'].upper()}")
-
 
 user_action = st.chat_input("Describe your action or speak...")
 
@@ -626,7 +639,6 @@ if user_action:
         
     engine["story_log"].append({"role": "user", "content": user_action})
     
-    # Render user text bubble onto the display canvas instantly before the heavy network stream launches
     with chat_canvas_context:
         st.markdown(f"""
         <div class="chat-row-user">
@@ -664,16 +676,15 @@ if user_action:
         chat_placeholder = st.empty()
         raw_ai_text = ""
         for chunk in stream_response:
-            if chunk.choices and len(chunk.choices) > 0 and chunk.choices.delta.content:
-                raw_ai_text += chunk.choices.delta.content
-                # Synchronous UI typewriter engine feeding the flexbox wrappers live
+            if chunk.choices and len(chunk.choices) > 0 and chunk.choices[0].delta.content:
+                raw_ai_text += chunk.choices[0].delta.content
                 chat_placeholder.markdown(f"""
                 <div class="chat-row-ai">
                     <div class="avatar-box">🤖</div>
                     <div class="glass-bubble-ai">{raw_ai_text}</div>
                 </div>
                 """, unsafe_allow_html=True)
-                time.sleep(0.07)  # Calibrated slow human-tempo typing delay
+                time.sleep(0.04)
                 
     loot_matches = re.findall(r'\[LOOT:\s*(.*?)\]', raw_ai_text, re.IGNORECASE)
     for item in loot_matches:
@@ -687,3 +698,6 @@ if user_action:
         
     engine["story_log"].append({"role": "assistant", "content": raw_ai_text})
     st.rerun()
+
+# Cleanly seal our custom HTML viewport scroller tags at script termination
+st.markdown('</div></div>', unsafe_allow_html=True)
