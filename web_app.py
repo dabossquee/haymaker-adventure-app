@@ -191,7 +191,7 @@ with st.sidebar:
     st.divider()
 
     
-        # 🎵 SYSTEM AUDIO MATRICES DECK (ADVANCED CONTINUOUS BACKGROUND CAMPAIGN STREAMER)
+            # 🎵 SYSTEM AUDIO MATRICES DECK (ADVANCED CONTINUOUS BACKGROUND CAMPAIGN STREAMER)
     with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
         col_m1, col_m2 = st.columns(2)
         with col_m1:
@@ -211,39 +211,46 @@ with st.sidebar:
                 st.session_state.audio_state["playing"] = True
                 st.rerun()
                 
-        # Advanced Persisted Session HTML5 Injection Framework to track audio timestamps across page reruns
+        # Advanced Base64 Local File Injection Framework to prevent path errors and persist tracking timestamps across reruns
         if st.session_state.audio_state["playing"]:
+            import base64
             track_source = st.session_state.audio_state['track_url']
-            st.markdown(f"""
-                <div style="text-align: center; margin-top: 10px;">
-                    <audio id="global-ambient-deck" src="{track_source}" controls loop style="width: 100%; max-height: 32px;"></audio>
-                    <p style='font-size: 11px; color: #334155; font-weight: bold; margin: 8px 0 0 0;'>🔊 Audio stream synchronized and locked active</p>
-                    <script>
-                        var audioEl = document.getElementById("global-ambient-deck");
-                        if (audioEl) {{
-                            // Retrieve exact audio timestamp and volume state from current browser session cache
-                            var savedTime = sessionStorage.getItem("haymaker_audio_time");
-                            var savedSrc = sessionStorage.getItem("haymaker_audio_src");
-                            
-                            // Re-apply past timeline tracking coordinates seamlessly if the track matching is identical
-                            if (savedSrc === "{track_source}" && savedTime) {{
-                                audioEl.currentTime = parseFloat(savedTime);
-                            }}
-                            
-                            // Auto-authorize execution streams instantly upon browser container approval
-                            audioEl.play().catch(function(e) {{ console.log("Autoplay approval pending"); }});
-                            
-                            // Continually save active tracking positions across every microsecond to protect against page updates
-                            setInterval(function() {{
-                                if (!audioEl.paused) {{
-                                    sessionStorage.setItem("haymaker_audio_time", audioEl.currentTime);
-                                    sessionStorage.setItem("haymaker_audio_src", "{track_source}");
+            
+            try:
+                # Read the local file bytes and parse into secure inline stream strings to completely bypass browser blocks
+                with open(track_source, "rb") as f_audio:
+                    audio_bytes = f_audio.read()
+                audio_base64 = base64.b64encode(audio_bytes).decode()
+                audio_data_url = f"data:audio/mp3;base64,{audio_base64}"
+                
+                st.markdown(f"""
+                    <div style="text-align: center; margin-top: 10px;">
+                        <audio id="global-ambient-deck" src="{audio_data_url}" controls loop style="width: 100%; max-height: 32px;"></audio>
+                        <p style='font-size: 11px; color: #334155; font-weight: bold; margin: 8px 0 0 0;'>🔊 Audio stream synchronized and locked active</p>
+                        <script>
+                            var audioEl = document.getElementById("global-ambient-deck");
+                            if (audioEl) {{
+                                var savedTime = sessionStorage.getItem("haymaker_audio_time");
+                                var savedSrc = sessionStorage.getItem("haymaker_audio_src");
+                                
+                                if (savedSrc === "{track_source}" && savedTime) {{
+                                    audioEl.currentTime = parseFloat(savedTime);
                                 }}
-                            }}, 250);
-                        }}
-                    </script>
-                </div>
-            """, unsafe_allow_html=True)
+                                
+                                audioEl.play().catch(function(e) {{ console.log("Autoplay approval pending"); }});
+                                
+                                setInterval(function() {{
+                                    if (!audioEl.paused) {{
+                                        sessionStorage.setItem("haymaker_audio_time", audioEl.currentTime);
+                                        sessionStorage.setItem("haymaker_audio_src", "{track_source}");
+                                    }}
+                                }}, 250);
+                            }}
+                        </script>
+                    </div>
+                """, unsafe_allow_html=True)
+            except Exception as audio_err:
+                st.error(f"Audio Path Tracking Fault: {audio_err}")
         else:
             st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
             st.markdown("""<script>sessionStorage.removeItem("haymaker_audio_time");</script>""", unsafe_allow_html=True)
