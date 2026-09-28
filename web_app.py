@@ -208,13 +208,37 @@ with st.sidebar:
                     if st.button("🔊 Play Audio", use_container_width=True, key="btn_play_audio_chan"):
                         st.session_state.audio_state["playing"] = True
                         st.rerun()
-            with col_m2:
-                if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
-                    current_track = st.session_state.audio_state["track_url"]
-                    next_track = "assets/adventure_loop.mp3" if "menu_theme" in current_track else "assets/menu_theme.mp3"
-                    st.session_state.audio_state["track_url"] = next_track
-                    st.session_state.audio_state["playing"] = True
-                    st.rerun()
+        with col_m2:
+            if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
+                # Define our master 11-track general post-rock campaign playlist map array
+                playlist_deck = [
+                    "assets/menu_theme.mp3",
+                    "assets/adventure_loop.mp3",
+                    "assets/track_1.mp3", "assets/track_2.mp3", 
+                    "assets/track_3.mp3", "assets/track_4.mp3",
+                    "assets/track_5.mp3", "assets/track_6.mp3",
+                    "assets/track_7.mp3", "assets/track_8.mp3"
+                ]
+                
+                # Check what song is playing, find its position, and slide to the next track index cleanly
+                current_track = st.session_state.audio_state["track_url"]
+                try:
+                    current_index = playlist_deck.index(current_track)
+                    next_index = (current_index + 1) % len(playlist_deck)
+                except ValueError:
+                    next_index = 0 # Safe fallback position if state hits an unmapped path
+                
+                # Verify the file actually exists inside the assets folder before trying to load it
+                chosen_track = playlist_deck[next_index]
+                if os.path.exists(chosen_track):
+                    st.session_state.audio_state["track_url"] = chosen_track
+                else:
+                    # If any track hasn't been copied over yet, safely snap back to your primary theme track loop
+                    st.session_state.audio_state["track_url"] = "assets/menu_theme.mp3"
+                    
+                st.session_state.audio_state["playing"] = True
+                st.rerun()
+
                     
             if st.session_state.audio_state["playing"]:
                 st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
