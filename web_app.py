@@ -474,12 +474,12 @@ if not engine["world_name"]:
                 st.rerun()
             else:
                 st.warning("⚠️ Fill out the architectural inputs to launch.")
-    with tab_avatars:
-        st.markdown("### Community Avatars Portal")
-        st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
+        with tab_avatars:
+          st.markdown("### Community Avatars Portal")
+          st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
         
         cols_avatars = st.columns(3)
-        with cols_avatars:
+        with cols_avatars[0]:
             st.markdown("#### 👤 COMMANDER DIXON")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
             st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
@@ -491,7 +491,7 @@ if not engine["world_name"]:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
-        with cols_avatars:
+        with cols_avatars[1]:
             st.markdown("#### 👤 NYX THE SHADOW")
             st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
             st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
@@ -503,7 +503,7 @@ if not engine["world_name"]:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
-        with cols_avatars:
+        with cols_avatars[2]:
             st.markdown("#### 👤 VALERIUS THE EXILE")
             st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
             st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
@@ -515,6 +515,7 @@ if not engine["world_name"]:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
+
                 
     with tab_profile:
         st.markdown("### User Authentication Center")
