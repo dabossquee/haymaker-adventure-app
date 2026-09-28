@@ -448,11 +448,17 @@ if not engine["world_name"]:
                         with cols_actions[1]:
                             if st.button("🗑️ Delete World", key=f"purge_{my_row['id']}_{index}", type="primary", use_container_width=True):
                                 try:
-                                    supabase_client.table("worlds").delete().eq("id", my_row["id"]).execute()
+                                    # 👑 THE RLS CLEARANCE FIX: Explicitly inject the user's active session token into the network headers
+                                    if "access_token" in st.session_state:
+                                        supabase_client.postgrest.auth(st.session_state["access_token"])
+                                    
+                                    # Execute the authenticated delete statement on your live database rows
+                                    supabase_client.table("worlds").delete().eq("id", my_row["id"]).eq("creator_id", st.session_state.user.id).execute()
                                     st.toast("💥 Timeline completely erased from the local vault and public community servers!")
                                     st.rerun()
                                 except Exception as err:
                                     st.error(f"Purge Fault: {err}")
+
                         st.divider()
                 else:
                     st.info("You haven't deployed any permanent universes yet. Forge one inside the 'Create a World' tab!")
@@ -491,10 +497,25 @@ if not engine["world_name"]:
                 st.rerun()
             else:
                 st.warning("⚠️ Fill out the architectural inputs to launch.")
-        with tab_avatars:
-          st.markdown("### Community Avatars Portal")
-          st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
+
+    with tab_avatars:
+        st.markdown("### Community Avatars Portal")
+        st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
+        st.divider()
         
+        # 🎨 THE PERFECTLY ALIGNED AVATAR FORGE SANDBOX ENTRY ZONE
+        st.markdown("#### Forged Identities")
+        avatar_prompt_input = st.text_input("Describe your dream avatar character appearance:", placeholder="e.g., A cybernetic samurai with a glowing red visor, hyper-detailed digital art style...", key="input_sandbox_avatar_prompt")
+        
+        if st.button("✨ Forge Avatar Identity", use_container_width=True, key="btn_forge_avatar_sandbox_trigger"):
+            if avatar_prompt_input:
+                st.info("⏳ Processing your avatar request block... (DALL-E 3 matrix asset pipelines will ignite here tomorrow morning!)")
+            else:
+                st.warning("⚠️ Enter a visual description to forge your profile character.")
+                
+        st.divider()
+        
+        # Public Community Avatar cards grid block continues seamlessly right below
         cols_avatars = st.columns(3)
         with cols_avatars[0]:
             st.markdown("#### 👤 COMMANDER DIXON")
