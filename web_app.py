@@ -72,6 +72,17 @@ st.markdown("""
     .stButton > button:hover {
         color: #ffffff !important; background: linear-gradient(180deg, #7c5dfa 0%, #5b21b6 100%) !important;
     }
+        /* 🎬 CINEMATIC WIDESCREEN LIVE CANVAS COVER ART */
+    .live-canvas-cover {
+        width: 100% !important;
+        max-height: 280px !important;
+        object-fit: cover !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(124, 93, 250, 0.2);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+        margin-bottom: 20px !important;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -556,8 +567,30 @@ with chat_canvas_context:
             </div>
             """, unsafe_allow_html=True)
 # 8. INITIAL COSMOS ENTRY SCENE SPARK (VERIFIED ZERO-INDEX CHOICE MAPPING)
+# 8. INITIAL COSMOS ENTRY SCENE SPARK (WITH AUTOMATED DALL-E 3 COVER GENERATION)
 if not engine["story_log"]:
-    with st.spinner("⏳ Simulating initial cosmos entry scene..."):
+    # Check if a live scene cover asset is already cached in memory to save token credits
+    if "world_cover_url" not in st.session_state:
+        st.session_state.world_cover_url = None
+
+    with st.spinner("⏳ Simulating initial cosmos entry scene & forging visual assets..."):
+        # 🟢 ENGINE PASS 1: GENERATE CINEMATIC WIDESCREEN VISUAL COVER VIA DALL-E 3
+        try:
+            image_prompt = f"Cinematic widescreen conceptual game concept art for a universe titled '{engine['world_name']}' in the genre of '{engine['world_genre']}'. Moody, atmospheric lighting, ultra-detailed matte painting style, vivid colors, no text, no letters."
+            img_response = openai_client.images.generate(
+                model="dall-e-3",
+                prompt=image_prompt,
+                n=1,
+                size="1024x1024", # Returns high-res square master optimized for fluid responsive container clipping
+                quality="standard"
+            )
+            st.session_state.world_cover_url = img_response.data[0].url
+        except Exception as img_err:
+            st.warning(f"Visual Grid Warning: Image generation layer bypassed. ({img_err})")
+            # Safe localized stock fallback if your OpenAI key runs out of daily image credits
+            st.session_state.world_cover_url = "https://picsum.photos"
+
+        # 🟣 ENGINE PASS 2: GENERATE NARRATIVE INTRO VIA CHAT COMPLETIONS
         master_prompt = (
             f"You are the master narrator for a text adventure game called Haymaker.\n"
             f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
@@ -566,7 +599,7 @@ if not engine["story_log"]:
             f"⚠️ CRITICAL GAMEPLAY & FORMATTING RULES:\n"
             f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
             f"2. Never play for the user or repeat their setup words. Establish the opening scene and stop instantly.\n"
-            f"3. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: **\"Dialogue text here\"** in standard bold. Do not use raw HTML style spans inside generation steps."
+            f"3. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: **\"Dialogue text here\"** in standard bold."
         )
         
         response = openai_client.chat.completions.create(
@@ -579,6 +612,11 @@ if not engine["story_log"]:
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
+
+# 9. RENDER THE GENERATED WORLD COVER AT THE TOP OF THE ACTIVE CHAT CANVASES
+if getattr(st.session_state, "world_cover_url", None):
+    st.image(st.session_state.world_cover_url, use_container_width=True, caption=f"🪐 Universe Visualizer Checkpoint: {engine['world_name'].upper()}")
+
 
 user_action = st.chat_input("Describe your action or speak...")
 
