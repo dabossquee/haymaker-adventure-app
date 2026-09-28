@@ -577,6 +577,7 @@ if not engine["story_log"]:
                 quality="standard"
             )
             st.session_state.world_cover_url = img_response.data[0].url
+
         except Exception as img_err:
             st.warning(f"Visual Grid Warning: Defaulting to standard theme skin. ({img_err})")
 
