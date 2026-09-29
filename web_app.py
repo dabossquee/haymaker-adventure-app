@@ -665,9 +665,9 @@ is_premium_active = getattr(st.session_state, 'is_premium', False)
 has_trial_tokens = st.session_state.guest_tokens > 0
 
 if not is_premium_active and not has_trial_tokens:
-    # 👑 THE BULLETPROOF KEY FORCE: Securely connect your pre-loaded file variable directly to Stripe
+    # 👑 THE BULLETPROOF KEY FORCE: Explicitly load the verified key name directly into Stripe
     import stripe
-    stripe.api_key = STRIPE_SECRET if STRIPE_SECRET else os.getenv("STRIPE_SECRET_KEY")
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
     st.title("💳 PLATFORM ACCESS LOCKED")
     st.subheader("Your trial action points have been exhausted. Select a premium navigation pass to unlock the cosmos.")
@@ -675,6 +675,7 @@ if not is_premium_active and not has_trial_tokens:
     st.divider()
     
     col_t1, col_t2, col_t3 = st.columns(3)
+
 
 
     
