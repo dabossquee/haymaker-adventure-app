@@ -107,6 +107,8 @@ API_KEY = os.getenv("OPENAI_API_KEY")
 STRIPE_SECRET = os.getenv("STRIPE_SECRET_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")  # 🔒 Loaded safely into server memory
+
 
 if not API_KEY or not SUPABASE_URL or not SUPABASE_KEY:
     st.error("🔒 Missing crucial core environment variables inside your hidden .env file!")
@@ -560,7 +562,15 @@ if not engine["world_name"]:
         # 🎨 THE HIGH-CONVERSION AVATAR FORGE SANDBOX ENTRY ZONE
         st.markdown("#### Forged Identities")
         
+                # 👑 BOSS MODE SECURE DEVELOPER OVERRIDE BYPASS
         is_user_premium = getattr(st.session_state, 'is_premium', False)
+        
+        # Double-layer confirmation: Checks session authentication state against hidden server tokens
+        if "user" in st.session_state and ADMIN_EMAIL:
+            if st.session_state.user.email == ADMIN_EMAIL:
+                is_user_premium = True
+
+
         
         avatar_prompt_input = st.text_input(
             "Describe your dream avatar character appearance:", 
