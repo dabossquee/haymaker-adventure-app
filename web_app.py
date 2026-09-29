@@ -557,19 +557,62 @@ if not engine["world_name"]:
         st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
         st.divider()
         
-        # 🎨 THE PERFECTLY ALIGNED AVATAR FORGE SANDBOX ENTRY ZONE
+        # 🎨 THE HIGH-CONVERSION AVATAR FORGE SANDBOX ENTRY ZONE
         st.markdown("#### Forged Identities")
-        avatar_prompt_input = st.text_input("Describe your dream avatar character appearance:", placeholder="e.g., A cybernetic samurai with a glowing red visor, hyper-detailed digital art style...", key="input_sandbox_avatar_prompt")
+        
+        is_user_premium = getattr(st.session_state, 'is_premium', False)
+        
+        avatar_prompt_input = st.text_input(
+            "Describe your dream avatar character appearance:", 
+            placeholder="e.g., A cybernetic samurai with a glowing red visor, hyper-detailed digital art style...", 
+            key="input_sandbox_avatar_prompt"
+        )
         
         if st.button("✨ Forge Avatar Identity", use_container_width=True, key="btn_forge_avatar_sandbox_trigger"):
-            if avatar_prompt_input:
-                st.info("⏳ Processing your avatar request block... (DALL-E 3 matrix asset pipelines will ignite here tomorrow morning!)")
+            if "user" not in st.session_state:
+                st.error("🔒 Access Locked: Please create an account or sign in to authorize identity forge protocols.")
+            elif not is_user_premium:
+                st.error("🔒 Premium Pass Required: Avatar generation requires an active Avatar, Spartan, or STEM pass tier.")
+            elif not avatar_prompt_input:
+                st.warning("⚠️ Input Framework Empty: Enter a visual description to forge your profile character.")
             else:
-                st.warning("⚠️ Enter a visual description to forge your profile character.")
-                
+                with st.spinner("⏳ Igniting DALL-E 3 matrix pipelines... Forging high-res asset card..."):
+                    try:
+                        from openai import OpenAI
+                        client = OpenAI(api_key=API_KEY)
+                        
+                        response = client.images.generate(
+                            model="dall-e-3",
+                            prompt=f"{avatar_prompt_input.strip()}, cinematic lighting, hyper-detailed character portrait, concept art style",
+                            n=1,
+                            size="1024x1024",
+                            quality="standard"
+                        )
+                        
+                        generated_url = response.data.url
+                        
+                        if "access_token" in st.session_state:
+                            supabase_client.postgrest.auth(st.session_state["access_token"])
+                        
+                        supabase_client.table("profiles").upsert({
+                            "id": st.session_state.user.id,
+                            "avatar_url": generated_url,
+                            "username": char["name"] if char["name"] else "Wanderer",
+                            "is_premium": True
+                        }).execute()
+                        
+                        st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
+                        st.image(generated_url, caption="Your Forged Identity Profile", use_container_width=True)
+                        time.sleep(2)
+                        st.rerun()
+                        
+                    except Exception as img_forge_err:
+                        st.error(f"Graphics Engine Fault: {img_forge_err}")
+                        st.caption("Ensure your OpenAI billing dashboard balance has cleared successfully into Tier 1 limits.")
+                        
         st.divider()
         
-        # Public Community Avatar cards grid block continues seamlessly right below
+        # 👤 Public Community Avatar cards grid block continues seamlessly right below
         cols_avatars = st.columns(3)
         with cols_avatars[0]:
             st.markdown("#### 👤 COMMANDER DIXON")
@@ -607,6 +650,7 @@ if not engine["world_name"]:
                     "img": "https://picsum.photos"
                 }
                 st.rerun()
+
 
                 
     with tab_profile:
