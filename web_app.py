@@ -611,28 +611,108 @@ is_premium_active = getattr(st.session_state, 'is_premium', False)
 has_trial_tokens = st.session_state.guest_tokens > 0
 
 if not is_premium_active and not has_trial_tokens:
-    st.subheader("💳 Activate Subscription")
-    st.info("Your free trial action points have been exhausted. Unlock the $10/week Pass to continue.")
-    if st.button("👑 Get Unlimited Pass ($10/wk)", type="primary", use_container_width=True):
-        try:
-            checkout_session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=[{
-                    'price_data': {
-                        'currency': 'usd',
-                        'product_data': {'name': 'Haymaker Unlimited Pass'},
-                        'unit_amount': 1000, 'recurring': {'interval': 'week'}
-                    },
-                    'quantity': 1,
-                }],
-                mode='subscription',
-                success_url='https://onrender.com',
-                cancel_url='https://onrender.com',
-            )
-            st.markdown(f"[👉 Click Here to Open Secure Stripe Checkout Page]({checkout_session.url})")
-        except Exception as e:
-            st.error(f"Stripe Error: {e}")
+    st.title("💳 PLATFORM ACCESS LOCKED")
+    st.subheader("Your trial action points have been exhausted. Select a premium navigation pass to unlock the cosmos.")
+    st.markdown("<p style='color: #94a3b8; font-size: 14px;'>All tiers are community-priced to be accessible, while fully protecting timeline data streams from heavy asset processing.</p>", unsafe_allow_html=True)
+    st.divider()
+    
+    col_t1, col_t2, col_t3 = st.columns(3)
+    
+    with col_t1:
+        st.markdown("""
+        <div style="background: #110c1f; padding: 20px; border-radius: 16px; border: 1px solid #3b2c63; text-align: center; height: 320px;">
+            <h3 style="color: #ffffff; margin: 0;">💨 AVATAR PASS</h3>
+            <h2 style="color: #7c5dfa; margin: 10px 0;">$4.99<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
+            <p style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 10px;">📦 ALLOWANCE PROTOCOLS:</p>
+            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 40,000 Narrative Tokens / wk</p>
+            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 20 Cinematic Images / wk</p>
+            <p style="color: #94a3b8; font-size: 12px; font-style: italic; margin-top: 10px;">Built to be completely affordable for everyday dreamers to escape reality.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Activate Avatar Pass", key="btn_checkout_tier_1", use_container_width=True):
+            try:
+                checkout_session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'usd',
+                            'product_data': {'name': 'Haymaker Avatar Pass'},
+                            'unit_amount': 499, 'recurring': {'interval': 'week'}
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='subscription',
+                    success_url='https://onrender.com',
+                    cancel_url='https://onrender.com',
+                )
+                st.markdown(f"[👉 Click Here to Open Secure Stripe Checkout]({checkout_session.url})")
+            except Exception as e:
+                st.error(f"Stripe Portal Error: {e}")
+                
+    with col_t2:
+        st.markdown("""
+        <div style="background: #161026; padding: 20px; border-radius: 16px; border: 2px solid #7c5dfa; text-align: center; height: 320px; box-shadow: 0 0 15px rgba(124, 93, 250, 0.2);">
+            <h3 style="color: #ffffff; margin: 0;">🎖️ SPARTAN PASS</h3>
+            <h2 style="color: #a78bfa; margin: 10px 0;">$9.99<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
+            <p style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 10px;">📦 ALLOWANCE PROTOCOLS:</p>
+            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 100,000 Narrative Tokens / wk</p>
+            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 60 Cinematic Images / wk</p>
+            <p style="color: #94a3b8; font-size: 12px; font-style: italic; margin-top: 10px;">Our standard premium experience for extended multi-hour sessions.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Activate Spartan Pass", key="btn_checkout_tier_2", type="primary", use_container_width=True):
+            try:
+                checkout_session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'usd',
+                            'product_data': {'name': 'Haymaker Spartan Pass'},
+                            'unit_amount': 999, 'recurring': {'interval': 'week'}
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='subscription',
+                    success_url='https://onrender.com',
+                    cancel_url='https://onrender.com',
+                )
+                st.markdown(f"[👉 Click Here to Open Secure Stripe Checkout]({checkout_session.url})")
+            except Exception as e:
+                st.error(f"Stripe Portal Error: {e}")
+                
+    with col_t3:
+        st.markdown("""
+        <div style="background: #110c1f; padding: 20px; border-radius: 16px; border: 1px solid #3b2c63; text-align: center; height: 320px;">
+            <h3 style="color: #ffffff; margin: 0;">🧠 STEM PASS</h3>
+            <h2 style="color: #f43f5e; margin: 10px 0;">$19.99<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
+            <p style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 10px;">📦 ALLOWANCE PROTOCOLS:</p>
+            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• UNLIMITED Narrative Tokens</p>
+            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 150 Cinematic Images / wk</p>
+            <p style="color: #94a3b8; font-size: 12px; font-style: italic; margin-top: 10px;">Un-capped matrix shield. Built for heavy, continuous 24/7 world roleplay.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Activate STEM Pass", key="btn_checkout_tier_3", use_container_width=True):
+            try:
+                checkout_session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'usd',
+                            'product_data': {'name': 'Haymaker STEM Pass'},
+                            'unit_amount': 1999, 'recurring': {'interval': 'week'}
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='subscription',
+                    success_url='https://onrender.com',
+                    cancel_url='https://onrender.com',
+                )
+                st.markdown(f"[👉 Click Here to Open Secure Stripe Checkout]({checkout_session.url})")
+            except Exception as e:
+                st.error(f"Stripe Portal Error: {e}")
+                
     st.stop()
+
 
 # 8. INITIAL COSMOS ENTRY SCENE SPARK (WITH VALID DALL-E 3 GENERATION)
 if not engine["story_log"]:
