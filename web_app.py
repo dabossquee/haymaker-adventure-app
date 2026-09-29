@@ -252,6 +252,60 @@ with st.sidebar:
         st.info("💡 Want unlimited actions?")
         if st.button("🔑 SIGN IN / SIGN UP", key="sidebar_auth_gateway_redirect", use_container_width=True):
             st.toast("⚡ Head over to your 'Account Profile' hub tab right on the main panel to log in or register instantly.")
+    st.divider()
+
+    # ⚙️ SYSTEM SETTINGS & SUBSCRIPTION MANAGEMENT OVERWATCH
+    with st.expander("⚙️ SETTINGS CONTROL", expanded=False):
+        st.caption("🔒 Sandbox Platform Account Verified")
+        st.subheader("💳 Subscription Status")
+        
+        if getattr(st.session_state, 'is_premium', False):
+            st.success("👑 STATUS: Premium Pass Active")
+            st.caption("Your timeline capabilities are fully un-capped.")
+        else:
+            st.warning("⏳ STATUS: Free Trial Mode (12 Actions)")
+            
+        st.divider()
+        st.markdown("#### 📡 Re-Sync Past Purchases")
+        st.caption("Changed phones or reinstalled? Tap below to scan Stripe for your active billing cycle account profiles.")
+        
+        # 🔄 DYNAMIC REACTIVE SUB RECOVERY MATRIX
+        if st.button("🔄 Sync & Restore Subscription", key="btn_reactive_sync_stripe_gate", use_container_width=True):
+            if "user" not in st.session_state:
+                st.error("🔒 Please sign in via the 'Account Profile' tab first so we can map your purchase history securely!")
+            else:
+                with st.spinner("⏳ Scanning Stripe secure merchant databases for active account tokens..."):
+                    try:
+                        import stripe
+                        if STRIPE_SECRET:
+                            stripe.api_key = STRIPE_SECRET
+                        else:
+                            stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+                            
+                        user_email = st.session_state.user.email
+                        customers = stripe.Customer.list(email=user_email, limit=1)
+                        
+                        if customers.data:
+                            customer = customers.data[0]
+                            subs = stripe.Subscription.list(customer=customer.id, status="active", limit=1)
+                            trial_subs = stripe.Subscription.list(customer=customer.id, status="trialing", limit=1)
+                            
+                            if subs.data or trial_subs.data:
+                                st.session_state.is_premium = True
+                                st.toast("👑 Premium Subscription Successfully Restored! Welcome back, Pilot.")
+                                time.sleep(1)
+                                st.rerun()
+                            else:
+                                st.error("❌ No active paid billing accounts found matching this email on the Stripe ledger.")
+                        else:
+                            st.error("❌ No verified customer account files exist for this email address yet.")
+                    except Exception as stripe_api_err:
+                        st.error(f"Sync Fault: {stripe_api_err}")
+                        st.caption("Ensure your STRIPE_SECRET_KEY is fully written inside your hidden .env file container.")
+                        
+        st.divider()
+        st.markdown("<p style='font-size: 11px; color: #475569; font-style: italic; text-align: center;'>Haymaker Industry Security Architecture v1.02 • Privacy Framework Protected</p>", unsafe_allow_html=True)
+
 # 6. BALA DISCOVERY CORE ARCHITECTURE
 if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
