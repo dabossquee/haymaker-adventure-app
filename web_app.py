@@ -599,7 +599,7 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                        generated_url = response.data.url
+                        generated_url = response.data[0].url
                         
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
