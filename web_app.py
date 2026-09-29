@@ -592,7 +592,7 @@ if not engine["world_name"]:
                         client = OpenAI(api_key=API_KEY)
                         
                         response = client.images.generate(
-                            model="dall-e-3",
+                            model="gpt-image-1",
                             prompt=f"{avatar_prompt_input.strip()}, cinematic lighting, hyper-detailed character portrait, concept art style",
                             n=1,
                             size="1024x1024",
@@ -885,7 +885,7 @@ if not engine["story_log"]:
         try:
             image_prompt = f"Cinematic widescreen matte game concept background for an alternate reality adventure titled '{engine['world_name']}' in the genre of '{engine['world_genre']}'. Vivid colors, epic landscape, beautiful atmospheric light, zero text, zero labels, high resolution."
             img_response = openai_client.images.generate(
-                model="dall-e-3",
+                model="gpt-image-1",
                 prompt=image_prompt,
                 n=1,
                 size="1024x1024",
