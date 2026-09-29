@@ -669,8 +669,55 @@ if not is_premium_active and not has_trial_tokens:
     import stripe
     stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
+    # 🔒 LAYER 1 PROTECTION CHECK: If the user is NOT logged in, force the Account Creation Gate first
+    if "user" not in st.session_state:
+        st.title("🔒 SECURE YOUR CORRIDOR")
+        st.subheader("Your 12 free trial action points have been fully exhausted.")
+        st.markdown("<p style='color: #a78bfa; font-size: 14px; font-weight: bold;'>To protect your custom timelines, save your progress, and unlock premium navigation passes, you must create a verified account profile first.</p>", unsafe_allow_html=True)
+        st.divider()
+        
+        # In-line high-conversion authentication hub
+        auth_mode = st.radio("Choose Action:", ["✨ Create An Account (Sign Up)", "🔑 Access Existing Profile (Log In)"], horizontal=True, key="paywall_gate_auth_toggle")
+        
+        email_input = st.text_input("📩 Enter Your Email Address:", placeholder="name@example.com", key="input_paywall_auth_email").strip()
+        pass_input = st.text_input("🔒 Establish Secure Password (Min. 6 characters):", type="password", placeholder="••••••••", key="input_paywall_auth_password")
+        
+        if auth_mode == "✨ Create An Account (Sign Up)":
+            if st.button("🚀 Forge Encrypted Account Profile", use_container_width=True, type="primary", key="btn_paywall_gate_signup"):
+                if email_input and len(pass_input) >= 6:
+                    with st.spinner("⏳ Provisioning database matrix vaults..."):
+                        try:
+                            auth_res = supabase_client.auth.sign_up({"email": email_input, "password": pass_input})
+                            if auth_res.user:
+                                st.success("🎉 Profile created! An activation link has been sent to your email. Check your inbox and spam folder, then log in right here to unlock the cards!")
+                        except Exception as auth_err:
+                            st.error(f"Account Creation Fault: {auth_err}")
+                else:
+                    st.warning("⚠️ Enter a valid email and a password of at least 6 characters to secure your file data.")
+                    
+        else: # Log In mode
+            if st.button("🔑 Authorize Profile Credentials", use_container_width=True, type="primary", key="btn_paywall_gate_login"):
+                if email_input and pass_input:
+                    with st.spinner("⏳ Verifying profile security signatures..."):
+                        try:
+                            auth_res = supabase_client.auth.sign_in_with_password({"email": email_input, "password": pass_input})
+                            if auth_res.user:
+                                st.session_state.user = auth_res.user
+                                if auth_res.session and hasattr(auth_res.session, 'access_token'):
+                                    st.session_state.access_token = auth_res.session.access_token
+                                st.toast("👑 Access Granted! Checking billing authorization profiles...")
+                                time.sleep(1)
+                                st.rerun()
+                        except Exception as auth_err:
+                            st.error(f"Authorization Denied: {auth_err}")
+                else:
+                    st.warning("⚠️ Enter both your registered email and password to pull your account file.")
+        
+        st.stop() # Stops the page execution right here so they CANNOT see the pricing cards until logged in!
+
+    # 💳 LAYER 2 PROTECTION CHECK: Once they successfully log in, show the checkout cards automatically
     st.title("💳 PLATFORM ACCESS LOCKED")
-    st.subheader("Your trial action points have been exhausted. Select a premium navigation pass to unlock the cosmos.")
+    st.subheader(f"Welcome back, Pilot ({st.session_state.user.email}). Select a premium navigation pass to unlock the cosmos.")
     st.markdown("<p style='color: #94a3b8; font-size: 14px;'>All tiers are community-priced to be accessible, while fully protecting timeline data streams from heavy asset processing.</p>", unsafe_allow_html=True)
     st.divider()
     
