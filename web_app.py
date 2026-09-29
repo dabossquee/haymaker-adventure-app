@@ -612,13 +612,20 @@ if not engine["world_name"]:
                         }).execute()
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
-                        st.image(str(generated_url), caption="Your Forged Identity Profile", use_container_width=True)
+                        
+                        # 🎯 THE FORTIFIED IMAGE GATE: Explicitly verify the url string exists before rendering
+                        if generated_url and str(generated_url) != "None":
+                            st.image(str(generated_url), caption="Your Forged Identity Profile", use_container_width=True)
+                        else:
+                            st.warning("📡 Asset link queued in database. Refreshing dashboard terminal to load card graphics...")
+                        
                         time.sleep(3)
                         st.rerun()
                         
                     except Exception as img_forge_err:
                         st.error(f"Graphics Engine Fault: {img_forge_err}")
                         st.caption("Ensure your OpenAI billing dashboard balance has cleared successfully into Tier 1 limits.")
+
                         
         st.divider()
         
