@@ -139,7 +139,7 @@ if "success" in st.query_params and st.query_params["success"] == "true":
 # TRIAL VARIABLES STORAGE INITIALIZATION
 if "user" not in st.session_state:
     if "guest_tokens" not in st.session_state:
-        st.session_state.guest_tokens = 3  
+        st.session_state.guest_tokens = 12  
     if "world_engine" not in st.session_state:
         st.session_state.world_engine = {
             "world_id": None, "world_name": "", "world_genre": "",
