@@ -586,7 +586,7 @@ if not engine["world_name"]:
             elif not avatar_prompt_input:
                 st.warning("⚠️ Input Framework Empty: Enter a visual description to forge your profile character.")
             else:
-                with st.spinner("⏳ Igniting DALL-E 3 matrix pipelines... Forging high-res asset card..."):
+                with st.spinner(" Igniting image matrix pipelines... Forging high-res asset card..."):
                     try:
                         from openai import OpenAI
                         client = OpenAI(api_key=API_KEY)
@@ -596,7 +596,7 @@ if not engine["world_name"]:
                             prompt=f"{avatar_prompt_input.strip()}, cinematic lighting, hyper-detailed character portrait, concept art style",
                             n=1,
                             size="1024x1024",
-                            quality="standard"
+                            quality="auto"
                         )
                         
                         generated_url = response.data.url
@@ -889,11 +889,12 @@ if not engine["story_log"]:
                 prompt=image_prompt,
                 n=1,
                 size="1024x1024",
-                quality="standard"
+                quality="auto" # 🎯 Fixed from 'standard'
             )
             st.session_state.world_cover_url = img_response.data[0].url
-        except Exception as img_err:
-            st.warning(f"Visual Grid Warning: Defaulting to standard theme skin. ({img_err})")
+        except Exception as e:
+            st.error(f"Graphics Engine Fault: {e}")
+
 
         master_prompt = (
             f"You are the master narrator for a text adventure game called Haymaker.\n"
