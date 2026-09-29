@@ -667,16 +667,15 @@ has_trial_tokens = st.session_state.guest_tokens > 0
 if not is_premium_active and not has_trial_tokens:
     # 👑 THE BULLETPROOF KEY FORCE: Explicitly pull your secret key into this block
     import stripe
-    global STRIPE_SECRET
-    stripe.api_key = STRIPE_SECRET if STRIPE_SECRET else os.getenv("STRIPE_SECRET_KEY")
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
     st.title("💳 PLATFORM ACCESS LOCKED")
     st.subheader("Your trial action points have been exhausted. Select a premium navigation pass to unlock the cosmos.")
     st.markdown("<p style='color: #94a3b8; font-size: 14px;'>All tiers are community-priced to be accessible, while fully protecting timeline data streams from heavy asset processing.</p>", unsafe_allow_html=True)
     st.divider()
-
     
     col_t1, col_t2, col_t3 = st.columns(3)
+
     
     with col_t1:
         st.markdown("""
