@@ -612,8 +612,8 @@ if not engine["world_name"]:
                         }).execute()
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
-                        st.image(generated_url, caption="Your Forged Identity Profile", use_container_width=True)
-                        time.sleep(2)
+                        st.image(str(generated_url), caption="Your Forged Identity Profile", use_container_width=True)
+                        time.sleep(3)
                         st.rerun()
                         
                     except Exception as img_forge_err:
