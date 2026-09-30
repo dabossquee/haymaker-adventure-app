@@ -599,12 +599,19 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                        # 🎯 UNPACK THE PAYLOAD LAYER SAFELY
-                        generated_url = response.data[0].url
+                         # 🎯 UNPACK THE PAYLOAD LAYER SAFELY: Verify data exists before targeting index 0
+                        if response.data and len(response.data) > 0:
+                            generated_url = response.data[0].url
+                        else:
+                            generated_url = None
+                            
+                        if not generated_url or str(generated_url) == "None":
+                            raise Exception("OpenAI successfully processed the request but returned an empty or invalid URL path string.")
                         
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
                         img_data = requests.get(generated_url).content
                         file_name = f"{st.session_state.user.id}_avatar.jpg"
+
                         
                         # 🗜️ CLOUD FILE TRANSFER: Stream the physical file straight into your own storage bucket
                         supabase_client.storage.from_("avatars").upload(
