@@ -590,8 +590,9 @@ if not engine["world_name"]:
             else:
                 with st.spinner("⏳ Igniting Flux engine matrix pipelines... Forging high-res asset card..."):
                     try:
-                        # 📡 REPLICATE FLUX PIPELINE: Zero name bans, instant render speeds
-                        output = replicate.run(
+                     # 📡 REPLICATE FLUX PIPELINE: Armed with an explicit network timeout window to prevent read operations from hanging
+                        rep_client = replicate.Client(api_token=os.environ.get("REPLICATE_API_TOKEN"), timeout=120.0)
+                        output = rep_client.run(
                             "black-forest-labs/flux-schnell",
                             input={
                                 "prompt": f"{avatar_prompt_input.strip()}, high-quality cinematic character portrait, masterpiece concept art style",
@@ -599,6 +600,7 @@ if not engine["world_name"]:
                                 "output_format": "jpg"
                             }
                         )
+
                         
                         # 🎯 THE ULTRA-CLEAN EXTRACT: Replicate returns a clean, direct web string address inside a simple list
                         generated_url = output[0] if isinstance(output, list) else output
@@ -917,8 +919,9 @@ if not is_premium_active and not has_trial_tokens:
         try:
             image_prompt = f"Cinematic widescreen matte game concept background landscape scenery for an alternate reality adventure titled '{engine['world_name']}' in the genre of '{engine['world_genre']}'. Vivid colors, epic landscape, beautiful atmospheric light, zero text, zero labels, high resolution."
             
-            # 🌌 REPLICATE WORLD BACKGROUND PIPELINE: Fast cinematic environment landscapes
-            world_output = replicate.run(
+                       # 🌌 REPLICATE WORLD BACKGROUND PIPELINE: Armed with an explicit network timeout window to prevent read operations from hanging
+            rep_client = replicate.Client(api_token=os.environ.get("REPLICATE_API_TOKEN"), timeout=120.0)
+            world_output = rep_client.run(
                 "black-forest-labs/flux-schnell",
                 input={
                     "prompt": image_prompt,
@@ -926,6 +929,8 @@ if not is_premium_active and not has_trial_tokens:
                     "output_format": "jpg"
                 }
             )
+
+            
             
             # 🎯 THE CLEAN STRING FIX: Assign the direct URL output string cleanly to your session state
             st.session_state.world_cover_url = str(world_output)
