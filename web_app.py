@@ -664,9 +664,17 @@ if not engine["world_name"]:
                             col_target = cols[idx % 3]
                             with col_target:
                                 st.markdown(f"##### 🎭 {str(card.get('username', 'Wanderer')).upper()}")
-                                st.image(str(card.get("avatar_url")), use_container_width=True)
+                                
+                                # 🎯 PUBLIC LOOP FIX: Wrap community image urls in safety checks to block blank fields
+                                comm_link = card.get("avatar_url")
+                                if comm_link and str(comm_link) != "None" and "http" in str(comm_link):
+                                    st.image(str(comm_link), use_container_width=True)
+                                else:
+                                    st.image("https://picsum.photos", caption="Matrix Vault Initializing...", use_container_width=True)
+                                    
                                 st.caption(f"*Signature: user_{card.get('id')[:6]}*")
                                 st.divider()
+
                     elif not my_card or not my_card.get("avatar_url"):
                         st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
                 else:
