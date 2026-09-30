@@ -3,9 +3,11 @@ import os
 import re
 import time
 import stripe
+import requests # 🎯 ADDED THIS LINE: Opens the raw network pipeline for downloading binary photo streams
 from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
+
 
 # 1. CORE ENGINE PAGE INITIALIZATION
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
@@ -597,26 +599,36 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                        generated_url = response.data[0].url
+                        # 🎯 UNPACK THE PAYLOAD LAYER SAFELY
+                        generated_url = response.data.url
+                        
+                        # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
+                        img_data = requests.get(generated_url).content
+                        file_name = f"{st.session_state.user.id}_avatar.jpg"
+                        
+                        # 🗜️ CLOUD FILE TRANSFER: Stream the physical file straight into your own storage bucket
+                        supabase_client.storage.from_("avatars").upload(
+                            path=file_name,
+                            file=img_data,
+                            file_options={"content-type": "image/jpeg", "x-upsert": "true"}
+                        )
+                        
+                        # 🔗 EXTRACT THE PERMANENT ASSET DOMAIN STRING 
+                        public_vault_url = supabase_client.storage.from_("avatars").get_public_url(file_name)
                         
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                                                # 👑 THE UNBREAKABLE STRING CAST: Force index 0 to strip out the list array wrapper completely
+                        # 👑 SECURE DATA SYNC: Clean string slice for the username handle
                         email_handle = str(st.session_state.user.email).split("@")[0]
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
-                            "avatar_url": str(generated_url),
+                            "avatar_url": str(public_vault_url),
                             "username": str(email_handle),
                             "is_premium": True
                         }).execute()
-
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
-                        
-                        if generated_url and str(generated_url) != "None":
-                            st.image(str(generated_url), caption="Your Forged Identity Profile", use_container_width=True)
-                        
                         time.sleep(3)
                         st.rerun()
                         
@@ -625,6 +637,7 @@ if not engine["world_name"]:
                         
         st.divider()
         st.markdown("#### Active Community Records")
+
         
         # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
         if "user" in st.session_state:
