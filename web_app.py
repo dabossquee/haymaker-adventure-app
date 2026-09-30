@@ -602,7 +602,7 @@ if not engine["world_name"]:
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                                                # 👑 SECURE DATA SYNC: Explicitly cast the image url to a clean string format
+                        # Save directly into your encrypted hidden storage drawer table
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
                             "avatar_url": str(generated_url),
@@ -611,40 +611,62 @@ if not engine["world_name"]:
                         }).execute()
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
-                        
-                        if generated_url and str(generated_url) != "None":
-                            st.image(str(generated_url), caption="Your Forged Identity Profile", use_container_width=True)
-                        
-                        time.sleep(3)
+                        time.sleep(2)
                         st.rerun()
                         
                     except Exception as img_forge_err:
                         st.error(f"Graphics Engine Fault: {img_forge_err}")
-                        st.caption("Ensure your OpenAI billing dashboard balance has cleared successfully into Tier 1 limits.")
                         
         st.divider()
         st.markdown("#### Active Community Records")
         
-        # 📡 DYNAMIC ENGINE: Read and build boxes for all active community updates
+        # 📡 BULLETPROOF FORCED RENDERING ENGINE
+        if "user" in st.session_state:
+            try:
+                # 1. First, fetch YOUR specific row profile directly using your unique User ID
+                my_profile = supabase_client.table("profiles").select("*").eq("id", st.session_state.user.id).execute()
+                
+                if my_profile.data and my_profile.data[0].get("avatar_url"):
+                    my_card = my_profile.data[0]
+                    st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
+                    col_me_img, col_me_txt = st.columns([1, 2])
+                    with col_me_img:
+                        st.image(str(my_card.get("avatar_url")), use_container_width=True)
+                    with col_me_txt:
+                        display_name = char["name"] if char["name"] else "Wanderer"
+                        st.markdown(f"### {display_name.upper()}")
+                        st.markdown("❤️ **HP:** `100/100` | 🎒 `Active Loadout Secured`")
+                        st.caption(f"*Secure Master Signature: user_{my_card.get('id')[:8]}*")
+                        if st.button("🔍 Inspect My Full Identity File", key="btn_inspect_my_own_card", use_container_width=True):
+                            st.session_state.active_modal = {
+                                "title": f"🎭 {display_name.upper()}",
+                                "creator": "Platform Founder",
+                                "bio": "Your custom live persona forged inside the DALL-E 3 graphics sandbox engine loop.",
+                                "img": str(my_card.get("avatar_url"))
+                            }
+                            st.rerun()
+                    st.divider()
+            except Exception as e:
+                st.caption(f"Personal Profile Sync Standby: {e}")
+                
+        # 2. Now, read and build layout boxes dynamically for all other users in the database ledger
         try:
             profile_records = supabase_client.table("profiles").select("*").execute()
             
             if profile_records.data:
-                # hard filter to strip out only un-forged empty rows, allowing custom updates to render cleanly
-                valid_cards = [row for row in profile_records.data if row.get("avatar_url") and row.get("avatar_url") != ""]
+                # Filter rows to only display valid community entries that aren't your active card
+                my_id = st.session_state.user.id if "user" in st.session_state else None
+                valid_cards = [row for row in profile_records.data if row.get("avatar_url") and row.get("id") != my_id]
                 
                 if valid_cards:
+                    st.markdown("##### 👥 ALLIED TIMELINE DREAMERS")
                     cols = st.columns(3)
                     for idx, card in enumerate(valid_cards):
                         col_target = cols[idx % 3]
                         with col_target:
                             st.markdown(f"##### 🎭 {card.get('username', 'Wanderer').upper()}")
-                            st.markdown(f"❤️ **HP:** `100/100` | 🎒 `Inventory Active`")
-                            st.caption(f"*Creator Vault Signature: user_{card.get('id')[:6]}*")
-                            
                             st.image(str(card.get("avatar_url")), use_container_width=True)
-                            
-                            if st.button(f"🔍 Inspect {card.get('username', 'Wanderer')} Card", key=f"inspect_card_{card.get('id')}", use_container_width=True):
+                            if st.button("🔍 Inspect File", key=f"inspect_card_{card.get('id')}", use_container_width=True):
                                 st.session_state.active_modal = {
                                     "title": f"🎭 {card.get('username', 'Wanderer').upper()}",
                                     "creator": f"User_{card.get('id')[:6]}",
@@ -653,44 +675,15 @@ if not engine["world_name"]:
                                 }
                                 st.rerun()
                             st.divider()
+                elif "user" in st.session_state and my_profile.data and my_profile.data[0].get("avatar_url"):
+                    pass # Your master card is already proudly on display above!
                 else:
                     st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
             else:
                 st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
         except Exception as db_read_err:
-            st.caption(f"Database Sync Standby: {db_read_err}")
+            st.caption(f"Public Ledger Standby: {db_read_err}")
 
-                
-    with tab_profile:
-        st.markdown("### User Authentication Center")
-        if "user" in st.session_state:
-            st.success(f"👑 Secure Profile Synchronized: `{st.session_state.user.email}`")
-            if st.button("🚪 Log Out of Platform Account", type="primary", key="main_hub_profile_logout_gate", use_container_width=True):
-                supabase_client.auth.sign_out()
-                st.session_state.clear()
-                st.rerun()
-        else:
-            auth_mode = st.radio("Access Control:", ["Create Account", "Sign In"])
-            email = st.text_input("Account Email:")
-            password = st.text_input("Password:", type="password")
-            
-            if auth_mode == "Create Account":
-                if st.button("🚀 Register and Secure Sandbox Profile", use_container_width=True):
-                    try:
-                        supabase_client.auth.sign_up({"email": email, "password": password})
-                        st.success("✅ Account verified! Please switch to 'Sign In' to authenticate.")
-                    except Exception as e:
-                        st.error(f"Error: {e}")
-            elif auth_mode == "Sign In":
-                if st.button("🔓 Authenticate Profile", key="main_hub_auth_gateway_click", use_container_width=True):
-                    try:
-                        session_data = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
-                        st.session_state.user = session_data.user
-                        if hasattr(session_data, 'session') and session_data.session:
-                            st.session_state["access_token"] = session_data.session.access_token
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error: {e}")
     st.stop()
 # 7. ACTIVE NARRATIVE DISPLAY CANVAS (COHESIVE iOS FLEX WRAPPERS)
 st.markdown("""
