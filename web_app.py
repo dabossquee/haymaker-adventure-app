@@ -599,11 +599,11 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                                                 # 🎯 THE REAL FIXED UNWRAP: Extract the string value from the correct schema position
+                        # 🎯 THE REAL FIXED UNWRAP: Extract the string value from the correct schema position
                         if response.data and len(response.data) > 0:
-                            # Use dictionary key or direct attribute extraction depending on schema state
+                            # Open the list array container first to target the internal Image object properties cleanly
                             img_obj = response.data[0]
-                            if hasattr(img_obj, 'url'):
+                            if hasattr(img_obj, 'url') and img_obj.url:
                                 generated_url = img_obj.url
                             elif isinstance(img_obj, dict):
                                 generated_url = img_obj.get('url')
@@ -613,11 +613,12 @@ if not engine["world_name"]:
                             generated_url = None
                             
                         if not generated_url or str(generated_url) == "None" or "http" not in str(generated_url):
-                            raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Object structure: {type(response.data[0])}")
+                            raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Object structure: {type(response.data)}")
                         
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
                         img_data = requests.get(str(generated_url)).content
                         file_name = f"{st.session_state.user.id}_avatar.jpg"
+
 
                         
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
