@@ -1,0 +1,7 @@
+streamlit
+requests
+replicate
+openai
+supabase
+stripe
+python-dotenv

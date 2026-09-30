@@ -3,10 +3,12 @@ import os
 import re
 import time
 import stripe
-import requests # 🎯 ADDED THIS LINE: Opens the raw network pipeline for downloading binary photo streams
+import requests
+import replicate # 🚀 CHOSEN ENGINE: Loads the fast, indie-hacker approved image creation tool
 from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
+
 
 
 # 1. CORE ENGINE PAGE INITIALIZATION
@@ -586,69 +588,39 @@ if not engine["world_name"]:
             elif not avatar_prompt_input:
                 st.warning("⚠️ Input Framework Empty: Enter a visual description to forge your profile character.")
             else:
-                with st.spinner("⏳ Igniting graphics engine matrix pipelines... Forging high-res asset card..."):
+                with st.spinner("⏳ Igniting Flux engine matrix pipelines... Forging high-res asset card..."):
                     try:
-                        from openai import OpenAI
-                        client = OpenAI(api_key=API_KEY)
-                        
-                        response = client.images.generate(
-                            model="gpt-image-1",
-                            prompt=f"{avatar_prompt_input.strip()}, cinematic lighting, hyper-detailed character portrait, concept art style",
-                            n=1,
-                            size="1024x1024",
-                            quality="auto"
+                        # 📡 REPLICATE FLUX PIPELINE: Zero name bans, instant render speeds
+                        output = replicate.run(
+                            "black-forest-labs/flux-schnell",
+                            input={
+                                "prompt": f"{avatar_prompt_input.strip()}, high-quality cinematic character portrait, masterpiece concept art style",
+                                "aspect_ratio": "1:1",
+                                "output_format": "jpg"
+                            }
                         )
                         
-                                                  # 🎯 THE DEFINITIVE UNWRAP CRUISE: Target the first individual object inside the data array list
-                        generated_url = None
-                        try:
-                            if isinstance(response.data, list) and len(response.data) > 0:
-                                # 💡 THE FIX: Extract the actual inner object at index 0 out of the list box
-                                first_item = response.data[0]
-                                
-                                # ⚡ METHOD A: Direct Dot-Notation extraction on the class object
-                                if hasattr(first_item, 'url') and first_item.url:
-                                    generated_url = first_item.url
-                                # ⚡ METHOD B: Direct Property extraction bypassing hasattr validation
-                                elif getattr(first_item, 'url', None):
-                                    generated_url = getattr(first_item, 'url')
-                                # ⚡ METHOD C: Convert the Pydantic core structure directly to a raw Python dictionary
-                                elif hasattr(first_item, 'model_dump'):
-                                    dumped_dict = first_item.model_dump()
-                                    generated_url = dumped_dict.get('url')
-                                elif hasattr(first_item, 'dict'):
-                                    dumped_dict = first_item.dict()
-                                    generated_url = dumped_dict.get('url')
-                        except Exception as parse_core_err:
-                            st.caption(f"Extraction optimization standby: {parse_core_err}")
-                            
-                        if not generated_url or str(generated_url) == "None" or "http" not in str(generated_url):
-                            raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Verified structural fields: {dir(response.data[0]) if (response.data and len(response.data) > 0) else 'None'}")
+                        # 🎯 THE ULTRA-CLEAN EXTRACT: Replicate returns a clean, direct web string address inside a simple list
+                        generated_url = output[0] if isinstance(output, list) else output
                         
-                        # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
+                        # 📡 DOWNLOAD RAW PIXELS: Pull direct image bytes from the un-firewalled link
                         img_data = requests.get(str(generated_url)).content
                         file_name = f"{st.session_state.user.id}_avatar.jpg"
-
                         
-                        # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
-                        img_data = requests.get(generated_url).content
-                        file_name = f"{st.session_state.user.id}_avatar.jpg"
-
-                        
-                        # 🗜️ CLOUD FILE TRANSFER: Stream the physical file straight into your own storage bucket
+                        # 🗜️ CLOUD FILE TRANSFER: Stream straight into your own storage bucket house
                         supabase_client.storage.from_("avatars").upload(
                             path=file_name,
                             file=img_data,
                             file_options={"content-type": "image/jpeg", "x-upsert": "true"}
                         )
                         
-                        # 🔗 EXTRACT THE PERMANENT ASSET DOMAIN STRING 
+                        # 🔗 EXTRACT PERMANENT DOMAIN LINK ADDRESS
                         public_vault_url = supabase_client.storage.from_("avatars").get_public_url(file_name)
                         
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                        # 👑 SECURE DATA SYNC: Clean string slice for the username handle
+                        # 👑 SECURE DATA SYNC: Lock the clean URL straight into your profile record column
                         email_handle = str(st.session_state.user.email).split("@")[0]
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
@@ -658,7 +630,7 @@ if not engine["world_name"]:
                         }).execute()
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
-                        time.sleep(3)
+                        time.sleep(2)
                         st.rerun()
                         
                     except Exception as img_forge_err:
@@ -666,6 +638,7 @@ if not engine["world_name"]:
                         
         st.divider()
         st.markdown("#### Active Community Records")
+
 
         
         # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
@@ -940,25 +913,26 @@ if not is_premium_active and not has_trial_tokens:
                 
     st.stop()
 
-
-# 8. INITIAL COSMOS ENTRY SCENE SPARK (WITH VALID DALL-E 3 GENERATION)
-if not engine["story_log"]:
-    if "world_cover_url" not in st.session_state:
-        st.session_state.world_cover_url = "https://picsum.photos"
-
     with st.spinner("⏳ Simulating initial cosmos entry scene & forging visual assets..."):
         try:
-            image_prompt = f"Cinematic widescreen matte game concept background for an alternate reality adventure titled '{engine['world_name']}' in the genre of '{engine['world_genre']}'. Vivid colors, epic landscape, beautiful atmospheric light, zero text, zero labels, high resolution."
-            img_response = openai_client.images.generate(
-                model="gpt-image-1",
-                prompt=image_prompt,
-                n=1,
-                size="1024x1024",
-                quality="auto" # 🎯 Fixed from 'standard'
+            image_prompt = f"Cinematic widescreen matte game concept background landscape scenery for an alternate reality adventure titled '{engine['world_name']}' in the genre of '{engine['world_genre']}'. Vivid colors, epic landscape, beautiful atmospheric light, zero text, zero labels, high resolution."
+            
+            # 🌌 REPLICATE WORLD BACKGROUND PIPELINE: Fast cinematic environment landscapes
+            world_output = replicate.run(
+                "black-forest-labs/flux-schnell",
+                input={
+                    "prompt": image_prompt,
+                    "aspect_ratio": "16:9",
+                    "output_format": "jpg"
+                }
             )
-            st.session_state.world_cover_url = img_response.data[0].url
+            
+            # 🎯 THE CLEAN STRING FIX: Assign the direct URL output string cleanly to your session state
+            st.session_state.world_cover_url = str(world_output)
+            
         except Exception as e:
             st.error(f"Graphics Engine Fault: {e}")
+
 
 
         master_prompt = (
