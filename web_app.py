@@ -624,32 +624,34 @@ if not engine["world_name"]:
         st.divider()
         st.markdown("#### Active Community Records")
         
-                # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
+                       # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
         if "user" in st.session_state:
             try:
                 profile_records = supabase_client.table("profiles").select("*").execute()
                 
                 if profile_records.data:
-                    # Render your personal priority master card cleanly right at the top
-                    my_card = next((row for row in profile_records.data if row.get("id") == st.session_state.user.id), None)
+                    # 🎯 THE UNWRAP FIX: Find your dictionary data row directly
+                    my_card = None
+                    for row in profile_records.data:
+                        if str(row.get("id")) == str(st.session_state.user.id):
+                            my_card = row
+                            break
                     
-                    if my_card and my_card.get("avatar_url") and "picsum" not in my_card.get("avatar_url"):
-                        st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
-                        col_me_img, col_me_txt = st.columns(2)
-                        with col_me_img:
-                            # 🎯 THE UNBREACHABLE FALLBACK: Force a high-quality default if the database link evaluates to None
-                            avatar_link = my_card.get("avatar_url")
-                            if avatar_link and str(avatar_link) != "None" and "http" in str(avatar_link):
+                    if my_card:
+                        avatar_link = my_card.get("avatar_url")
+                        # Verify a valid image address is present before drawing layout containers
+                        if avatar_link and str(avatar_link) != "None" and "http" in str(avatar_link):
+                            st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
+                            col_me_img, col_me_txt = st.columns(2)
+                            with col_me_img:
                                 st.image(str(avatar_link), use_container_width=True)
-                            else:
-                                st.image("https://picsum.photos", caption="Matrix Vault Initializing...", use_container_width=True)
-                        with col_me_txt:
-                            display_name = char["name"] if char["name"] else "Wanderer"
-                            st.markdown(f"### {display_name.upper()}")
-                            st.markdown("❤️ **HP:** `100/100` | 🎒 `Active Loadout Secured`")
-                            st.caption(f"*Secure Master Signature: user_{my_card.get('id')[:8]}*")
-                        st.divider()
-                    
+                            with col_me_txt:
+                                display_name = char["name"] if char["name"] else "Wanderer"
+                                st.markdown(f"### {display_name.upper()}")
+                                st.markdown("❤️ **HP:** `100/100` | 🎒 `Active Loadout Secured`")
+                                st.caption(f"*Secure Master Signature: user_{my_card.get('id')[:8]}*")
+                            st.divider()
+
                     # Package and build dynamic 3-column layout boxes for any other community creations
                     valid_community_cards = [row for row in profile_records.data if row.get("avatar_url") and "picsum" not in row.get("avatar_url") and row.get("id") != st.session_state.user.id]
                     
