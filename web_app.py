@@ -599,30 +599,34 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                                                # 🔎 INDIE DIAGNOSTIC OVERLAY: Force a live blueprint readout on screen if extraction breaks
+                          # 🎯 THE DEFINITIVE UNWRAP CRUISE: Force absolute direct parameter object property extraction
                         generated_url = None
                         try:
                             if isinstance(response.data, list) and len(response.data) > 0:
-                                # Target the first element cell inside the array
                                 first_item = response.data[0]
-                                st.info(f"⚡ Diagnostics Active - Inner Object Properties: {dir(first_item)}")
                                 
+                                # ⚡ METHOD A: Direct Dot-Notation extraction on the class object
                                 if hasattr(first_item, 'url') and first_item.url:
                                     generated_url = first_item.url
-                                elif isinstance(first_item, dict):
-                                    generated_url = first_item.get('url')
-                                else:
-                                    generated_url = getattr(first_item, 'url', None)
-                        except Exception as diag_err:
-                            st.warning(f"Diagnostic inspection stalled: {diag_err}")
+                                # ⚡ METHOD B: Direct Property extraction bypassing hasattr validation
+                                elif getattr(first_item, 'url', None):
+                                    generated_url = getattr(first_item, 'url')
+                                # ⚡ METHOD C: Convert the Pydantic core structure directly to a raw Python dictionary
+                                elif hasattr(first_item, 'model_dump'):
+                                    dumped_dict = first_item.model_dump()
+                                    generated_url = dumped_dict.get('url')
+                                elif hasattr(first_item, 'dict'):
+                                    dumped_dict = first_item.dict()
+                                    generated_url = dumped_dict.get('url')
+                        except Exception as parse_core_err:
+                            st.caption(f"Extraction optimization standby: {parse_core_err}")
                             
                         if not generated_url or str(generated_url) == "None" or "http" not in str(generated_url):
-                            raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Object structure: {type(response.data)}")
+                            raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Verified structural fields: {dir(response.data[0]) if response.data else 'None'}")
                         
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
                         img_data = requests.get(str(generated_url)).content
                         file_name = f"{st.session_state.user.id}_avatar.jpg"
-
 
 
                         
