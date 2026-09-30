@@ -600,7 +600,7 @@ if not engine["world_name"]:
                         )
                         
                         # 🎯 UNPACK THE PAYLOAD LAYER SAFELY
-                        generated_url = response.data.url
+                        generated_url = response.data[0].url
                         
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
                         img_data = requests.get(generated_url).content
