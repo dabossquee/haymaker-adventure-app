@@ -635,7 +635,7 @@ if not engine["world_name"]:
                     
                     if my_card and my_card.get("avatar_url") and "picsum" not in my_card.get("avatar_url"):
                         st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
-                        col_me_img, col_me_txt = st.columns()
+                        col_me_img, col_me_txt = st.columns(2)
                         with col_me_img:
                             st.image(str(my_card.get("avatar_url")), use_container_width=True)
                         with col_me_txt:
