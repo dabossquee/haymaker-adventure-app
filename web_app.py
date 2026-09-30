@@ -599,18 +599,22 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                        # 🎯 THE REAL FIXED UNWRAP: Extract the string value from the correct schema position
-                        if response.data and len(response.data) > 0:
-                            # Open the list array container first to target the internal Image object properties cleanly
-                            img_obj = response.data[0]
-                            if hasattr(img_obj, 'url') and img_obj.url:
-                                generated_url = img_obj.url
-                            elif isinstance(img_obj, dict):
-                                generated_url = img_obj.get('url')
-                            else:
-                                generated_url = getattr(img_obj, 'url', None)
-                        else:
-                            generated_url = None
+                                                # 🔎 INDIE DIAGNOSTIC OVERLAY: Force a live blueprint readout on screen if extraction breaks
+                        generated_url = None
+                        try:
+                            if isinstance(response.data, list) and len(response.data) > 0:
+                                # Target the first element cell inside the array
+                                first_item = response.data[0]
+                                st.info(f"⚡ Diagnostics Active - Inner Object Properties: {dir(first_item)}")
+                                
+                                if hasattr(first_item, 'url') and first_item.url:
+                                    generated_url = first_item.url
+                                elif isinstance(first_item, dict):
+                                    generated_url = first_item.get('url')
+                                else:
+                                    generated_url = getattr(first_item, 'url', None)
+                        except Exception as diag_err:
+                            st.warning(f"Diagnostic inspection stalled: {diag_err}")
                             
                         if not generated_url or str(generated_url) == "None" or "http" not in str(generated_url):
                             raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Object structure: {type(response.data)}")
@@ -618,6 +622,7 @@ if not engine["world_name"]:
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
                         img_data = requests.get(str(generated_url)).content
                         file_name = f"{st.session_state.user.id}_avatar.jpg"
+
 
 
                         
