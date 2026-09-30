@@ -602,15 +602,17 @@ if not engine["world_name"]:
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                        # Cast the complex payload object to a clean string format to clear Supabase text column limits
+                                                # 👑 SECURE DATA SYNC: Use your verified session email to strip out broken dictionary key blocks
+                        email_handle = str(st.session_state.user.email).split("@")[0]
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
                             "avatar_url": str(generated_url),
-                            "username": char["name"] if char["name"] else "Wanderer",
+                            "username": email_handle,
                             "is_premium": True
                         }).execute()
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
+
                         
                         if generated_url and str(generated_url) != "None":
                             st.image(str(generated_url), caption="Your Forged Identity Profile", use_container_width=True)
