@@ -599,10 +599,11 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                          # 🎯 THE DEFINITIVE UNWRAP CRUISE: Force absolute direct parameter object property extraction
+                                                  # 🎯 THE DEFINITIVE UNWRAP CRUISE: Target the first individual object inside the data array list
                         generated_url = None
                         try:
                             if isinstance(response.data, list) and len(response.data) > 0:
+                                # 💡 THE FIX: Extract the actual inner object at index 0 out of the list box
                                 first_item = response.data[0]
                                 
                                 # ⚡ METHOD A: Direct Dot-Notation extraction on the class object
@@ -622,12 +623,11 @@ if not engine["world_name"]:
                             st.caption(f"Extraction optimization standby: {parse_core_err}")
                             
                         if not generated_url or str(generated_url) == "None" or "http" not in str(generated_url):
-                            raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Verified structural fields: {dir(response.data[0]) if response.data else 'None'}")
+                            raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Verified structural fields: {dir(response.data[0]) if (response.data and len(response.data) > 0) else 'None'}")
                         
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
                         img_data = requests.get(str(generated_url)).content
                         file_name = f"{st.session_state.user.id}_avatar.jpg"
-
 
                         
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
