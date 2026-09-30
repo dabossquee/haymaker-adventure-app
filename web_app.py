@@ -599,14 +599,26 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                         # 🎯 UNPACK THE PAYLOAD LAYER SAFELY: Verify data exists before targeting index 0
+                                                 # 🎯 THE REAL FIXED UNWRAP: Extract the string value from the correct schema position
                         if response.data and len(response.data) > 0:
-                            generated_url = response.data[0].url
+                            # Use dictionary key or direct attribute extraction depending on schema state
+                            img_obj = response.data[0]
+                            if hasattr(img_obj, 'url'):
+                                generated_url = img_obj.url
+                            elif isinstance(img_obj, dict):
+                                generated_url = img_obj.get('url')
+                            else:
+                                generated_url = getattr(img_obj, 'url', None)
                         else:
                             generated_url = None
                             
-                        if not generated_url or str(generated_url) == "None":
-                            raise Exception("OpenAI successfully processed the request but returned an empty or invalid URL path string.")
+                        if not generated_url or str(generated_url) == "None" or "http" not in str(generated_url):
+                            raise Exception(f"Extraction Layer Fault: Found raw data payload but failed to parse string URL address. Object structure: {type(response.data[0])}")
+                        
+                        # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
+                        img_data = requests.get(str(generated_url)).content
+                        file_name = f"{st.session_state.user.id}_avatar.jpg"
+
                         
                         # 📡 DOWNLOAD BINARY PIXELS: Pull the raw image directly out of OpenAI memory cache
                         img_data = requests.get(generated_url).content
