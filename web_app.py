@@ -565,7 +565,7 @@ if not engine["world_name"]:
         is_user_premium = getattr(st.session_state, 'is_premium', False)
         ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
         
-        # 👑 Secure Boss Mode Authorization
+        # 👑 Secure Boss Mode Authorization Check
         if "user" in st.session_state and ADMIN_EMAIL:
             if st.session_state.user.email == ADMIN_EMAIL:
                 is_user_premium = True
@@ -578,7 +578,7 @@ if not engine["world_name"]:
         
         if st.button("✨ Forge Avatar Identity", use_container_width=True, key="btn_forge_avatar_sandbox_trigger"):
             if "user" not in st.session_state:
-                st.error("🔒 Access Locked: Please create an account or sign in to authorize identity forge protocols.")
+                st.error("🔒 Access Locked: Please create an account or sign in via the Account Profile tab to authorize identity forge protocols.")
             elif not is_user_premium:
                 st.error("🔒 Premium Pass Required: Avatar generation requires an active Avatar, Spartan, or STEM pass tier.")
             elif not avatar_prompt_input:
@@ -597,12 +597,12 @@ if not engine["world_name"]:
                             quality="auto"
                         )
                         
-                        generated_url = response.data[0].url
+                        generated_url = response.data.url
                         
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                                                # 👑 SECURE DATA SYNC: Explicitly cast the image url to a clean string format
+                        # Cast the complex payload object to a clean string format to clear Supabase text column limits
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
                             "avatar_url": str(generated_url),
@@ -620,45 +620,51 @@ if not engine["world_name"]:
                         
                     except Exception as img_forge_err:
                         st.error(f"Graphics Engine Fault: {img_forge_err}")
-                        st.caption("Ensure your OpenAI billing dashboard balance has cleared successfully into Tier 1 limits.")
                         
         st.divider()
         st.markdown("#### Active Community Records")
         
-        # 📡 DYNAMIC ENGINE: Read and build boxes for all active community updates
-        try:
-            profile_records = supabase_client.table("profiles").select("*").execute()
-            
-            if profile_records.data:
-                # hard filter to strip out only un-forged empty rows, allowing custom updates to render cleanly
-                valid_cards = [row for row in profile_records.data if row.get("avatar_url") and row.get("avatar_url") != ""]
+        # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
+        if "user" in st.session_state:
+            try:
+                profile_records = supabase_client.table("profiles").select("*").execute()
                 
-                if valid_cards:
-                    cols = st.columns(3)
-                    for idx, card in enumerate(valid_cards):
-                        col_target = cols[idx % 3]
-                        with col_target:
-                            st.markdown(f"##### 🎭 {card.get('username', 'Wanderer').upper()}")
-                            st.markdown(f"❤️ **HP:** `100/100` | 🎒 `Inventory Active`")
-                            st.caption(f"*Creator Vault Signature: user_{card.get('id')[:6]}*")
-                            
-                            st.image(str(card.get("avatar_url")), use_container_width=True)
-                            
-                            if st.button(f"🔍 Inspect {card.get('username', 'Wanderer')} Card", key=f"inspect_card_{card.get('id')}", use_container_width=True):
-                                st.session_state.active_modal = {
-                                    "title": f"🎭 {card.get('username', 'Wanderer').upper()}",
-                                    "creator": f"User_{card.get('id')[:6]}",
-                                    "bio": "A unique visual identity forged live inside the community graphics sandbox loop.",
-                                    "img": str(card.get("avatar_url"))
-                                }
-                                st.rerun()
-                            st.divider()
+                if profile_records.data:
+                    # Render your personal priority master card cleanly right at the top
+                    my_card = next((row for row in profile_records.data if row.get("id") == st.session_state.user.id), None)
+                    
+                    if my_card and my_card.get("avatar_url") and "picsum" not in my_card.get("avatar_url"):
+                        st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
+                        col_me_img, col_me_txt = st.columns()
+                        with col_me_img:
+                            st.image(str(my_card.get("avatar_url")), use_container_width=True)
+                        with col_me_txt:
+                            display_name = char["name"] if char["name"] else "Wanderer"
+                            st.markdown(f"### {display_name.upper()}")
+                            st.markdown("❤️ **HP:** `100/100` | 🎒 `Active Loadout Secured`")
+                            st.caption(f"*Secure Master Signature: user_{my_card.get('id')[:8]}*")
+                        st.divider()
+                    
+                    # Package and build dynamic 3-column layout boxes for any other community creations
+                    valid_community_cards = [row for row in profile_records.data if row.get("avatar_url") and "picsum" not in row.get("avatar_url") and row.get("id") != st.session_state.user.id]
+                    
+                    if valid_community_cards:
+                        st.markdown("##### 👥 ALLIED TIMELINE DREAMERS")
+                        cols = st.columns(3)
+                        for idx, card in enumerate(valid_community_cards):
+                            col_target = cols[idx % 3]
+                            with col_target:
+                                st.markdown(f"##### 🎭 {card.get('username', 'Wanderer').upper()}")
+                                st.image(str(card.get("avatar_url")), use_container_width=True)
+                                st.divider()
+                    elif not my_card or not my_card.get("avatar_url") or "picsum" in my_card.get("avatar_url"):
+                        st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
                 else:
                     st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
-            else:
-                st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
-        except Exception as db_read_err:
-            st.caption(f"Database Sync Standby: {db_read_err}")
+            except Exception as db_read_err:
+                st.caption(f"Database Sync Standby: {db_read_err}")
+        else:
+            st.info("🔑 Please sign in via the 'Account Profile' tab to view live character assets and authorize database ledger streams.")
 
                 
     with tab_profile:
