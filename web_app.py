@@ -602,7 +602,7 @@ if not engine["world_name"]:
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                                                # 👑 SECURE DATA SYNC: Use your verified session email to strip out broken dictionary key blocks
+                        # 👑 SECURE DATA SYNC: Safe email handle mapping with zero dictionary failures
                         email_handle = str(st.session_state.user.email).split("@")[0]
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
@@ -612,7 +612,6 @@ if not engine["world_name"]:
                         }).execute()
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
-
                         
                         if generated_url and str(generated_url) != "None":
                             st.image(str(generated_url), caption="Your Forged Identity Profile", use_container_width=True)
@@ -626,36 +625,37 @@ if not engine["world_name"]:
         st.divider()
         st.markdown("#### Active Community Records")
         
-                       # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
+        # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
         if "user" in st.session_state:
             try:
                 profile_records = supabase_client.table("profiles").select("*").execute()
                 
                 if profile_records.data:
-                    # 🎯 THE UNWRAP FIX: Find your dictionary data row directly
+                    # 🎯 THE REAL FIXED UNWRAP: Extract your live data row by checking strings cleanly
                     my_card = None
                     for row in profile_records.data:
                         if str(row.get("id")) == str(st.session_state.user.id):
                             my_card = row
                             break
                     
-                    if my_card:
-                        avatar_link = my_card.get("avatar_url")
-                        # Verify a valid image address is present before drawing layout containers
-                        if avatar_link and str(avatar_link) != "None" and "http" in str(avatar_link):
-                            st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
-                            col_me_img, col_me_txt = st.columns(2)
-                            with col_me_img:
+                    if my_card and my_card.get("avatar_url") and "picsum" not in my_card.get("avatar_url"):
+                        st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
+                        col_me_img, col_me_txt = st.columns(2)
+                        with col_me_img:
+                            avatar_link = my_card.get("avatar_url")
+                            if avatar_link and str(avatar_link) != "None" and "http" in str(avatar_link):
                                 st.image(str(avatar_link), use_container_width=True)
-                            with col_me_txt:
-                                display_name = char["name"] if char["name"] else "Wanderer"
-                                st.markdown(f"### {display_name.upper()}")
-                                st.markdown("❤️ **HP:** `100/100` | 🎒 `Active Loadout Secured`")
-                                st.caption(f"*Secure Master Signature: user_{my_card.get('id')[:8]}*")
-                            st.divider()
-
-                    # Package and build dynamic 3-column layout boxes for any other community creations
-                    valid_community_cards = [row for row in profile_records.data if row.get("avatar_url") and "picsum" not in row.get("avatar_url") and row.get("id") != st.session_state.user.id]
+                            else:
+                                st.image("https://picsum.photos", caption="Matrix Vault Initializing...", use_container_width=True)
+                        with col_me_txt:
+                            display_name = my_card.get("username", "Wanderer")
+                            st.markdown(f"### {str(display_name).upper()}")
+                            st.markdown("❤️ **HP:** `100/100` | 🎒 `Active Loadout Secured`")
+                            st.caption(f"*Secure Master Signature: user_{my_card.get('id')[:8]}*")
+                        st.divider()
+                    
+                    # Package and build dynamic 3-column layout boxes for all entries in the system ledger
+                    valid_community_cards = [row for row in profile_records.data if row.get("avatar_url") and "picsum" not in row.get("avatar_url")]
                     
                     if valid_community_cards:
                         st.markdown("##### 👥 ALLIED TIMELINE DREAMERS")
@@ -663,10 +663,11 @@ if not engine["world_name"]:
                         for idx, card in enumerate(valid_community_cards):
                             col_target = cols[idx % 3]
                             with col_target:
-                                st.markdown(f"##### 🎭 {card.get('username', 'Wanderer').upper()}")
+                                st.markdown(f"##### 🎭 {str(card.get('username', 'Wanderer')).upper()}")
                                 st.image(str(card.get("avatar_url")), use_container_width=True)
+                                st.caption(f"*Signature: user_{card.get('id')[:6]}*")
                                 st.divider()
-                    elif not my_card or not my_card.get("avatar_url") or "picsum" in my_card.get("avatar_url"):
+                    elif not my_card or not my_card.get("avatar_url"):
                         st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
                 else:
                     st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
