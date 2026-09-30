@@ -556,22 +556,20 @@ if not engine["world_name"]:
 
     with tab_avatars:
         st.markdown("### Community Avatars Portal")
-        st.caption("Click 'Inspect File' to view full resolution profiles and creator records.")
+        st.caption("Browse live identities forged across active world timelines.")
         st.divider()
         
-        # 🎨 THE HIGH-CONVERSION AVATAR FORGE SANDBOX ENTRY ZONE
-        st.markdown("#### Forged Identities")
+        # 🎨 THE SECURE AVATAR FORGE SANDBOX ENTRY ZONE
+        st.markdown("#### Forge Your Identity")
         
-                # 👑 BOSS MODE SECURE DEVELOPER OVERRIDE BYPASS
         is_user_premium = getattr(st.session_state, 'is_premium', False)
+        ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
         
-        # Double-layer confirmation: Checks session authentication state against hidden server tokens
+        # 👑 Secure Boss Mode Authorization
         if "user" in st.session_state and ADMIN_EMAIL:
             if st.session_state.user.email == ADMIN_EMAIL:
                 is_user_premium = True
-
-
-        
+                
         avatar_prompt_input = st.text_input(
             "Describe your dream avatar character appearance:", 
             placeholder="e.g., A cybernetic samurai with a glowing red visor, hyper-detailed digital art style...", 
@@ -586,7 +584,7 @@ if not engine["world_name"]:
             elif not avatar_prompt_input:
                 st.warning("⚠️ Input Framework Empty: Enter a visual description to forge your profile character.")
             else:
-                with st.spinner(" Igniting image matrix pipelines... Forging high-res asset card..."):
+                with st.spinner("⏳ Igniting graphics engine matrix pipelines... Forging high-res asset card..."):
                     try:
                         from openai import OpenAI
                         client = OpenAI(api_key=API_KEY)
@@ -604,20 +602,18 @@ if not engine["world_name"]:
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
+                        # Save directly into your encrypted hidden storage drawer table
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
                             "avatar_url": generated_url,
                             "username": char["name"] if char["name"] else "Wanderer",
-                            "is_premium": True
+                            "is_premium": is_user_premium
                         }).execute()
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
                         
-                        # 🎯 THE FORTIFIED IMAGE GATE: Explicitly verify the url string exists before rendering
                         if generated_url and str(generated_url) != "None":
                             st.image(str(generated_url), caption="Your Forged Identity Profile", use_container_width=True)
-                        else:
-                            st.warning("📡 Asset link queued in database. Refreshing dashboard terminal to load card graphics...")
                         
                         time.sleep(3)
                         st.rerun()
@@ -625,48 +621,46 @@ if not engine["world_name"]:
                     except Exception as img_forge_err:
                         st.error(f"Graphics Engine Fault: {img_forge_err}")
                         st.caption("Ensure your OpenAI billing dashboard balance has cleared successfully into Tier 1 limits.")
-
                         
         st.divider()
+        st.markdown("#### Active Community Records")
         
-        # 👤 Public Community Avatar cards grid block continues seamlessly right below
-        cols_avatars = st.columns(3)
-        with cols_avatars[0]:
-            st.markdown("#### 👤 COMMANDER DIXON")
-            st.markdown("❤️ **HP:** `100/100` | 🎒 `Survival Gear`")
-            st.caption("*Ex-military tactical operative specializing in high-stakes salvage ops.*")
-            st.image("https://picsum.photos", use_container_width=True)
-            if st.button("🔍 Inspect Dixon File", key="btn_dixon_inspect", use_container_width=True):
-                st.session_state.active_modal = {
-                    "title": "👤 COMMANDER DIXON", "creator": "Alpha_Dreamer99",
-                    "bio": "Ex-military tactical operative specializing in high-stakes salvage ops across lawless outer rims.",
-                    "img": "https://picsum.photos"
-                }
-                st.rerun()
-        with cols_avatars[1]:
-            st.markdown("#### 👤 NYX THE SHADOW")
-            st.markdown("❤️ **HP:** `85/100` | 🎒 `Datapad, Lockpick`")
-            st.caption("*Cybernetic network runner operating out of Tokyo's neon underground.*")
-            st.image("https://picsum.photos", use_container_width=True)
-            if st.button("🔍 Inspect Nyx File", key="btn_nyx_inspect", use_container_width=True):
-                st.session_state.active_modal = {
-                    "title": "👤 NYX THE SHADOW", "creator": "Neon_Ghost",
-                    "bio": "Cybernetic network runner operating out of Neo-Tokyo's underbelly. Known for breaking corporate firewalls.",
-                    "img": "https://picsum.photos"
-                }
-                st.rerun()
-        with cols_avatars[2]:
-            st.markdown("#### 👤 VALERIUS THE EXILE")
-            st.markdown("❤️ **HP:** `100/100` | 🎒 `Ancient Blade`")
-            st.caption("*Nomadic bloodline guardian navigating dark medieval covenant wars.*")
-            st.image("https://picsum.photos", use_container_width=True)
-            if st.button("🔍 Inspect Valerius File", key="btn_valerius_inspect", use_container_width=True):
-                st.session_state.active_modal = {
-                    "title": "👤 VALERIUS THE EXILE", "creator": "Gothic_Lord",
-                    "bio": "Nomadic bloodline guardian navigating dark medieval covenant wars. Wielder of the sun-forged iron blade.",
-                    "img": "https://picsum.photos"
-                }
-                st.rerun()
+        # 📡 DYNAMIC ENGINE: Read and build boxes ONLY for real user images saved in Supabase
+        try:
+            profile_records = supabase_client.table("profiles").select("*").execute()
+            
+            if profile_records.data:
+                # Filter out any placeholder rows or rows without custom forged image links
+                valid_cards = [row for row in profile_records.data if row.get("avatar_url") and "picsum" not in row.get("avatar_url")]
+                
+                if valid_cards:
+                    # Dynamically package cards inside a clean grid responsive column stream
+                    cols = st.columns(3)
+                    for idx, card in enumerate(valid_cards):
+                        col_target = cols[idx % 3]
+                        with col_target:
+                            st.markdown(f"##### 🎭 {card.get('username', 'Wanderer').upper()}")
+                            st.markdown(f"❤️ **HP:** `100/100` | 🎒 `Inventory Active`")
+                            st.caption(f"*Creator Vault Signature: user_{card.get('id')[:6]}*")
+                            
+                            # Pull the permanent live image straight out of the database drawer
+                            st.image(str(card.get("avatar_url")), use_container_width=True)
+                            
+                            if st.button(f"🔍 Inspect {card.get('username', 'Wanderer')} Card", key=f"inspect_card_{card.get('id')}", use_container_width=True):
+                                st.session_state.active_modal = {
+                                    "title": f"🎭 {card.get('username', 'Wanderer').upper()}",
+                                    "creator": f"User_{card.get('id')[:6]}",
+                                    "bio": "A unique visual identity forged live inside the community graphics sandbox loop.",
+                                    "img": str(card.get("avatar_url"))
+                                }
+                                st.rerun()
+                            st.divider()
+                else:
+                    st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
+            else:
+                st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
+        except Exception as db_read_err:
+            st.caption(f"Database Sync Standby: {db_read_err}")
 
 
                 
