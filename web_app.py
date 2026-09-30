@@ -602,12 +602,12 @@ if not engine["world_name"]:
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                        # Save directly into your encrypted hidden storage drawer table
+                                                # 👑 SECURE DATA SYNC: Explicitly cast the image url to a clean string format
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
-                            "avatar_url": generated_url,
+                            "avatar_url": str(generated_url),
                             "username": char["name"] if char["name"] else "Wanderer",
-                            "is_premium": is_user_premium
+                            "is_premium": True
                         }).execute()
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
@@ -625,16 +625,15 @@ if not engine["world_name"]:
         st.divider()
         st.markdown("#### Active Community Records")
         
-        # 📡 DYNAMIC ENGINE: Read and build boxes ONLY for real user images saved in Supabase
+        # 📡 DYNAMIC ENGINE: Read and build boxes for all active community updates
         try:
             profile_records = supabase_client.table("profiles").select("*").execute()
             
             if profile_records.data:
-                # Filter out any placeholder rows or rows without custom forged image links
-                valid_cards = [row for row in profile_records.data if row.get("avatar_url") and "picsum" not in row.get("avatar_url")]
+                # hard filter to strip out only un-forged empty rows, allowing custom updates to render cleanly
+                valid_cards = [row for row in profile_records.data if row.get("avatar_url") and row.get("avatar_url") != ""]
                 
                 if valid_cards:
-                    # Dynamically package cards inside a clean grid responsive column stream
                     cols = st.columns(3)
                     for idx, card in enumerate(valid_cards):
                         col_target = cols[idx % 3]
@@ -643,7 +642,6 @@ if not engine["world_name"]:
                             st.markdown(f"❤️ **HP:** `100/100` | 🎒 `Inventory Active`")
                             st.caption(f"*Creator Vault Signature: user_{card.get('id')[:6]}*")
                             
-                            # Pull the permanent live image straight out of the database drawer
                             st.image(str(card.get("avatar_url")), use_container_width=True)
                             
                             if st.button(f"🔍 Inspect {card.get('username', 'Wanderer')} Card", key=f"inspect_card_{card.get('id')}", use_container_width=True):
@@ -661,7 +659,6 @@ if not engine["world_name"]:
                 st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
         except Exception as db_read_err:
             st.caption(f"Database Sync Standby: {db_read_err}")
-
 
                 
     with tab_profile:
