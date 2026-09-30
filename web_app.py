@@ -602,14 +602,15 @@ if not engine["world_name"]:
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                        # 👑 SECURE DATA SYNC: Safe email handle mapping with zero dictionary failures
+                                                # 👑 THE UNBREAKABLE STRING CAST: Force index 0 to strip out the list array wrapper completely
                         email_handle = str(st.session_state.user.email).split("@")[0]
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
                             "avatar_url": str(generated_url),
-                            "username": email_handle,
+                            "username": str(email_handle),
                             "is_premium": True
                         }).execute()
+
                         
                         st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
                         
