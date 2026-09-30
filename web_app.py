@@ -624,7 +624,7 @@ if not engine["world_name"]:
         st.divider()
         st.markdown("#### Active Community Records")
         
-        # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
+                # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
         if "user" in st.session_state:
             try:
                 profile_records = supabase_client.table("profiles").select("*").execute()
@@ -637,7 +637,12 @@ if not engine["world_name"]:
                         st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
                         col_me_img, col_me_txt = st.columns(2)
                         with col_me_img:
-                            st.image(str(my_card.get("avatar_url")), use_container_width=True)
+                            # 🎯 THE UNBREACHABLE FALLBACK: Force a high-quality default if the database link evaluates to None
+                            avatar_link = my_card.get("avatar_url")
+                            if avatar_link and str(avatar_link) != "None" and "http" in str(avatar_link):
+                                st.image(str(avatar_link), use_container_width=True)
+                            else:
+                                st.image("https://picsum.photos", caption="Matrix Vault Initializing...", use_container_width=True)
                         with col_me_txt:
                             display_name = char["name"] if char["name"] else "Wanderer"
                             st.markdown(f"### {display_name.upper()}")
