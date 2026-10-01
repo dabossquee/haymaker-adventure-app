@@ -36,7 +36,17 @@ LOCALIZATION_VAULT = {
         "lbl_enemies": "💀 Rogue / Opposing Faction Name",
         "lbl_directives": "✍️ Custom Environmental Directives / Constraints",
         "btn_deploy": "🚀 Deploy and Ignite Core Engine",
-        "msg_success": "🎉 Custom universe timeline seed compiled successfully!"
+        "msg_success": "🎉 Custom universe timeline seed compiled successfully!",
+        "genres": ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"],
+        "atmosphere_options": ["Vacuum (Space)", "Thin / Toxic", "Breathable Baseline", "Hyper-Dense / Corrosive"],
+        "trial_active": "⏳ TRIAL ACTIVE: {} Actions Left",
+        "pool_depleted": "🔒 Action Pool Depleted!",
+        "premium_pilot": "👑 PREMIUM PILOT AUTHENTICATED: {}",
+        "active_records_title": "#### 👥 Active Community Records",
+        "your_identity_title": "##### 👑 YOUR ACTIVE FORGED IDENTITY",
+        "allied_dreamers_title": "##### 👥 ALLIED TIMELINE DREAMERS",
+        "empty_ledger": "✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!",
+        "signin_prompt": "🔑 Please sign in via the 'Account Profile' tab to view live character assets and authorize database ledger streams."
     },
     "Español (Spanish)": {
         "tab_explore": "🌐 Explorar Universos",
@@ -60,7 +70,17 @@ LOCALIZATION_VAULT = {
         "lbl_enemies": "💀 Nombre de la Facción Rebelde / Enemiga",
         "lbl_directives": "✍️ Directivas / Restricciones Ambientales Personalizadas",
         "btn_deploy": "🚀 Desplegar e Encender el Motor Central",
-        "msg_success": "🎉 ¡Semilla de la línea de tiempo del universo compilada con éxito!"
+        "msg_success": "🎉 ¡Semilla de la línea de tiempo del universo compilada con éxito!",
+        "genres": ["Ciencia Ficción", "Fantasía Oscura", "Cyberpunk", "Terror", "Romance", "Otro"],
+        "atmosphere_options": ["Vacío (Espacio)", "Delgada / Tóxica", "Línea Base Respirable", "Hiperdensa / Corrosiva"],
+        "trial_active": "⏳ PRUEBA ACTIVA: {} Acciones Restantes",
+        "pool_depleted": "🔒 ¡Pool de Acciones Agotado!",
+        "premium_pilot": "👑 PILOTO PREMIUM AUTENTICADO: {}",
+        "active_records_title": "#### 👥 Registros Activos de la Comunidad",
+        "your_identity_title": "##### 👑 TU IDENTIDAD ACTIVA FORJADA",
+        "allied_dreamers_title": "##### 👥 SOÑADORES DE LÍNEAS DE TIEMPO ALIADAS",
+        "empty_ledger": "✨ El registro público está actualmente vacío. ¡Sé el primero en forjar un avatar de identidad personalizado arriba!",
+        "signin_prompt": "🔑 Inicie sesión a través de la pestaña 'Perfil de cuenta' para ver los activos de los personajes en vivo y autorizar el flujo de datos del registro."
     },
     "简体中文 (Mandarin)": {
         "tab_explore": "🌐 探索宇宙",
@@ -69,7 +89,7 @@ LOCALIZATION_VAULT = {
         "tab_avatars": "🎭 社区化身",
         "tab_profile": "🔑 账户个人资料",
         "status_control": "📡 状态控制",
-        "form_title": "### ⚔️ 宇宙架构师表单",
+        "form_title": "### 宇宙架构师表单",
         "form_subtitle": "在初始化叙事种子之前，调整自定义时间线的基础机制。",
         "lbl_celestial": "##### 🪐 天体物理学",
         "lbl_name": "宇宙名称:",
@@ -84,7 +104,17 @@ LOCALIZATION_VAULT = {
         "lbl_enemies": "💀 叛军/敌对阵营名称",
         "lbl_directives": "✍️ 自定义环境指令/限制",
         "btn_deploy": "🚀 部署并启动核心引擎",
-        "msg_success": "🎉 自定义宇宙时间线种子成功编译！"
+        "msg_success": "🎉 自定义宇宙时间线种子成功编译！",
+        "genres": ["科幻", "黑暗奇幻", "赛博朋克", "恐怖", "浪漫", "其他"],
+        "atmosphere_options": ["真空 (太空)", "稀薄 / 有毒", "可呼吸基准线", "高密度 / 腐蚀性"],
+        "trial_active": "⏳ 试用激活：剩余 {} 次操作",
+        "pool_depleted": "🔒 操作次数已耗尽！",
+        "premium_pilot": "👑 已认证的高级试点员：{}",
+        "active_records_title": "#### 👥 活跃社区记录",
+        "your_identity_title": "##### 👑 您当前处于激活状态的化身",
+        "allied_dreamers_title": "##### 👥 盟友时间线追梦人",
+        "empty_ledger": "✨ 公共账本目前为空。成为第一个在上方锻造自定义头像身份资产的人！",
+        "signin_prompt": "🔑 请通过“账户个人资料”标签登录以查看实时角色资产并授权数据库账本流。"
     }
 }
 
@@ -280,14 +310,23 @@ else:
 
 engine = st.session_state.world_engine
 char = engine["player_character"]
-# 5. DYNAMIC SIDEBAR OVERWATCH PANEL
+# ---------------------------------------------------------
+# # 5. DYNAMIC SIDEBAR OVERWATCH PANEL
+# ---------------------------------------------------------
 with st.sidebar:
-    st.title("STATUS CONTROL")
+    # 🗺️ READ ACTIVE LOCALIZATION MATRIX STATES
+    active_lang = st.session_state.get("app_language", "English")
+    text_vault = LOCALIZATION_VAULT[active_lang]
+
+    # 🪐 DYNAMIC LOCALIZED SIDEBAR BANNER
+    st.title(text_vault["status_control"])
     st.divider()
     
-    # 🚪 HOME TERMINAL ESCAPE GATEWAY
+    # 🚪 HOME TERMINAL ESCAPE GATEWAY (Fully Localized Routing Mapping Node)
     if engine["world_name"]:
-        if st.button("🚪 ABANDON TIMELINE (HOME HUB)", type="secondary", key="sidebar_exit_timeline_gate", use_container_width=True):
+        # Dynamic translate mappings for the abandon navigation button
+        abandon_label = "🚪 ABANDON TIMELINE" if active_lang == "English" else ("🚪 ABANDONAR LÍNEA DE TIEMPO" if active_lang == "Español (Spanish)" else "🚪 放弃时间线")
+        if st.button(abandon_label, type="secondary", key="sidebar_exit_timeline_gate", use_container_width=True):
             st.session_state.world_engine = {
                 "world_id": None, "world_name": "", "world_genre": "",
                 "player_character": {"name": "", "backstory": "", "health": 100, "inventory": ["survival gear"]},
@@ -297,17 +336,13 @@ with st.sidebar:
                 st.session_state.world_cover_url = "https://picsum.photos"
             st.rerun()
         st.divider()
-        
 
-
-  
     # 🔐 PHASE 1 PROTOCOL: The Ironclad Paywall Vault Execution Checks
     if "user" in st.session_state:
         user_id = st.session_state.user.id
         
-               # 📡 LIVE VAULT INVENTORY: Verify subscription metadata & language records directly from your database
+        # 📡 LIVE VAULT INVENTORY: Verify subscription metadata & language records directly from your database
         try:
-            # 🌐 STEP 3 ARCHITECTURE: Select BOTH columns to load their saved language matrix
             profile_query = supabase_client.table("profiles").select("is_premium, interface_language").eq("id", user_id).single().execute()
             
             if profile_query.data:
@@ -317,48 +352,62 @@ with st.sidebar:
                 # 🪐 AUTOMATED PROFILE LOADING: Instantly lock in their saved language choice if it exists
                 if saved_lang:
                     st.session_state.app_language = saved_lang
+                    # Synchronize the lookup matrix mapping states right away
+                    text_vault = LOCALIZATION_VAULT[saved_lang]
             else:
                 is_premium = False
         except Exception:
             is_premium = False  # Strict default safety gate fallback position
 
-
         # 👑 THE PAYWALL GATEWAY: Halt non-paying accounts instantly before loading any story engines
         if not is_premium:
-            st.markdown("### ⚔️ UNLEASH YOUR UNIVERSE")
-            st.write(
-                "To grinders, daydreamers, and creators: You work hard. Now it's time to play hard. "
-                "Corporate apps censor your imagination—this is your unfiltered independent sanctuary. "
-                "Unlock infinite text-adventure worlds, custom storylines, and atmospheric soundtracks instantly."
-            )
+            # Dynamic multi-lingual conversion mappings for the payment gateway layout screens
+            if active_lang == "Español (Spanish)":
+                st.markdown("### ⚔️ DESATA TU UNIVERSO")
+                st.write("Para los que trabajan duro, los soñadores y los creadores: Trabajas duro. Ahora es el momento de jugar duro. Las aplicaciones corporativas censuran tu imaginación; este es tu santuario independiente y sin filtros. Desbloquea mundos infinitos, historias personalizadas y bandas sonoras atmosféricas al instante.")
+                st.info("💡 Consejo profesional: Completa primero el marco de personalización del personaje y del mundo en la pestaña de opciones antes de activar el acceso.")
+                btn_premium_text = "🚀 ACTIVAR PASE PREMIUM — $10 / SEMANA"
+                warning_msg = "⚠️ Acceso pendiente: Una vez que su pago se procese correctamente, haga clic en el botón de abajo para verificar el estado de su token."
+                btn_verify_text = "🔄 Verificar Estado del Token de Pago"
+            elif active_lang == "简体中文 (Mandarin)":
+                st.markdown("### ⚔️ 解放你的宇宙")
+                st.write("献给苦干者、白日梦想家和创作者：你工作努力。现在是尽情玩耍的时候了。企业级应用会审查你的想象力——这是你未经过滤的独立避难所。立即解锁无限的文字冒险世界、自定义故事情节和环境原声带。")
+                st.info("💡 专业提示：在激活访问权限之前，请先在选项标签中完成您的角色和世界架构自定义框架。")
+                btn_premium_text = "🚀 激活尊享通行证 — $10 / 周"
+                warning_msg = "⚠️ 访问挂起：您的 Stripe 交易处理完成后，请点击下方刷新按钮验证代币状态以解锁工作区。"
+                btn_verify_text = "🔄 验证支付代币状态"
+            else:
+                st.markdown("### ⚔️ UNLEASH YOUR UNIVERSE")
+                st.write("To grinders, daydreamers, and creators: You work hard. Now it's time to play hard. Corporate apps censor your imagination—this is your unfiltered independent sanctuary. Unlock infinite text-adventure worlds, custom storylines, and atmospheric soundtracks instantly.")
+                st.info("💡 Pro Tip: Complete your character and world architecture customization framework in the options tab first to lock in your timeline blueprint before activating access.")
+                btn_premium_text = "🚀 ACTIVATE PREMIUM PASS — $10 / WEEK"
+                warning_msg = "⚠️ Access Pending: Once your Stripe transaction processes cleanly, click the refresh button below to verify your token state and unlock your sandbox canvas panel."
+                btn_verify_text = "🔄 Verify Payment Token Status"
             
-            st.info("💡 Pro Tip: Complete your character and world architecture customization framework in the options tab first to lock in your timeline blueprint before activating access.")
-            
-            # 💳 STRIPE INTEGRATION PAYLOAD: Replace with your actual live Stripe Payment Link URL string
-            stripe_checkout_url = "https://stripe.com" 
+            stripe_checkout_url = "https://stripe.com"
             
             st.markdown(
                 f'<a href="{stripe_checkout_url}" target="_blank" style="text-decoration: none;">'
-                '<div style="background-color: #00FF66; color: black; text-align: center; padding: 14px; '
-                'font-weight: bold; border-radius: 6px; font-size: 18px; margin-top: 15px; margin-bottom: 25px;">'
-                '🚀 ACTIVATE PREMIUM PASS — $10 / WEEK</div></a>',
+                f'<div style="background-color: #00FF66; color: black; text-align: center; padding: 14px; '
+                f'font-weight: bold; border-radius: 6px; font-size: 18px; margin-top: 15px; margin-bottom: 25px;">'
+                f'{btn_premium_text}</div></a>',
                 unsafe_allowed_html=True
             )
             
-            st.warning("⚠️ Access Pending: Once your Stripe transaction processes cleanly, click the refresh button below to verify your token state and unlock your sandbox canvas panel.")
-            if st.button("🔄 Verify Payment Token Status"):
+            st.warning(warning_msg)
+            if st.button(btn_verify_text, key="sidebar_payment_manual_verify_btn"):
                 st.rerun()
                 
-            st.stop() # ABSOLUTE EMERGENCY BREAK: Freezes the entire file from compiling further for this session
+            st.stop() # ABSOLUTE EMERGENCY BREAK: Freezes execution instantly
 
         # 🟢 ACCESS GRANTED: Paid subscribers pass cleanly past the gate
-        st.success(f"👑 PREMIUM PILOT AUTHENTICATED: {st.session_state.user.email}")
+        st.success(text_vault["premium_pilot"].format(st.session_state.user.email))
         
     else:
         if st.session_state.guest_tokens > 0:
-            st.warning(f"⏳ TRIAL ACTIVE: {st.session_state.guest_tokens} Actions Left")
+            st.warning(text_vault["trial_active"].format(st.session_state.guest_tokens))
         else:
-            st.error("🔒 Action Pool Depleted!")
+            st.error(text_vault["pool_depleted"])
             
     st.divider()
 
@@ -727,12 +776,17 @@ if not engine["world_name"]:
         with col_left:
             st.markdown(text_vault["lbl_celestial"])
             w_name = st.text_input(text_vault["lbl_name"], placeholder="e.g., Sector 7, Neo-Tokyo")
-            w_genre = st.selectbox(text_vault["lbl_genre"], ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"])
+            
+            # 🪐 DYNAMIC DROPDOWN MATRIX MAPS:
+            w_genre = st.selectbox(text_vault["lbl_genre"], text_vault["genres"])
             
             world_gravity = st.slider(text_vault["lbl_gravity"], min_value=0.1, max_value=5.0, value=1.0, step=0.1)
+            
+            # 💨 DYNAMIC ATMOSPHERE SELECTOR SLIDER MAPS:
             world_atmosphere = st.select_slider(text_vault["lbl_atmosphere"], 
-                                                options=["Vacuum (Space)", "Thin / Toxic", "Breathable Baseline", "Hyper-Dense / Corrosive"],
-                                                value="Breathable Baseline")
+                                                options=text_vault["atmosphere_options"],
+                                                value=text_vault["atmosphere_options"][2])
+
 
         with col_right:
             st.markdown(text_vault["lbl_identity"])
@@ -841,8 +895,8 @@ if not engine["world_name"]:
                     except Exception as profile_sync_err:
                         st.error(f"Vault Sync Fault: {profile_sync_err}")
                         
-        st.divider()
-        st.markdown("#### Active Community Records")
+                st.divider()
+        st.markdown(text_vault["active_records_title"])
 
         # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
         if "user" in st.session_state:
@@ -858,7 +912,7 @@ if not engine["world_name"]:
                             break
                     
                     if my_card and my_card.get("avatar_url"):
-                        st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
+                        st.markdown(text_vault["your_identity_title"])
                         col_me_img, col_me_txt = st.columns(2)
                         with col_me_img:
                             avatar_link = my_card.get("avatar_url")
@@ -877,7 +931,7 @@ if not engine["world_name"]:
                     valid_community_cards = [row for row in profile_records.data if row.get("avatar_url")]
                     
                     if valid_community_cards:
-                        st.markdown("##### 👥 ALLIED TIMELINE DREAMERS")
+                        st.markdown(text_vault["allied_dreamers_title"])
                         cols = st.columns(3)
                         for idx, card in enumerate(valid_community_cards):
                             col_target = cols[idx % 3]
@@ -894,13 +948,13 @@ if not engine["world_name"]:
                                 st.caption(f"*Signature: user_{card.get('id')[:6]}*")
                                 st.divider()
                     else:
-                        st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
+                        st.info(text_vault["empty_ledger"])
                 else:
-                    st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
+                    st.info(text_vault["empty_ledger"])
             except Exception as db_read_err:
                 st.caption(f"Database Sync Standby: {db_read_err}")
         else:
-            st.info("🔑 Please sign in via the 'Account Profile' tab to view live character assets and authorize database ledger streams.")
+            st.info(text_vault["signin_prompt"])
 
                 
     with tab_profile:
