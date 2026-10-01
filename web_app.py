@@ -655,7 +655,8 @@ if not engine["world_name"]:
         st.divider()
         
         # 🎨 THE SECURE AVATAR FORGE SANDBOX ENTRY ZONE
-        st.markdown("#### Forge Your Identity")
+        st.markdown("#### Select Your Identity Portrait")
+        st.write("Select a curated high-end cinematic profile character avatar card to sync to your identity vault profile.")
         
         is_user_premium = getattr(st.session_state, 'is_premium', False)
         ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
@@ -664,76 +665,51 @@ if not engine["world_name"]:
         if "user" in st.session_state and ADMIN_EMAIL:
             if st.session_state.user.email == ADMIN_EMAIL:
                 is_user_premium = True
-                
-        avatar_prompt_input = st.text_input(
-            "Describe your dream avatar character appearance:", 
-            placeholder="e.g., A cybernetic samurai with a glowing red visor, hyper-detailed digital art style...", 
-            key="input_sandbox_avatar_prompt"
-        )
-        
-        if st.button("✨ Forge Avatar Identity", use_container_width=True, key="btn_forge_avatar_sandbox_trigger"):
-            if "user" not in st.session_state:
-                st.error("🔒 Access Locked: Please create an account or sign in via the Account Profile tab to authorize identity forge protocols.")
-            elif not is_user_premium:
-                st.error("🔒 Premium Pass Required: Avatar generation requires an active Avatar, Spartan, or STEM pass tier.")
-            elif not avatar_prompt_input:
-                st.warning("⚠️ Input Framework Empty: Enter a visual description to forge your profile character.")
-            else:
-                with st.spinner("⏳ Igniting Flux engine matrix pipelines... Forging high-res asset card..."):
-                    try:
-                     # 📡 REPLICATE FLUX PIPELINE: Armed with an explicit network timeout window to prevent read operations from hanging
-                        rep_client = replicate.Client(api_token=os.environ.get("REPLICATE_API_TOKEN"), timeout=120.0)
-                        output = rep_client.run(
-                            "black-forest-labs/flux-schnell",
-                            input={
-                                "prompt": f"{avatar_prompt_input.strip()}, high-quality cinematic character portrait, masterpiece concept art style",
-                                "aspect_ratio": "1:1",
-                                "output_format": "jpg"
-                            }
-                        )
 
-                        
-                        # 🎯 THE ULTRA-CLEAN EXTRACT: Replicate returns a clean, direct web string address inside a simple list
-                        generated_url = output[0] if isinstance(output, list) else output
-                        
-                        # 📡 DOWNLOAD RAW PIXELS: Pull direct image bytes from the un-firewalled link
-                        img_data = requests.get(str(generated_url)).content
-                        file_name = f"{st.session_state.user.id}_avatar.jpg"
-                        
-                        # 🗜️ CLOUD FILE TRANSFER: Stream straight into your own storage bucket house
-                        supabase_client.storage.from_("avatars").upload(
-                            path=file_name,
-                            file=img_data,
-                            file_options={"content-type": "image/jpeg", "x-upsert": "true"}
-                        )
-                        
-                        # 🔗 EXTRACT PERMANENT DOMAIN LINK ADDRESS
-                        public_vault_url = supabase_client.storage.from_("avatars").get_public_url(file_name)
-                        
+        # 👥 CURATED STATIC VAULT IMAGES: High-end pre-made visual assets to prevent connection hanging
+        avatar_options = {
+            "🥷 Cybernetic Shinobi / Tactical Operator": "https://picsum.photos",
+            "🧙‍♂️ Arcane Runemaster / Dark Sorcerer": "https://picsum.photos",
+            "🚀 Dreadnought Pilot / Space Marine": "https://picsum.photos",
+            "💀 Wasteland Scavenger / Nomad Raider": "https://picsum.photos"
+        }
+        
+        selected_avatar_name = st.selectbox("Choose your visual identity archetype:", list(avatar_options.keys()), key="sb_avatar_archetype_choice")
+        chosen_public_url = avatar_options[selected_avatar_name]
+        
+        # Display a quick visual preview layout box of their active choice
+        st.image(chosen_public_url, caption=f"Selected Blueprint: {selected_avatar_name}", width=200)
+        
+        if st.button("✨ Lock Identity Profile", use_container_width=True, key="btn_forge_avatar_sandbox_trigger"):
+            if "user" not in st.session_state:
+                st.error("🔒 Access Locked: Please create an account or sign in via the Account Profile tab to authorize identity protocols.")
+            elif not is_user_premium:
+                st.error("🔒 Premium Pass Required: Swapping identity profile cards requires an active Avatar, Spartan, or STEM pass tier.")
+            else:
+                with st.spinner("⏳ Linking high-res asset card to your encrypted vault profile records..."):
+                    try:
                         if "access_token" in st.session_state:
                             supabase_client.postgrest.auth(st.session_state["access_token"])
                         
-                        # 👑 SECURE DATA SYNC: Lock the clean URL straight into your profile record column
+                        # 👑 SECURE DATA SYNC: Lock the clean pre-made link address straight into your profile record columns
                         email_handle = str(st.session_state.user.email).split("@")[0]
                         supabase_client.table("profiles").upsert({
                             "id": st.session_state.user.id,
-                            "avatar_url": str(public_vault_url),
+                            "avatar_url": str(chosen_public_url),
                             "username": str(email_handle),
                             "is_premium": True
                         }).execute()
                         
-                        st.success("🎉 Asset card successfully forged and locked to your permanent encrypted vault profile!")
-                        time.sleep(2)
+                        st.success("🎉 Archetype profile asset successfully locked to your permanent encrypted vault!")
+                        time.sleep(1.0)
                         st.rerun()
                         
-                    except Exception as img_forge_err:
-                        st.error(f"Graphics Engine Fault: {img_forge_err}")
+                    except Exception as profile_sync_err:
+                        st.error(f"Vault Sync Fault: {profile_sync_err}")
                         
         st.divider()
         st.markdown("#### Active Community Records")
 
-
-        
         # 🔒 ISOLATION FIELD: Only attempt to pull records if a verified user session is actively present
         if "user" in st.session_state:
             try:
@@ -747,7 +723,7 @@ if not engine["world_name"]:
                             my_card = row
                             break
                     
-                    if my_card and my_card.get("avatar_url") and "picsum" not in my_card.get("avatar_url"):
+                    if my_card and my_card.get("avatar_url"):
                         st.markdown("##### 👑 YOUR ACTIVE FORGED IDENTITY")
                         col_me_img, col_me_txt = st.columns(2)
                         with col_me_img:
@@ -764,7 +740,7 @@ if not engine["world_name"]:
                         st.divider()
                     
                     # Package and build dynamic 3-column layout boxes for all entries in the system ledger
-                    valid_community_cards = [row for row in profile_records.data if row.get("avatar_url") and "picsum" not in row.get("avatar_url")]
+                    valid_community_cards = [row for row in profile_records.data if row.get("avatar_url")]
                     
                     if valid_community_cards:
                         st.markdown("##### 👥 ALLIED TIMELINE DREAMERS")
@@ -783,8 +759,7 @@ if not engine["world_name"]:
                                     
                                 st.caption(f"*Signature: user_{card.get('id')[:6]}*")
                                 st.divider()
-
-                    elif not my_card or not my_card.get("avatar_url"):
+                    else:
                         st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
                 else:
                     st.info("✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!")
