@@ -4,15 +4,54 @@ import re
 import time
 import stripe
 import requests
-import replicate # 🚀 CHOSEN ENGINE: Loads the fast, indie-hacker approved image creation tool
+import replicate  # 🚀 CHOSEN ENGINE: Loads the fast, indie-hacker approved image creation tool
 from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
+# 1. CORE ENGINE PAGE INITIALIZATION (MUST STAY AT THE TOP)
+st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
+
+# 🌐 THE MASTER HAYMAKER TRANSLATION DICTIONARY MAP
+LOCALIZATION_VAULT = {
+    "English": {
+        "welcome": "### ⚔️ UNLEASH YOUR UNIVERSE",
+        "tagline": "To grinders, daydreamers, and creators: You work hard. Now it's time to play hard.",
+        "btn_premium": "🚀 ACTIVATE PREMIUM PASS — $10 / WEEK",
+        "btn_verify": "🔄 Verify Payment Token Status",
+        "tab_create": "🌌 Universe Creator",
+        "tab_adventure": "⚔️ Adventure Engine",
+        "tab_avatars": "🎭 Identity Portal",
+        "tab_profile": "🔑 Account Profile",
+        "status_control": "📡 STATUS CONTROL"
+    },
+    "Español (Spanish)": {
+        "welcome": "### ⚔️ DESATA TU UNIVERSO",
+        "tagline": "Para los que trabajan duro, los soñadores y los creadores: Trabajas duro. Ahora es el momento de jugar duro.",
+        "btn_premium": "🚀 ACTIVAR PASE PREMIUM — $10 / SEMANA",
+        "btn_verify": "🔄 Verificar Estado del Token de Pago",
+        "tab_create": "🌌 Creador de Universos",
+        "tab_adventure": "⚔️ Motor de Aventura",
+        "tab_avatars": "🎭 Portal de Identidad",
+        "tab_profile": "🔑 Perfil de Cuenta",
+        "status_control": "📡 CONTROL DE ESTADO"
+    },
+    "简体中文 (Mandarin)": {
+        "welcome": "### ⚔️ 解放你的宇宙",
+        "tagline": "献给苦干者、白日梦想家和创作者：你工作努力。现在是尽情玩耍的时候了。",
+        "btn_premium": "🚀 激活尊享通行证 — $10 / 周",
+        "btn_verify": "🔄 验证支付代币状态",
+        "tab_create": "🌌 宇宙创作者",
+        "tab_adventure": "⚔️ 冒险引擎",
+        "tab_avatars": "🎭 身份门户",
+        "tab_profile": "🔑 账户个人资料",
+        "status_control": "📡 状态控制"
+    }
+}
+
 # 🌐 GLOBAL LOCALIZATION STATE RUNWAY INITIALIZATION
 if "app_language" not in st.session_state:
-    st.session_state["app_language"] = None # Starts blank to force the initialization screen pop-up
-
+    st.session_state["app_language"] = None
 
 # 📡 SYSTEM CORES INITIALIZATION: Anchor default states before any layout elements render
 if "world_cover_url" not in st.session_state:
@@ -21,17 +60,48 @@ if "world_cover_url" not in st.session_state:
 if "guest_tokens" not in st.session_state:
     st.session_state["guest_tokens"] = 12  # Standard trial buffer fallback safety state
 
-
-
-# 1. CORE ENGINE PAGE INITIALIZATION
-st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
-
 # 🎵 LOCAL CUSTOM AUDIOSCAPE STORAGE INITIALIZATION
 if "audio_state" not in st.session_state:
     st.session_state.audio_state = {
         "playing": True, 
         "track_url": "assets/menu_theme.mp3"  # Points to your fresh custom campaign file!
     }
+
+# ---------------------------------------------------------
+# 🌐 THE ENTERPRISE LOCALIZATION CHECKPOINT GATEWAY (FRONT GATE)
+# ---------------------------------------------------------
+if st.session_state.get("app_language") is None:
+    st.markdown("# ⚔️ HAYMAKER INDUSTRY")
+    st.markdown("### 🪐 Select Your Structural Language Matrix / Seleccione Su Idioma / 请选择您的语言")
+    st.write("Establish your dynamic profile localization interface parameters before entering the sandbox workspace.")
+    
+    selected_matrix_lang = st.selectbox(
+        "🌐 Choose Interface Language Node:",
+        ["English", "Español (Spanish)", "简体中文 (Mandarin)"],
+        key="sb_global_onboarding_language_picker"
+    )
+    
+    if st.button("🚀 IGNITE APPLICATION INTERFACE", use_container_width=True):
+        st.session_state.app_language = selected_matrix_lang
+        
+        # 👑 SECURE PROFILE SYNC: Save choice if authenticated
+        if "user" in st.session_state:
+            try:
+                if "access_token" in st.session_state:
+                    supabase_client.postgrest.auth(st.session_state["access_token"])
+                supabase_client.table("profiles").upsert({
+                    "id": st.session_state.user.id,
+                    "interface_language": str(selected_matrix_lang)
+                }).execute()
+            except Exception:
+                pass
+                
+        st.success(f"⚡ Interface matrix locked to {selected_matrix_lang}! Syncing layout scales...")
+        time.sleep(1.0)
+        st.rerun()
+        
+    st.stop() # 🛑 ABSOLUTE EMERGENCY BREAK: Freezes the layout completely right here so sidebars/tabs stay hidden!
+
 
 # GLOBAL THEME DESIGN: High-Contrast Modern Tech Dynamic UI Skin
 st.markdown("""
@@ -187,38 +257,7 @@ with st.sidebar:
             st.rerun()
         st.divider()
         
-# 🌐 THE ENTERPRISE LOCALIZATION CHECKPOINT GATEWAY
-if st.session_state.get("app_language") is None:
-    st.markdown("# ⚔️ HAYMAKER INDUSTRY")
-    st.markdown("### 🪐 Select Your Structural Language Matrix / Seleccione Su Idioma / 请选择您的语言")
-    st.write("Establish your dynamic profile localization interface parameters before entering the sandbox workspace.")
-    
-    selected_matrix_lang = st.selectbox(
-        "🌐 Choose Interface Language Node:",
-        ["English", "Español (Spanish)", "简体中文 (Mandarin)"],
-        key="sb_global_onboarding_language_picker"
-    )
-    
-    if st.button("🚀 IGNITE APPLICATION INTERFACE", use_container_width=True):
-        st.session_state.app_language = selected_matrix_lang
-        
-        # 👑 SECURE PROFILE SYNC: If they are logged in, save their language choice permanently to Supabase
-        if "user" in st.session_state:
-            try:
-                if "access_token" in st.session_state:
-                    supabase_client.postgrest.auth(st.session_state["access_token"])
-                supabase_client.table("profiles").upsert({
-                    "id": st.session_state.user.id,
-                    "interface_language": str(selected_matrix_lang)
-                }).execute()
-            except Exception:
-                pass # Fail silently during guest setup boundaries
-                
-        st.success(f"⚡ Interface matrix locked to {selected_matrix_lang}! Syncing layout scales...")
-        time.sleep(1.0)
-        st.rerun()
-        
-    st.stop() # ABSOLUTE STRUCTURAL OVERRIDE REBOOT BLOCK: Halts everything else from rendering yet
+
 
   
     # 🔐 PHASE 1 PROTOCOL: The Ironclad Paywall Vault Execution Checks
