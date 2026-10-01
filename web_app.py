@@ -9,6 +9,11 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
+# 🌐 GLOBAL LOCALIZATION STATE RUNWAY INITIALIZATION
+if "app_language" not in st.session_state:
+    st.session_state["app_language"] = None # Starts blank to force the initialization screen pop-up
+
+
 # 📡 SYSTEM CORES INITIALIZATION: Anchor default states before any layout elements render
 if "world_cover_url" not in st.session_state:
     st.session_state["world_cover_url"] = "https://picsum.photos"
@@ -182,17 +187,61 @@ with st.sidebar:
             st.rerun()
         st.divider()
         
-    # TOKEN COUNTER CHECKS
+# 🌐 THE ENTERPRISE LOCALIZATION CHECKPOINT GATEWAY
+if st.session_state.get("app_language") is None:
+    st.markdown("# ⚔️ HAYMAKER INDUSTRY")
+    st.markdown("### 🪐 Select Your Structural Language Matrix / Seleccione Su Idioma / 请选择您的语言")
+    st.write("Establish your dynamic profile localization interface parameters before entering the sandbox workspace.")
+    
+    selected_matrix_lang = st.selectbox(
+        "🌐 Choose Interface Language Node:",
+        ["English", "Español (Spanish)", "简体中文 (Mandarin)"],
+        key="sb_global_onboarding_language_picker"
+    )
+    
+    if st.button("🚀 IGNITE APPLICATION INTERFACE", use_container_width=True):
+        st.session_state.app_language = selected_matrix_lang
+        
+        # 👑 SECURE PROFILE SYNC: If they are logged in, save their language choice permanently to Supabase
+        if "user" in st.session_state:
+            try:
+                if "access_token" in st.session_state:
+                    supabase_client.postgrest.auth(st.session_state["access_token"])
+                supabase_client.table("profiles").upsert({
+                    "id": st.session_state.user.id,
+                    "interface_language": str(selected_matrix_lang)
+                }).execute()
+            except Exception:
+                pass # Fail silently during guest setup boundaries
+                
+        st.success(f"⚡ Interface matrix locked to {selected_matrix_lang}! Syncing layout scales...")
+        time.sleep(1.0)
+        st.rerun()
+        
+    st.stop() # ABSOLUTE STRUCTURAL OVERRIDE REBOOT BLOCK: Halts everything else from rendering yet
+
+  
     # 🔐 PHASE 1 PROTOCOL: The Ironclad Paywall Vault Execution Checks
     if "user" in st.session_state:
         user_id = st.session_state.user.id
         
-        # 📡 LIVE VAULT INVENTORY: Verify subscription metadata directly from your database
+               # 📡 LIVE VAULT INVENTORY: Verify subscription metadata & language records directly from your database
         try:
-            profile_query = supabase_client.table("profiles").select("is_premium").eq("id", user_id).single().execute()
-            is_premium = profile_query.data.get("is_premium", False) if profile_query.data else False
+            # 🌐 STEP 3 ARCHITECTURE: Select BOTH columns to load their saved language matrix
+            profile_query = supabase_client.table("profiles").select("is_premium, interface_language").eq("id", user_id).single().execute()
+            
+            if profile_query.data:
+                is_premium = profile_query.data.get("is_premium", False)
+                saved_lang = profile_query.data.get("interface_language")
+                
+                # 🪐 AUTOMATED PROFILE LOADING: Instantly lock in their saved language choice if it exists
+                if saved_lang:
+                    st.session_state.app_language = saved_lang
+            else:
+                is_premium = False
         except Exception:
             is_premium = False  # Strict default safety gate fallback position
+
 
         # 👑 THE PAYWALL GATEWAY: Halt non-paying accounts instantly before loading any story engines
         if not is_premium:
