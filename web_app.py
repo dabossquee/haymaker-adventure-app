@@ -20,7 +20,23 @@ LOCALIZATION_VAULT = {
         "tab_create": "🚀 Create a World",
         "tab_avatars": "🎭 Community Avatars",
         "tab_profile": "🔑 Account Profile",
-        "status_control": "📡 STATUS CONTROL"
+        "status_control": "📡 STATUS CONTROL",
+        "form_title": "### ⚔️ Universe Architect Form",
+        "form_subtitle": "Tune the fundamental mechanics of your custom timeline before initializing the narrative seed.",
+        "lbl_celestial": "##### 🪐 Celestial Physics",
+        "lbl_name": "Universe Name:",
+        "lbl_genre": "Select thematic genre:",
+        "lbl_gravity": "🪐 Gravity Levels",
+        "lbl_atmosphere": "💨 Atmospheric Density",
+        "lbl_identity": "##### 🎭 Character Identity Settings",
+        "lbl_char_name": "Your character's name:",
+        "lbl_backstory": "Character profile/backstory:",
+        "lbl_factions": "##### 🦅 Faction Architecture & Frictional Elements",
+        "lbl_allies": "🦅 Dominant / Allied Faction Name",
+        "lbl_enemies": "💀 Rogue / Opposing Faction Name",
+        "lbl_directives": "✍️ Custom Environmental Directives / Constraints",
+        "btn_deploy": "🚀 Deploy and Ignite Core Engine",
+        "msg_success": "🎉 Custom universe timeline seed compiled successfully!"
     },
     "Español (Spanish)": {
         "tab_explore": "🌐 Explorar Universos",
@@ -28,7 +44,23 @@ LOCALIZATION_VAULT = {
         "tab_create": "🚀 Crear un Universo",
         "tab_avatars": "🎭 Avatares de la Comunidad",
         "tab_profile": "🔑 Perfil de Cuenta",
-        "status_control": "📡 CONTROL DE ESTADO"
+        "status_control": "📡 CONTROL DE ESTADO",
+        "form_title": "### ⚔️ Formulario de Arquitecto del Universo",
+        "form_subtitle": "Ajusta las mecánicas fundamentales de tu línea de tiempo antes de inicializar la semilla narrativa.",
+        "lbl_celestial": "##### 🪐 Física Celestial",
+        "lbl_name": "Nombre del Universo:",
+        "lbl_genre": "Selecciona el género temático:",
+        "lbl_gravity": "🪐 Niveles de Gravedad",
+        "lbl_atmosphere": "💨 Densidad Atmosférica",
+        "lbl_identity": "##### 🎭 Configuración de Identidad de Personaje",
+        "lbl_char_name": "Nombre de tu personaje:",
+        "lbl_backstory": "Perfil/Trasfondo del personaje:",
+        "lbl_factions": "##### 🦅 Arquitectura de Facciones y Elementos de Fricción",
+        "lbl_allies": "🦅 Nombre de la Facción Dominante / Aliada",
+        "lbl_enemies": "💀 Nombre de la Facción Rebelde / Enemiga",
+        "lbl_directives": "✍️ Directivas / Restricciones Ambientales Personalizadas",
+        "btn_deploy": "🚀 Desplegar e Encender el Motor Central",
+        "msg_success": "🎉 ¡Semilla de la línea de tiempo del universo compilada con éxito!"
     },
     "简体中文 (Mandarin)": {
         "tab_explore": "🌐 探索宇宙",
@@ -36,9 +68,26 @@ LOCALIZATION_VAULT = {
         "tab_create": "🚀 创造世界",
         "tab_avatars": "🎭 社区化身",
         "tab_profile": "🔑 账户个人资料",
-        "status_control": "📡 状态控制"
+        "status_control": "📡 状态控制",
+        "form_title": "### ⚔️ 宇宙架构师表单",
+        "form_subtitle": "在初始化叙事种子之前，调整自定义时间线的基础机制。",
+        "lbl_celestial": "##### 🪐 天体物理学",
+        "lbl_name": "宇宙名称:",
+        "lbl_genre": "选择主题类型:",
+        "lbl_gravity": "🪐 引力水平",
+        "lbl_atmosphere": "💨 大气密度",
+        "lbl_identity": "##### 🎭 角色身份设置",
+        "lbl_char_name": "你的角色名称:",
+        "lbl_backstory": "角色档案/背景故事:",
+        "lbl_factions": "##### 🦅 阵营架构与摩擦元素",
+        "lbl_allies": "🦅 主导/盟友阵营名称",
+        "lbl_enemies": "💀 叛军/敌对阵营名称",
+        "lbl_directives": "✍️ 自定义环境指令/限制",
+        "btn_deploy": "🚀 部署并启动核心引擎",
+        "msg_success": "🎉 自定义宇宙时间线种子成功编译！"
     }
 }
+
 
 
 # 🌐 GLOBAL LOCALIZATION STATE RUNWAY INITIALIZATION
@@ -665,42 +714,40 @@ if not engine["world_name"]:
             st.warning("🔒 Please sign in via the 'Account Profile' tab to look inside your private creation vault.")
 
     with tab_create:
-        # 🌌 PHASE 0: DEEP WORLD CUSTOMIZATION ARCHITECT
-        st.markdown("### ⚔️ Universe Architect Form")
-        st.write("Tune the fundamental mechanics of your custom timeline before initializing the narrative seed.")
+        # 🗺️ AUTOMATED TRANSLATION LOOKUP FOR WORKSPACE FIELDS
+        lang = st.session_state.get("app_language", "English")
+        text_vault = LOCALIZATION_VAULT[lang]
+
+        st.markdown(text_vault["form_title"])
+        st.write(text_vault["form_subtitle"])
 
         # Layout Column Splitting for Clean UI Design Matrix
         col_left, col_right = st.columns(2)
 
         with col_left:
-            st.markdown("##### 🪐 Celestial Physics")
-            w_name = st.text_input("Universe Name:", placeholder="e.g., Sector 7, Neo-Tokyo")
-            w_genre = st.selectbox("Select thematic genre:", ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"])
+            st.markdown(text_vault["lbl_celestial"])
+            w_name = st.text_input(text_vault["lbl_name"], placeholder="e.g., Sector 7, Neo-Tokyo")
+            w_genre = st.selectbox(text_vault["lbl_genre"], ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"])
             
-            # Gravity and Atmospheric sliders to hook ADHD hyper-focus instantly
-            world_gravity = st.slider("🪐 Gravity Levels", min_value=0.1, max_value=5.0, value=1.0, step=0.1, 
-                                      help="1.0 is standard Earth baseline gravity. Affects combat logistics and movement mechanics.")
-            world_atmosphere = st.select_slider("💨 Atmospheric Density", 
+            world_gravity = st.slider(text_vault["lbl_gravity"], min_value=0.1, max_value=5.0, value=1.0, step=0.1)
+            world_atmosphere = st.select_slider(text_vault["lbl_atmosphere"], 
                                                 options=["Vacuum (Space)", "Thin / Toxic", "Breathable Baseline", "Hyper-Dense / Corrosive"],
                                                 value="Breathable Baseline")
 
         with col_right:
-            st.markdown("##### 🎭 Character Identity Settings")
-            c_name = st.text_input("Your character's name:")
-            c_backstory = st.text_area("Character profile/backstory:")
+            st.markdown(text_vault["lbl_identity"])
+            c_name = st.text_input(text_vault["lbl_char_name"])
+            c_backstory = st.text_area(text_vault["lbl_backstory"])
 
-        st.markdown("##### 🦅 Faction Architecture & Frictional Elements")
-        faction_allies = st.text_input("🦅 Dominant / Allied Faction Name", placeholder="e.g., Vanguard Coalition, Iron Syndicate")
-        faction_enemies = st.text_input("💀 Rogue / Opposing Faction Name", placeholder="e.g., Sector Insurgency, Waste Marauders")
+        st.markdown(text_vault["lbl_factions"])
+        faction_allies = st.text_input(text_vault["lbl_allies"], placeholder="e.g., Vanguard Coalition")
+        faction_enemies = st.text_input(text_vault["lbl_enemies"], placeholder="e.g., Sector Insurgency")
         
-        # Open canvas text block for deep world lore dumping
-        world_custom_lore = st.text_area("✍️ Custom Environmental Directives / Constraints", 
-                                         placeholder="Inject specific universe rules here... (e.g., 'The air is highly combustible, energy shields are banned, or characters look like Master Chief armor variants')",
-                                         height=80)
+        world_custom_lore = st.text_area(text_vault["lbl_directives"], placeholder="Inject universe rules here...", height=80)
         
         st.divider()
 
-        if st.button("🚀 Deploy and Ignite Core Engine", use_container_width=True):
+        if st.button(text_vault["btn_deploy"], use_container_width=True):
             if w_name and w_genre and c_name and faction_allies and faction_enemies:
                 if "user" in st.session_state:
                     try:
@@ -716,26 +763,24 @@ if not engine["world_name"]:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
                 
-                # 👑 THE ADVANCED PROTOCOL PACKAGING: Bundle the sliders into memory state matrices
                 engine["world_name"] = w_name
                 engine["world_genre"] = w_genre
-                
-                # Inject the customized physics and faction parameters right into the backend engine storage dictionary
                 engine["world_customization"] = {
                     "gravity": world_gravity,
                     "atmosphere": world_atmosphere,
                     "allies": faction_allies,
                     "enemies": faction_enemies,
-                    "lore": world_custom_lore
+                    "lore": world_custom_lore,
+                    "language": lang
                 }
                 
                 char["name"] = c_name
                 char["backstory"] = c_backstory
-                st.success("🎉 Custom universe timeline seed compiled successfully!")
+                st.success(text_vault["msg_success"])
                 time.sleep(1.0)
                 st.rerun()
             else:
-                st.warning("⚠️ Architect Refusal: Fill out all fields, including Factions, to launch the framework.")
+                st.warning("⚠️ Architect Refusal: Fill out all fields to launch.")
 
 
     with tab_avatars:
