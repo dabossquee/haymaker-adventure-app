@@ -9,6 +9,13 @@ from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
+# 📡 SYSTEM CORES INITIALIZATION: Anchor default states before any layout elements render
+if "world_cover_url" not in st.session_state:
+    st.session_state["world_cover_url"] = "https://picsum.photos"
+
+if "guest_tokens" not in st.session_state:
+    st.session_state["guest_tokens"] = 12  # Standard trial buffer fallback safety state
+
 
 
 # 1. CORE ENGINE PAGE INITIALIZATION
@@ -1070,7 +1077,8 @@ if not is_premium_active and not has_trial_tokens:
 
 
 # 9. INJECT DYNAMIC IMMERSIVE VISUAL BACKGROUND WINDOW WRAPPER
-bg_url = st.session_state.world_cover_url
+    # 🌌 SAFE INITIALIZATION DEPLOYMENT: Safe read with a structural default placeholder fallback path
+    bg_url = st.session_state.get("world_cover_url", "https://picsum.photos")
 st.markdown(f'<div class="immersive-chat-viewport" style="background-image: url(\'{bg_url}\');">', unsafe_allow_html=True)
 st.markdown('<div class="glass-frosted-scroller">', unsafe_allow_html=True)
 
