@@ -15,39 +15,31 @@ st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 # 🌐 THE MASTER HAYMAKER TRANSLATION DICTIONARY MAP
 LOCALIZATION_VAULT = {
     "English": {
-        "welcome": "### ⚔️ UNLEASH YOUR UNIVERSE",
-        "tagline": "To grinders, daydreamers, and creators: You work hard. Now it's time to play hard.",
-        "btn_premium": "🚀 ACTIVATE PREMIUM PASS — $10 / WEEK",
-        "btn_verify": "🔄 Verify Payment Token Status",
-        "tab_create": "🌌 Universe Creator",
-        "tab_adventure": "⚔️ Adventure Engine",
-        "tab_avatars": "🎭 Identity Portal",
+        "tab_explore": "🌐 Explore Universes",
+        "tab_my_creations": "📂 My Creations",
+        "tab_create": "🚀 Create a World",
+        "tab_avatars": "🎭 Community Avatars",
         "tab_profile": "🔑 Account Profile",
         "status_control": "📡 STATUS CONTROL"
     },
     "Español (Spanish)": {
-        "welcome": "### ⚔️ DESATA TU UNIVERSO",
-        "tagline": "Para los que trabajan duro, los soñadores y los creadores: Trabajas duro. Ahora es el momento de jugar duro.",
-        "btn_premium": "🚀 ACTIVAR PASE PREMIUM — $10 / SEMANA",
-        "btn_verify": "🔄 Verificar Estado del Token de Pago",
-        "tab_create": "🌌 Creador de Universos",
-        "tab_adventure": "⚔️ Motor de Aventura",
-        "tab_avatars": "🎭 Portal de Identidad",
+        "tab_explore": "🌐 Explorar Universos",
+        "tab_my_creations": "📂 Mis Creaciones",
+        "tab_create": "🚀 Crear un Universo",
+        "tab_avatars": "🎭 Avatares de la Comunidad",
         "tab_profile": "🔑 Perfil de Cuenta",
         "status_control": "📡 CONTROL DE ESTADO"
     },
     "简体中文 (Mandarin)": {
-        "welcome": "### ⚔️ 解放你的宇宙",
-        "tagline": "献给苦干者、白日梦想家和创作者：你工作努力。现在是尽情玩耍的时候了。",
-        "btn_premium": "🚀 激活尊享通行证 — $10 / 周",
-        "btn_verify": "🔄 验证支付代币状态",
-        "tab_create": "🌌 宇宙创作者",
-        "tab_adventure": "⚔️ 冒险引擎",
-        "tab_avatars": "🎭 身份门户",
+        "tab_explore": "🌐 探索宇宙",
+        "tab_my_creations": "📂 我的创作",
+        "tab_create": "🚀 创造世界",
+        "tab_avatars": "🎭 社区化身",
         "tab_profile": "🔑 账户个人资料",
         "status_control": "📡 状态控制"
     }
 }
+
 
 # 🌐 GLOBAL LOCALIZATION STATE RUNWAY INITIALIZATION
 if "app_language" not in st.session_state:
@@ -453,10 +445,19 @@ if not engine["world_name"]:
     st.title("🪐 Haymaker Industry Hub")
     st.subheader("Explore alternate realities or forge your own timeline")
     
-    # Core main navigation elements defined cleanly inside the home block scope
+    # 🗺️ READ ACTIVE LOCALIZATION MATRIX STATES
+    active_lang = st.session_state.get("app_language", "English")
+    text_vault = LOCALIZATION_VAULT[active_lang]
+
+    # 🪐 DYNAMIC LOCALIZED 5-TAB NAVIGATION SYSTEM
     tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
-        "Explore Universes", "My Creations", "Create a World", "Community Avatars", "Account Profile"
+        text_vault["tab_explore"],
+        text_vault["tab_my_creations"],
+        text_vault["tab_create"],
+        text_vault["tab_avatars"],
+        text_vault["tab_profile"]
     ])
+
     
     with tab_explore:
         # Multi-genre discovery selection tabs initialized directly within the explore scope
