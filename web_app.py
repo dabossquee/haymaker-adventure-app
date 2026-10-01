@@ -176,8 +176,48 @@ with st.sidebar:
         st.divider()
         
     # TOKEN COUNTER CHECKS
+    # 🔐 PHASE 1 PROTOCOL: The Ironclad Paywall Vault Execution Checks
     if "user" in st.session_state:
-        st.success(f"👑 PREMIUM PILOT: {st.session_state.user.email}")
+        user_id = st.session_state.user.id
+        
+        # 📡 LIVE VAULT INVENTORY: Verify subscription metadata directly from your database
+        try:
+            profile_query = supabase_client.table("profiles").select("is_premium").eq("id", user_id).single().execute()
+            is_premium = profile_query.data.get("is_premium", False) if profile_query.data else False
+        except Exception:
+            is_premium = False  # Strict default safety gate fallback position
+
+        # 👑 THE PAYWALL GATEWAY: Halt non-paying accounts instantly before loading any story engines
+        if not is_premium:
+            st.markdown("### ⚔️ UNLEASH YOUR UNIVERSE")
+            st.write(
+                "To grinders, daydreamers, and creators: You work hard. Now it's time to play hard. "
+                "Corporate apps censor your imagination—this is your unfiltered independent sanctuary. "
+                "Unlock infinite text-adventure worlds, custom storylines, and atmospheric soundtracks instantly."
+            )
+            
+            st.info("💡 Pro Tip: Complete your character and world architecture customization framework in the options tab first to lock in your timeline blueprint before activating access.")
+            
+            # 💳 STRIPE INTEGRATION PAYLOAD: Replace with your actual live Stripe Payment Link URL string
+            stripe_checkout_url = "https://stripe.com" 
+            
+            st.markdown(
+                f'<a href="{stripe_checkout_url}" target="_blank" style="text-decoration: none;">'
+                '<div style="background-color: #00FF66; color: black; text-align: center; padding: 14px; '
+                'font-weight: bold; border-radius: 6px; font-size: 18px; margin-top: 15px; margin-bottom: 25px;">'
+                '🚀 ACTIVATE PREMIUM PASS — $10 / WEEK</div></a>',
+                unsafe_allowed_html=True
+            )
+            
+            st.warning("⚠️ Access Pending: Once your Stripe transaction processes cleanly, click the refresh button below to verify your token state and unlock your sandbox canvas panel.")
+            if st.button("🔄 Verify Payment Token Status"):
+                st.rerun()
+                
+            st.stop() # ABSOLUTE EMERGENCY BREAK: Freezes the entire file from compiling further for this session
+
+        # 🟢 ACCESS GRANTED: Paid subscribers pass cleanly past the gate
+        st.success(f"👑 PREMIUM PILOT AUTHENTICATED: {st.session_state.user.email}")
+        
     else:
         if st.session_state.guest_tokens > 0:
             st.warning(f"⏳ TRIAL ACTIVE: {st.session_state.guest_tokens} Actions Left")
@@ -185,6 +225,7 @@ with st.sidebar:
             st.error("🔒 Action Pool Depleted!")
             
     st.divider()
+
     
     # HOUSING FRAME FOR PLAYER PROFILE IMAGE
     avatar_display = "👤" if not engine["world_name"] else "🎭"
