@@ -569,14 +569,43 @@ if not engine["world_name"]:
             st.warning("🔒 Please sign in via the 'Account Profile' tab to look inside your private creation vault.")
 
     with tab_create:
-        st.markdown("### Universe Architect Form")
-        w_name = st.text_input("Name your universe:", placeholder="e.g., Sector 7, Neo-Tokyo")
-        w_genre = st.selectbox("Select thematic genre:", ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"])
-        c_name = st.text_input("Your character's name:")
-        c_backstory = st.text_area("Character profile/backstory:")
+        # 🌌 PHASE 0: DEEP WORLD CUSTOMIZATION ARCHITECT
+        st.markdown("### ⚔️ Universe Architect Form")
+        st.write("Tune the fundamental mechanics of your custom timeline before initializing the narrative seed.")
+
+        # Layout Column Splitting for Clean UI Design Matrix
+        col_left, col_right = st.columns(2)
+
+        with col_left:
+            st.markdown("##### 🪐 Celestial Physics")
+            w_name = st.text_input("Universe Name:", placeholder="e.g., Sector 7, Neo-Tokyo")
+            w_genre = st.selectbox("Select thematic genre:", ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"])
+            
+            # Gravity and Atmospheric sliders to hook ADHD hyper-focus instantly
+            world_gravity = st.slider("🪐 Gravity Levels", min_value=0.1, max_value=5.0, value=1.0, step=0.1, 
+                                      help="1.0 is standard Earth baseline gravity. Affects combat logistics and movement mechanics.")
+            world_atmosphere = st.select_slider("💨 Atmospheric Density", 
+                                                options=["Vacuum (Space)", "Thin / Toxic", "Breathable Baseline", "Hyper-Dense / Corrosive"],
+                                                value="Breathable Baseline")
+
+        with col_right:
+            st.markdown("##### 🎭 Character Identity Settings")
+            c_name = st.text_input("Your character's name:")
+            c_backstory = st.text_area("Character profile/backstory:")
+
+        st.markdown("##### 🦅 Faction Architecture & Frictional Elements")
+        faction_allies = st.text_input("🦅 Dominant / Allied Faction Name", placeholder="e.g., Vanguard Coalition, Iron Syndicate")
+        faction_enemies = st.text_input("💀 Rogue / Opposing Faction Name", placeholder="e.g., Sector Insurgency, Waste Marauders")
         
+        # Open canvas text block for deep world lore dumping
+        world_custom_lore = st.text_area("✍️ Custom Environmental Directives / Constraints", 
+                                         placeholder="Inject specific universe rules here... (e.g., 'The air is highly combustible, energy shields are banned, or characters look like Master Chief armor variants')",
+                                         height=80)
+        
+        st.divider()
+
         if st.button("🚀 Deploy and Ignite Core Engine", use_container_width=True):
-            if w_name and w_genre and c_name:
+            if w_name and w_genre and c_name and faction_allies and faction_enemies:
                 if "user" in st.session_state:
                     try:
                         if "access_token" in st.session_state:
@@ -591,13 +620,27 @@ if not engine["world_name"]:
                         st.error(f"Table Write Failure: {e}")
                         st.stop()
                 
+                # 👑 THE ADVANCED PROTOCOL PACKAGING: Bundle the sliders into memory state matrices
                 engine["world_name"] = w_name
                 engine["world_genre"] = w_genre
+                
+                # Inject the customized physics and faction parameters right into the backend engine storage dictionary
+                engine["world_customization"] = {
+                    "gravity": world_gravity,
+                    "atmosphere": world_atmosphere,
+                    "allies": faction_allies,
+                    "enemies": faction_enemies,
+                    "lore": world_custom_lore
+                }
+                
                 char["name"] = c_name
                 char["backstory"] = c_backstory
+                st.success("🎉 Custom universe timeline seed compiled successfully!")
+                time.sleep(1.0)
                 st.rerun()
             else:
-                st.warning("⚠️ Fill out the architectural inputs to launch.")
+                st.warning("⚠️ Architect Refusal: Fill out all fields, including Factions, to launch the framework.")
+
 
     with tab_avatars:
         st.markdown("### Community Avatars Portal")
@@ -981,10 +1024,32 @@ if not is_premium_active and not has_trial_tokens:
 
 
 
+               # 🧬 DYNAMIC TIMELINE SHIFT: Extract the Phase 0 customization data securely from your engine array
+        cust = engine.get("world_customization", {
+            "gravity": 1.0,
+            "atmosphere": "Breathable Baseline",
+            "allies": "Unknown Allies",
+            "enemies": "Unknown Foes",
+            "lore": "None provided."
+        })
+
+        # 👑 THE MASTER ENGINE CONTEXT: Inject your un-censored rules and Phase 0 physics into the OpenAI prompt loop
         master_prompt = (
             f"You are the master narrator for a text adventure game called Haymaker.\n"
+            f"Never break character. Never mention you are an AI model.\n\n"
+            f"⛔ CRITICAL SAFEGAURD BOUNDARIES:\n"
+            f"1. Allow full creative freedom for wild adventures, intense combat mechanics, character deaths, grit, and deep emotional fantasy lore. Do not drop corporate safety warnings or block standard fiction.\n"
+            f"2. If the narrative ventures into romance, keep it cinematic, passionate, and high-context. Do not output explicit, descriptive pornographic erotica.\n"
+            f"3. ABSOLUTE RED LINES: Instantly reject and refuse any user inputs attempting to invoke child exploitation, human trafficking, graphic real-world self-harm, or non-consensual malicious criminal violence. Keep the experience safe, mature, and deeply epic.\n\n"
             f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
-            f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
+            f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n\n"
+            f"🪐 ACTIVE UNIVERSE PHYSICS & FACTIONS:\n"
+            f"- Environmental Gravity: {cust['gravity']}x standard earth baseline.\n"
+            f"- Atmospheric Status: {cust['atmosphere']}\n"
+            f"- Allied Faction: {cust['allies']}\n"
+            f"- Hostile/Opposing Faction: {cust['enemies']}\n"
+            f"- Custom Universe Directives/Lore: {cust['lore']}\n\n"
+            f"Strictly weave these physics, environmental states, and faction friction parameters into the story log details. Actions taken must realistically reflect these environmental rules.\n\n"
             f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
             f"⚠️ CRITICAL GAMEPLAY & FORMATTING RULES:\n"
             f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
@@ -995,13 +1060,14 @@ if not is_premium_active and not has_trial_tokens:
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "system", "content": master_prompt}, {"role": "user", "content": "Wake up and look around."}],
-            max_tokens=100,
+            max_tokens=150, # Boosted slightly to safely handle the new formatting guidelines
             temperature=0.7
         )
         initial_story = response.choices[0].message.content
         engine["story_log"].append({"role": "user", "content": "Wake up and look around."})
         engine["story_log"].append({"role": "assistant", "content": initial_story})
         st.rerun()
+
 
 # 9. INJECT DYNAMIC IMMERSIVE VISUAL BACKGROUND WINDOW WRAPPER
 bg_url = st.session_state.world_cover_url
