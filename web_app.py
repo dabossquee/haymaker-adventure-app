@@ -572,7 +572,8 @@ with st.sidebar:
     st.divider()
 
     # ⚙️ SYSTEM SETTINGS & SUBSCRIPTION MANAGEMENT OVERWATCH
-    with st.expander("⚙️ SETTINGS CONTROL", expanded=False):
+with st.expander(text_vault.get("settings_control", "⚙️ SETTINGS CONTROL").upper(), expanded=False):
+
         st.caption("🔒 Sandbox Platform Account Verified")
         st.subheader("💳 Subscription Status")
         
