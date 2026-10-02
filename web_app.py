@@ -552,9 +552,23 @@ with st.sidebar:
             st.session_state.clear()
             st.rerun()
     else:
-        st.info("💡 Want unlimited actions?")
-        if st.button("🔑 SIGN IN / SIGN UP", key="sidebar_auth_gateway_redirect", use_container_width=True):
-            st.toast("⚡ Head over to your 'Account Profile' hub tab right on the main panel to log in or register instantly.")
+        st.info(text_vault.get("unlimited_actions", "💡 Want unlimited actions?"))
+
+    # 🌎 DYNAMIC LOCALIZED COMBINED LABEL MATRIX
+    signin_lbl = text_vault.get("btn_signin", "Sign In")
+    signup_lbl = text_vault.get("btn_signup", "Sign Up")
+    combined_auth_lbl = f"🔑 {signin_lbl.upper()} / {signup_lbl.upper()}"
+
+    if st.button(combined_auth_lbl, key="sidebar_auth_gateway_redirect", use_container_width=True):
+        # Dynamic multi-lingual toast alerts to guide the user seamlessly
+        toast_msg = "⚡ Head over to your 'Account Profile' hub tab right on the main panel to log in or register instantly."
+        if active_lang == "Español (Spanish)":
+            toast_msg = "⚡ Diríjase a la pestaña 'Perfil de Cuenta' en el panel principal para iniciar sesión o registrarse al instante."
+        elif active_lang == "简体中文 (Mandarin)":
+            toast_msg = "⚡ 请前往主面板上的“账户个人资料”标签页立即登录或注册。"
+
+        st.toast(toast_msg)
+
     st.divider()
 
     # ⚙️ SYSTEM SETTINGS & SUBSCRIPTION MANAGEMENT OVERWATCH
