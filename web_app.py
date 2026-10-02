@@ -12,7 +12,6 @@ from dotenv import load_dotenv
 # 1. CORE ENGINE PAGE INITIALIZATION (MUST STAY AT THE TOP)
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 
-# 🌐 THE MASTER HAYMAKER TRANSLATION DICTIONARY MAP
 LOCALIZATION_VAULT = {
     "English": {
         "tab_explore": "🌐 Explore Universes",
@@ -46,7 +45,17 @@ LOCALIZATION_VAULT = {
         "your_identity_title": "##### 👑 YOUR ACTIVE FORGED IDENTITY",
         "allied_dreamers_title": "##### 👥 ALLIED TIMELINE DREAMERS",
         "empty_ledger": "✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!",
-        "signin_prompt": "🔑 Please sign in via the 'Account Profile' tab to view live character assets and authorize database ledger streams."
+        "signin_prompt": "🔑 Please sign in via the 'Account Profile' tab to view live character assets and authorize database ledger streams.",
+        # 🆕 NEW STRATEGIC CLEANUP MATRIX KEYS:
+        "dreamer_lbl": "Dreamer... {}",
+        "music_prompt": "🎵 To listen to music, join or forge a world timeline",
+        "unlimited_actions": "Want unlimited actions?",
+        "btn_signin": "Sign In",
+        "btn_signup": "Sign Up",
+        "settings_control": "⚙️ Settings Control",
+        "sub_genre_title": "🌌 Select Your Timeline Variant",
+        "community_timeline_title": "📜 Public Community Timeline",
+        "btn_join_world": "⚡ Enter This World Timeline"
     },
     "Español (Spanish)": {
         "tab_explore": "🌐 Explorar Universos",
@@ -80,7 +89,17 @@ LOCALIZATION_VAULT = {
         "your_identity_title": "##### 👑 TU IDENTIDAD ACTIVA FORJADA",
         "allied_dreamers_title": "##### 👥 SOÑADORES DE LÍNEAS DE TIEMPO ALIADAS",
         "empty_ledger": "✨ El registro público está actualmente vacío. ¡Sé el primero en forjar un avatar de identidad personalizado arriba!",
-        "signin_prompt": "🔑 Inicie sesión a través de la pestaña 'Perfil de cuenta' para ver los activos de los personajes en vivo y autorizar el flujo de datos del registro."
+        "signin_prompt": "🔑 Inicie sesión a través de la pestaña 'Perfil de cuenta' para ver los activos de los personajes en vivo y autorizar el flujo de datos del registro.",
+        # 🆕 NEW STRATEGIC CLEANUP MATRIX KEYS:
+        "dreamer_lbl": "Soñador... {}",
+        "music_prompt": "🎵 Para escuchar música, únete o forja una línea de tiempo mundial",
+        "unlimited_actions": "¿Quieres acciones ilimitadas?",
+        "btn_signin": "Iniciar Sesión",
+        "btn_signup": "Registrarse",
+        "settings_control": "⚙️ Control de Configuración",
+        "sub_genre_title": "🌌 Selecciona Tu Variante de Línea de Tiempo",
+        "community_timeline_title": "📜 Línea de Tiempo Pública de la Comunidad",
+        "btn_join_world": "⚡ Ingresar a Esta Línea de Tiempo"
     },
     "简体中文 (Mandarin)": {
         "tab_explore": "🌐 探索宇宙",
@@ -114,7 +133,17 @@ LOCALIZATION_VAULT = {
         "your_identity_title": "##### 👑 您当前处于激活状态的化身",
         "allied_dreamers_title": "##### 👥 盟友时间线追梦人",
         "empty_ledger": "✨ 公共账本目前为空。成为第一个在上方锻造自定义头像身份资产的人！",
-        "signin_prompt": "🔑 请通过“账户个人资料”标签登录以查看实时角色资产并授权数据库账本流。"
+        "signin_prompt": "🔑 请通过“账户个人资料”标签登录以查看实时角色资产并授权数据库账本流。",
+        # 🆕 NEW STRATEGIC CLEANUP MATRIX KEYS:
+        "dreamer_lbl": "追梦人... {}",
+        "music_prompt": "🎵 要听音乐，请加入或打造世界时间线",
+        "unlimited_actions": "想要无限操作次数吗？",
+        "btn_signin": "登录",
+        "btn_signup": "注册",
+        "settings_control": "⚙️ 设置控制",
+        "sub_genre_title": "🌌 选择您的时间线变体",
+        "community_timeline_title": "📜 公共社区时间线",
+        "btn_join_world": "⚡ 进入此世界时间线"
     }
 }
 
@@ -412,32 +441,51 @@ with st.sidebar:
     st.divider()
 
     
-    # HOUSING FRAME FOR PLAYER PROFILE IMAGE
+        # 🖼️ HOUSING FRAME FOR PLAYER PROFILE IMAGE
     avatar_display = "👤" if not engine["world_name"] else "🎭"
     st.markdown(f'<div class="sidebar-avatar-frame">{avatar_display}</div>', unsafe_allow_html=True)
     
-    # USERNAME DISPLAY TRACKER
+    # 🪐 DYNAMIC LOCALIZED USERNAME DISPLAY TRACKER
     display_username = char["name"] if char["name"] else "Wanderer"
-    st.markdown(f"<p style='text-align: center; font-size: 16px; margin: 0;'>Dreamer: <span style='font-weight: 800; color: #4c1d95;'>{display_username}</span></p>", unsafe_allow_html=True)
+    
+    # Extract the dynamic "Dreamer... {username}" text structure natively
+    localized_dreamer_text = text_vault['dreamer_lbl'].format(display_username)
+    
+    st.markdown(
+        f"<p style='text-align: center; font-size: 16px; margin: 0; color: white;'>"
+        f"<span style='font-weight: 800; color: #a78bfa;'>{localized_dreamer_text}</span></p>", 
+        unsafe_allow_html=True
+    )
     
     st.divider()
 
+
     
-       # 🎵 DYNAMIC SYSTEM AUDIO MATRICES DECK
+        # 🎵 DYNAMIC SYSTEM AUDIO MATRICES DECK (Fully Localized Integration Matrix)
+    # Determine the localized text for the mute and play action nodes
+    btn_mute_lbl = "🔇 Mute Audio" if active_lang == "English" else ("🔇 Silenciar Audio" if active_lang == "Español (Spanish)" else "🔇 静音音频")
+    btn_play_lbl = "🔊 Play Audio" if active_lang == "English" else ("🔊 Reproducir Audio" if active_lang == "Español (Spanish)" else "🔊 播放音频")
+
     with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
         if not engine["world_name"]:
-            st.markdown("<p style='text-align: center; font-size: 13px; color: #334155; font-weight: bold; margin: 5px 0;'>✨ To listen to music, join or forge a world timeline</p>", unsafe_allow_html=True)
+            # 🪐 DYNAMIC LOCALIZED MUSIC PROMPT: Automatically adapts to Spanish or Mandarin natively
+            st.markdown(
+                f"<p style='text-align: center; font-size: 13px; color: #a78bfa; font-weight: bold; margin: 5px 0;'>"
+                f"{text_vault['music_prompt']}</p>", 
+                unsafe_allow_html=True
+            )
         else:
             col_m1, col_m2 = st.columns(2)
             with col_m1:
                 if st.session_state.audio_state["playing"]:
-                    if st.button("🔇 Mute Audio", use_container_width=True, key="btn_mute_audio_chan"):
+                    if st.button(btn_mute_lbl, use_container_width=True, key="btn_mute_audio_chan"):
                         st.session_state.audio_state["playing"] = False
                         st.rerun()
                 else:
-                    if st.button("🔊 Play Audio", use_container_width=True, key="btn_play_audio_chan"):
+                    if st.button(btn_play_lbl, use_container_width=True, key="btn_play_audio_chan"):
                         st.session_state.audio_state["playing"] = True
                         st.rerun()
+
                         
             with col_m2:
                 if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
@@ -558,10 +606,24 @@ if not engine["world_name"]:
 
     
     with tab_explore:
-        # Multi-genre discovery selection tabs initialized directly within the explore scope
-        sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs([
-            "Community & AI", "Cyberpunk", "Dark Fantasy", "Horror", "Romance", "Sci-Fi"
-        ])
+        # 🗺️ READ ACTIVE LOCALIZATION MATRIX STATES
+        active_lang = st.session_state.get("app_language", "English")
+        text_vault = LOCALIZATION_VAULT[active_lang]
+
+        # 🪐 DYNAMIC LOCALIZED SUB-GENRE VARIANT SELECTION TABS
+        # Map localized sub-genre labels from your master vault keys securely
+        if active_lang == "Español (Spanish)":
+            explore_tabs_labels = ["Comunidad y IA", "Cyberpunk", "Fantasía Oscura", "Terror", "Romance", "Ciencia Ficción"]
+        elif active_lang == "简体中文 (Mandarin)":
+            explore_tabs_labels = ["社区与人工智能", "赛博朋克", "黑暗奇幻", "恐怖", "浪漫", "科幻"]
+        else:
+            explore_tabs_labels = ["Community & AI", "Cyberpunk", "Dark Fantasy", "Horror", "Romance", "Sci-Fi"]
+
+        st.markdown(text_vault["sub_genre_title"])
+        
+        # Initialize your dynamic 6-tab discovery navigation hub cleanly
+        sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs(explore_tabs_labels)
+
         
         with sub_ai:
             st.markdown("### Public Community Timelines")
