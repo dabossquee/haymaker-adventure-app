@@ -12,8 +12,7 @@ from dotenv import load_dotenv
 # 1. CORE ENGINE PAGE INITIALIZATION (MUST STAY AT THE TOP)
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 
-# 🌐 LOCALIZATION VAULT - BLOCK 1: CORE CHANNELS
-# 🌐 LOCALIZATION VAULT - BLOCK 1: CORE CHANNELS (FULLY REMAPPED WITH AUTH UTILITIES)
+# 🌐 LOCALIZATION VAULT - BLOCK 1: CORE CHANNELS (FULLY REMAPPED)
 LOCALIZATION_VAULT = {
     "English": {
         "tab_explore": "🌐 Explore Universes", "tab_my_creations": "📂 My Creations", "tab_create": "🚀 Create a World", "tab_avatars": "🎭 Community Avatars", "tab_profile": "🔑 Account Profile", "status_control": "📡 STATUS CONTROL",
@@ -40,7 +39,7 @@ LOCALIZATION_VAULT = {
         "genres": ["Ciencia Ficción", "Fantasía Oscura", "Cyberpunk", "Terror", "Romance", "Otro"],
         "atmosphere_options": ["Vacío (Espacio)", "Delgada / Tóxica", "Línea Base Respirable", "Hiperdensa / Corrosiva"],
         "trial_active": "⏳ PRUEBA ACTIVA: {} Acciones Restantes", "pool_depleted": "🔒 ¡Pool de Acciones Agotado!", "premium_pilot": "👑 PILOTO PREMIUM AUTENTICADO: {}",
-        "active_records_title": "#### 👥 Registros Activos de la Comunidad", "your_identity_title": "##### 👑 TU IDENTIDAD ACTIVA FORJADA", "allied_dreamers_title": "##### 👥 SOÑADORES DE LÍNEAS DE TIEMPO ALIADAS", "empty_ledger": "✨ El registro público está actualmente vacío. ¡Sé el primero en forjar un avatar de identidad personalizado arriba!", "signin_prompt": "🔑 Inicie sesión a través de la pestaña 'Perfil de cuenta' para ver los activos de los personajes en vivo y autorizar el flujo de datos del registro.",
+        "active_records_title": "#### 👥 Registros Activos de la Comunidad", "your_identity_title": "##### 👑 TU IDENTIDAD ACTIVA FORJADA", "allied_dreamers_title": "##### 👥 SOÑADORES DE LÍNEAS DE TIEMPO ALIADAS", "empty_ledger": "✨ El registro público está actualmente vacío. ¡Sé el primero en forjar un avatar de identidad personalizado arriba!", "signin_prompt": "🔑 Inicie sesión a través de la pestaña 'Perfil de cuenta' para ver los activos de los personajes en vivo.",
         "dreamer_lbl": "Soñador... {}", "music_prompt": "🎵 Para escuchar música, únete o forja una línea de tiempo mundial", "unlimited_actions": "¿Quieres acciones ilimitadas?", "btn_signin": "Iniciar Sesión", "btn_signup": "Registrarse", "settings_control": "⚙️ Control de Configuración", "sub_genre_title": "🌌 Selecciona Tu Variante de Línea de Tiempo", "community_timeline_title": "📜 Línea de Tiempo Pública de la Comunidad", "btn_join_world": "⚡ Ingresar a Esta Línea de Tiempo",
         "auth_title": "### 🔑 Portal de Identificación Seguro", "auth_subtitle": "Autorice su nodo de identidad de perfil para guardar líneas de tiempo personalizadas.",
         "lbl_email": "Correo Electrónico de la Cuenta:", "lbl_pass": "Contraseña de Seguridad:", "btn_login_submit": "🔐 Autorizar Sesión del Corredor", "btn_register_submit": "🚀 Forjar Nueva Identidad de Perfil"
@@ -56,7 +55,7 @@ LOCALIZATION_VAULT = {
         "atmosphere_options": ["真空 (太空)", "稀薄 / 有毒", "可呼吸基准线", "高密度 / 腐蚀性"],
         "trial_active": "⏳ 试用激活：剩余 {} 次操作", "pool_depleted": "🔒 操作次数已耗尽！", "premium_pilot": "👑 已认证的高级试点员：{}",
         "active_records_title": "#### 👥 活跃社区记录", "your_identity_title": "##### 👑 您当前处于激活状态的化身", "allied_dreamers_title": "##### 👥 盟友时间线追梦人", "empty_ledger": "✨ 公共账本目前为空。成为第一个在上方锻造自定义头像身份资产的人！", "signin_prompt": "🔑 请通过“账户个人资料”标签登录以查看实时角色资产并授权数据库账本流。",
-        "dreamer_lbl": "追梦人... {}", "music_prompt": "🎵 要听音乐，请加入或打造世界时间线", "unlimited_actions": "想要无限操作次数吗？", "btn_signin": "登录", "btn_signup": "注册", "settings_control": "⚙️ 设置控制", "sub_genre_title": "🌌 选择您的时间线变体", "community_timeline_title": "📜 公共社区时间线", "btn_join_world": "⚡ 进入此世界时间线",
+        "dreamer_lbl": "追梦人... {}", "music_prompt": "🎵 要听音乐，请加入或打造 world 时间线", "unlimited_actions": "想要无限操作次数吗？", "btn_signin": "登录", "btn_signup": "注册", "settings_control": "⚙️ 设置控制", "sub_genre_title": "🌌 选择您的时间线变体", "community_timeline_title": "📜 公共社区时间线", "btn_join_world": "⚡ 进入此世界时间线",
         "auth_title": "### 🔑 安全身份验证门户", "auth_subtitle": "授权您的个人资料身份节点以保存自定义时间线并清除限制。",
         "lbl_email": "账户电子邮件:", "lbl_pass": "安全密码签名:", "btn_login_submit": "🔐 授权通道会话", "btn_register_submit": "🚀 锻造新个人身份"
     }
@@ -68,18 +67,18 @@ LOCALIZATION_VAULT.update({
         "form_title": "### ⚔️ Форма Архитектора Вселенной", "form_subtitle": "Настройте фундаментальную механику вашей временной шкалы перед запуском повествовательного семени.",
         "lbl_celestial": "##### 🪐 Небесная Физика", "lbl_name": "Название Вселенной:", "lbl_genre": "Выберите жанр:", "lbl_gravity": "🪐 Уровни Гравитации", "lbl_atmosphere": "💨 Плотность Атмосферы",
         "lbl_identity": "##### 🎭 Настройки Личности Персонажа", "lbl_char_name": "Имя вашего персонажа:", "lbl_backstory": "Профиль/Биография персонажа:",
-        "lbl_factions": "##### 🦅 Архитектура Фракций и ЭлементыТрения", "lbl_allies": "🦅 Имя Доминирующей / Союзной Фракции", "lbl_enemies": "💀 Имя Враждебной Фракции", "lbl_directives": "✍️ Особые Директивы и Ограничения Мира",
+        "lbl_factions": "##### 🦅 Архитектура Фракций и Элементы Трения", "lbl_allies": "🦅 Имя Доминирующей Фракции", "lbl_enemies": "💀 Имя Враждебной Фракции", "lbl_directives": "✍️ Особые Директивы и Ограничения Мира",
         "btn_deploy": "🚀 Развернуть и Запустить Ядро", "msg_success": "🎉 Семя вселенной успешно скомпилировано!",
         "genres": ["Фантастика", "Темное Фэнтези", "Киберпанк", "Хоррор", "Романтика", "Другое"],
         "atmosphere_options": ["Вакуум (Космос)", "Тонкая / Токсичная", "Дыхательный Базис", "Плотная / Коррозийная"],
         "trial_active": "⏳ ПРОБНЫЙ ПЕРИОД: Осталось {} действий", "pool_depleted": "🔒 Пул действий исчерпан!", "premium_pilot": "👑 ПРЕМИУМ-ПИЛОТ АВТОРИЗОВАН: {}",
-        "active_records_title": "#### 👥 Активные Записи Сообщества", "your_identity_title": "##### 👑 ВАШ АКТИВНЫЙ АВАТАР", "allied_dreamers_title": "##### 👥 СОЮЗНЫЕ СТРАННИКИ ВРЕМЕНИ", "empty_ledger": "✨ Публичный реестр пуст. Станьте первым, кто создаст аватара!", "signin_prompt": "🔑 Пожалуйста, войдите в аккаунт, чтобы просмотреть аватары.",
+        "active_records_title": "#### 👥 Активные Записи Сообщества", "your_identity_title": "##### 👑 ВАШ АКТИВНЫЙ АВАТАР", "allied_dreamers_title": "##### 👥 СОЮЗНЫЕ СТРАННИКИ ВРЕМЕНИ", "empty_ledger": "✨ Публичный реестр пуст.", "signin_prompt": "🔑 Пожалуйста, войдите в аккаунт.",
         "dreamer_lbl": "Мечтатель... {}", "music_prompt": "🎵 Чтобы слушать музыку, войдите в мир", "unlimited_actions": "Хотите безлимит?", "btn_signin": "Войти", "btn_signup": "Регистрация", "settings_control": "⚙️ Настройки", "sub_genre_title": "🌌 Выберите вариант временной шкалы", "community_timeline_title": "📜 Публичная хроника сообщества", "btn_join_world": "⚡ Войти в этот мир",
-        "auth_title": "### 🔑 Безопасный портал идентификации", "auth_subtitle": "Авторизуйте свой идентификационный узел, чтобы сохранять временные шкалы.",
-        "lbl_email": "Вектор электронной почты:", "lbl_pass": "Подпись безопасного пароля:", "btn_login_submit": "🔐 Авторизовать сессию коридора", "btn_register_submit": "🚀 Создать новый профиль личности"
+        "auth_title": "### 🔑 Безопасный портал идентификации", "auth_subtitle": "Авторизуйте свой идентификационный узел.",
+        "lbl_email": "Электронная почта:", "lbl_pass": "Пароль:", "btn_login_submit": "🔐 Авторизовать сессию коридора", "btn_register_submit": "🚀 Создать новый профиль"
     },
     "Français (French)": {
-        "tab_explore": "🌐 Explorer les Univers", "tab_my_creations": "📂 Mes Créations", "tab_create": "🚀 Créer un Monde", "tab_avatars": "🎭 Avatars du Communauté", "tab_profile": "🔑 Profil du Compte", "status_control": "📡 CONTRÔLE DE STATUT",
+        "tab_explore": "🌐 Explorer les Univers", "tab_my_creations": "📂 Mes Créations", "tab_create": "🚀 Créer un Monde", "tab_avatars": "🎭 Avatars de la Communauté", "tab_profile": "🔑 Profil du Compte", "status_control": "📡 CONTRÔLE DE STATUT",
         "form_title": "### ⚔️ Formulaire d'Architecte d'Univers", "form_subtitle": "Ajustez les mécaniques fondamentales de votre chronologie avant d'initialiser le code narratif.",
         "lbl_celestial": "##### 🪐 Physique Céleste", "lbl_name": "Nom de l'Univers:", "lbl_genre": "Sélectionnez le genre:", "lbl_gravity": "🪐 Niveaux de Gravité", "lbl_atmosphere": "💨 Densité Atmosphérique",
         "lbl_identity": "##### 🎭 Paramètres d'Identité du Personnage", "lbl_char_name": "Nom de votre personnage:", "lbl_backstory": "Profil/Histoire du personnage:",
@@ -88,10 +87,10 @@ LOCALIZATION_VAULT.update({
         "genres": ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horreur", "Romance", "Autre"],
         "atmosphere_options": ["Vide (Espace)", "Mince / Toxique", "Atmosphère Respirable", "Hyper-Dense / Corrosive"],
         "trial_active": "⏳ ESSAI ACTIF: {} Actions Restantes", "pool_depleted": "🔒 Pool d'Actions Épuisé !", "premium_pilot": "👑 PILOTE PREMIUM AUTHENTIFIÉ: {}",
-        "active_records_title": "#### 👥 Registres Actifs de la Communauté", "your_identity_title": "##### 👑 VOTRE IDENTITÉ ACTIVE", "allied_dreamers_title": "##### 👥 REVEURS CHRONOLOGIQUES ALLIÉS", "empty_ledger": "✨ Le registre public est vide. Créez votre avatar !", "signin_prompt": "🔑 Veuillez vous connecter pour voir les enregistrements.",
+        "active_records_title": "#### 👥 Registres Actifs de la Communauté", "your_identity_title": "##### 👑 VOTRE IDENTITÉ ACTIVE", "allied_dreamers_title": "##### 👥 REVEURS CHRONOLOGIQUES ALLIÉS", "empty_ledger": "✨ Le registre public est vide.", "signin_prompt": "🔑 Veuillez vous connecter pour voir les enregistrements.",
         "dreamer_lbl": "Rêveur... {}", "music_prompt": "🎵 Pour écouter de la musique, rejoignez un monde", "unlimited_actions": "Actions illimitées ?", "btn_signin": "Connexion", "btn_signup": "S'inscrire", "settings_control": "⚙️ Réglages", "sub_genre_title": "🌌 Sélectionnez votre variante", "community_timeline_title": "📜 Chronologie publique", "btn_join_world": "⚡ Rejoindre ce monde",
-        "auth_title": "### 🔑 Portail d'Identification Sécurisé", "auth_subtitle": "Autorisez votre nœud d'identité pour sauvegarder vos univers personnalisés.",
-        "lbl_email": "Vecteur Email du Compte:", "lbl_pass": "Signature de Passe Sécurisée:", "btn_login_submit": "🔐 Autoriser la Session du Corridor", "btn_register_submit": "🚀 Forger une Nouvelle Identité"
+        "auth_title": "### 🔑 Portail d'Identification Sécurisé", "auth_subtitle": "Autorisez votre nœud d'identité pour sauvegarder vos univers.",
+        "lbl_email": "Email du Compte:", "lbl_pass": "Mot de Passe Sécurisé:", "btn_login_submit": "🔐 Autoriser la Session", "btn_register_submit": "🚀 Forger une Nouvelle Identité"
     },
     "العربية (Arabic)": {
         "tab_explore": "🌐 استكشاف العوالم", "tab_my_creations": "📂 إبداعاتي", "tab_create": "🚀 صنع عالمًا", "tab_avatars": "🎭 شخصيات المجتمع", "tab_profile": "🔑 ملف الحساب", "status_control": "📡 مراقبة الحالة",
@@ -103,58 +102,58 @@ LOCALIZATION_VAULT.update({
         "genres": ["خيال علمي", "فانتازيا مظلمة", "سايبربانك", "رعب", "رومانسي", "آخر"],
         "atmosphere_options": ["فراغ (الفضاء)", "رقيق / سام", "قابل للتنفس", "كثيف جدًا / أكّال"],
         "trial_active": "⏳ الفترة التجريبية: متبقي {} إجراءات", "pool_depleted": "🔒 تم استنفاد رصيد الإجراءات!", "premium_pilot": "👑 تم التحقق من الطيار المتميز: {}",
-        "active_records_title": "#### 👥 سجلات المجتمع النشطة", "your_identity_title": "##### 👑 هويتك النشطة الحالية", "allied_dreamers_title": "##### 👥 الحالمون في الخطوط الزمنية الحليفة", "empty_ledger": "✨ السجل العام فارغ حاليًا. كن أول من ينشئ شخصية!", "signin_prompt": "🔑 يرجى تسجيل الدخول لعرض السجلات.",
+        "active_records_title": "#### 👥 سجلات المجتمع推力", "your_identity_title": "##### 👑 هويتك النشطة الحالية", "allied_dreamers_title": "##### 👥 الحالمون في الخطوط الزمنية الحليفة", "empty_ledger": "✨ السجل العام فارغ حاليًا.", "signin_prompt": "🔑 يرجى تسجيل الدخول لعرض السجلات.",
         "dreamer_lbl": "الحالم... {}", "music_prompt": "🎵 للاستماع للموسيقى، انضم لعالم", "unlimited_actions": "تريد إجراءات غير محدودة؟", "btn_signin": "تسجيل الدخول", "btn_signup": "إنشاء حساب", "settings_control": "⚙️ التحكم بالإعدادات", "sub_genre_title": "🌌 اختر بديل الخط الزمني", "community_timeline_title": "📜 الخط الزمني العام للمجتمع", "btn_join_world": "⚡ دخول هذا الخط الزمني",
         "auth_title": "### 🔑 بوابة التحقق الآمنة", "auth_subtitle": "قم بترخيص معرفك الشخصي لحفظ الخطوط الزمنية وتخطي القيود.",
-        "lbl_email": "البريد الإلكتروني للحساب:", "lbl_pass": "توقيع كلمة المرور الآمنة:", "btn_login_submit": "🔐 ترخيص جلسة الممر", "btn_register_submit": "🚀 إنشاء هوية ملف شخصي جديدة"
+        "lbl_email": "البريد الإلكتروني:", "lbl_pass": "كلمة المرور الآمنة:", "btn_login_submit": "🔐 ترخيص جلسة الممر", "btn_register_submit": "🚀 إنشاء هوية جديدة"
     }
 })
 # 🌐 LOCALIZATION VAULT - BLOCK 3: HINDI, JAPANESE, KOREAN ASIA POWERHOUSES
 LOCALIZATION_VAULT.update({
     "हिन्दी (Hindi)": {
         "tab_explore": "🌐 ब्रह्मांड खोजें", "tab_my_creations": "📂 मेरी रचनाएँ", "tab_create": "🚀 ब्रह्मांड बनाएं", "tab_avatars": "🎭 समुदाय अवतार", "tab_profile": "🔑 खाता प्रोफ़ाइल", "status_control": "📡 स्थिति नियंत्रण",
-        "form_title": "### ⚔️ ब्रह्मांड आर्किटेक्ट फॉर्म", "form_subtitle": "कथा बीज शुरू करने से पहले अपनी कस्टम समयरेखा के बुनियादी तंत्र को ट्यून करें।",
+        "form_title": "### ⚔️ ब्रह्मांड आर्किटेक्ट फॉर्म", "form_subtitle": "कथा बीज शुरू करने से पहले अपनी समयरेखा के बुनियादी तंत्र को ट्यून करें.",
         "lbl_celestial": "##### 🪐 खगोलीय भौतिकी", "lbl_name": "ब्रह्मांड का नाम:", "lbl_genre": "शैली चुनें:", "lbl_gravity": "🪐 गुरुत्वाकर्षण स्तर", "lbl_atmosphere": "💨 वायुमंडलीय घनत्व",
-        "lbl_identity": "##### 🎭 चरित्र पहचान सेटिंग्स", "lbl_char_name": "आपके चरित्र का नाम:", "lbl_backstory": "चरित्र प्रोफ़ाइल/पृष्ठभूमि कहानी:",
-        "lbl_factions": "##### 🦅 गुट वास्तुकलाและ घर्षण तत्व", "lbl_allies": "🦅 प्रमुख / संबद्ध गुट का नाम", "lbl_enemies": "💀 विद्रोही / विरोधी गुट का नाम", "lbl_directives": "✍️ कस्टम पर्यावरण निर्देश / प्रतिबंध",
-        "btn_deploy": "🚀 कोर इंजन तैनात करें", "msg_success": "🎉 कस्टम ब्रह्मांड समयरेखा सफलतापूर्वक संकलित की गई!",
+        "lbl_identity": "##### 🎭 चरित्र पहचान सेटिंग्स", "lbl_char_name": "आपके चरित्र का नाम:", "lbl_backstory": "चरित्र प्रोफ़ाइल:",
+        "lbl_factions": "##### 🦅 गुट वास्तुकла", "lbl_allies": "🦅 प्रमुख गुट का नाम", "lbl_enemies": "💀 विरोधी गुट का नाम", "lbl_directives": "✍️ कस्टम निर्देश",
+        "btn_deploy": "🚀 कोर इंजन तैनात करें", "msg_success": "🎉 ब्रह्मांड समयरेखा सफलतापूर्वक संकलित की गई!",
         "genres": ["साइंस-फिक्शन", "डार्क फंतासी", "साइबरपंक", "हॉरर", "रोमांस", "अन्य"],
-        "atmosphere_options": ["वैक्यूम (अंतरिक्ष)", "पतली / जहरीली", "सांस लेने योग्य", "अत्यधिक घनी / संक्षारक"],
+        "atmosphere_options": ["वैक्यूम (अंतरिक्ष)", "पतली / जहरीली", "सांस लेने योग्य", "अत्यधिक घनी"],
         "trial_active": "⏳ परीक्षण सक्रिय: {} क्रियाएं शेष", "pool_depleted": "🔒 क्रिया पूल समाप्त!", "premium_pilot": "👑 प्रीमियम पायलट प्रमाणित: {}",
-        "active_records_title": "#### 👥 सक्रिय समुदाय रिकॉर्ड", "your_identity_title": "##### 👑 आपकी सक्रिय पहचान", "allied_dreamers_title": "##### 👥 संबद्ध समयरेखा के सपने देखने वाले", "empty_ledger": "✨ सार्वजनिक खाता वर्तमान में खाली है। सबसे पहले अवतार बनाएं!", "signin_prompt": "🔑 कृपया रिकॉर्ड देखने के लिए लॉग इन करें।",
+        "active_records_title": "#### 👥 सक्रिय समुदाय रिकॉर्ड", "your_identity_title": "##### 👑 आपकी सक्रिय पहचान", "allied_dreamers_title": "##### 👥 संबद्ध सपने देखने वाले", "empty_ledger": "✨ सार्वजनिक खाता खाली है.", "signin_prompt": "🔑 कृपया रिकॉर्ड देखने के लिए लॉग इन करें.",
         "dreamer_lbl": "सपने देखने वाला... {}", "music_prompt": "🎵 संगीत सुनने के लिए, ब्रह्मांड से जुड़ें", "unlimited_actions": "असीमित क्रियाएं चाहिए?", "btn_signin": "लॉग इन करें", "btn_signup": "साइन अप करें", "settings_control": "⚙️ सेटिंग्स नियंत्रण", "sub_genre_title": "🌌 अपना समयरेखा संस्करण चुनें", "community_timeline_title": "📜 सार्वजनिक समुदाय समयरेखा", "btn_join_world": "⚡ इस ब्रह्मांड में प्रवेश करें",
-        "auth_title": "### 🔑 सुरक्षित पहचान पोर्टल", "auth_subtitle": "समयरेखा को बचाने और सीमाओं को साफ़ करने के लिए अपनी प्रोफ़ाइल पहचान को अधिकृत करें।",
-        "lbl_email": "खाता ईमेल वेक्टर:", "lbl_pass": "सुरक्षित पासवर्ड हस्ताक्षर:", "btn_login_submit": "🔐 कॉरिडोर सत्र अधिकृत करें", "btn_register_submit": "🚀 नई पहचान का निर्माण करें"
+        "auth_title": "### 🔑 सुरक्षित पहचान पोर्टल", "auth_subtitle": "अपनी प्रोफ़ाइल पहचान को अधिकृत करें.",
+        "lbl_email": "खाता ईमेल:", "lbl_pass": "सुरक्षित पासवर्ड:", "btn_login_submit": "🔐 कॉरिडोर सत्र अधिकृत करें", "btn_register_submit": "🚀 नई पहचान का निर्माण करें"
     },
     "日本語 (Japanese)": {
         "tab_explore": "🌐 タイムライン探索", "tab_my_creations": "📂 マイユニバース", "tab_create": "🚀 世界の創造", "tab_avatars": "🎭 コミュニティ共同体", "tab_profile": "🔑 アカウントプロファイル", "status_control": "📡 ステータス管理",
         "form_title": "### ⚔️ 世界設計アーキテクトフォーム", "form_subtitle": "物語のシードを初期化する前に、カスタムタイムラインの根本的なメカニズムを調整します。",
-        "lbl_celestial": "##### 🪐 天体物理学パラメーター", "lbl_name": "世界・固有名称:", "lbl_genre": "テーマジャンル選択:", "lbl_gravity": "🪐 重力係数", "lbl_atmosphere": "💨 大气濃度レイヤー",
+        "lbl_celestial": "##### 🪐 天体物理学パラメーター", "lbl_name": "世界・固有名称:", "lbl_genre": "テーマジャンル選択:", "lbl_gravity": "🪐 重力係数", "lbl_atmosphere": "💨 大気濃度レイヤー",
         "lbl_identity": "##### 🎭 キャラクター固有アイデンティティ", "lbl_char_name": "プレイヤーキャラクター名:", "lbl_backstory": "キャラクタープロファイル/背景設定:",
         "lbl_factions": "##### 🦅 勢力アーキテクチャ & 摩擦対立エレメント", "lbl_allies": "🦅 支配勢力 / 同盟クラン名称", "lbl_enemies": "💀 反乱勢力 / 敵対組織名称", "lbl_directives": "✍️ 固有環境指令 / 世界の制約・ルール",
         "btn_deploy": "🚀 世界線構築エンジン点火", "msg_success": "🎉 カスタムタイムラインの構築に成功しました！",
-        "genres": ["SF", "ダークファン타ジー", "サイ버パンク", "ホラー", "ロマンス", "その他"],
+        "genres": ["SF", "ダークファンタジー", "サイ버パンク", "ホラー", "ロマンス", "その他"],
         "atmosphere_options": ["真空 (宇宙)", "希薄 / 有毒", "標準呼吸可能環境", "超高密度 / 腐食性"],
         "trial_active": "⏳ トライアル有効: 残り {} アクション", "pool_depleted": "🔒 アクションプールが枯渇しました！", "premium_pilot": "👑 認定プレミアムパイロット: {}",
-        "active_records_title": "#### 👥 アクティブなタイムライン記録", "your_identity_title": "##### 👑 あなたの現在のアバター", "allied_dreamers_title": "##### 👥 同盟関係の時空観測者", "empty_ledger": "✨ パブリックレジャーは現在空です。最初のアバターを鍛造しましょう！", "signin_prompt": "🔑 アカウントプロファイルからログインして、レジャーを確認してください。",
+        "active_records_title": "#### 👥 アクティブなタイムライン記録", "your_identity_title": "##### 👑 あなたの現在のアバター", "allied_dreamers_title": "##### 👥 同盟関係の時空観測者", "empty_ledger": "✨ パブリックレジャーは現在空です。", "signin_prompt": "🔑 アカウントプロファイルからログインしてください。",
         "dreamer_lbl": "観測者... {}", "music_prompt": "🎵 音楽を聴くには世界線に参加してください", "unlimited_actions": "無制限のアクセスを解放しますか？", "btn_signin": "ログイン", "btn_signup": "新規登録", "settings_control": "⚙️ 制御システム", "sub_genre_title": "🌌 タイムラインのバリアントを選択", "community_timeline_title": "📜 パブリックコミュニティタイムライン", "btn_join_world": "⚡ この世界線にダイブする",
-        "auth_title": "### 🔑 セキュア身元認証ポータル", "auth_subtitle": "カスタム世界線を保存し、制限をクリアするためにプロファイルを認証します。",
-        "lbl_email": "アカウントメールアドレス:", "lbl_pass": "安全なパスワード暗号:", "btn_login_submit": "🔐 セッション接続を承認", "btn_register_submit": "🚀 新規観測者アイデンティティを鍛造"
+        "auth_title": "### 🔑 セキュア身元認証ポータル", "auth_subtitle": "プロファイルを認証します。",
+        "lbl_email": "メールアドレス:", "lbl_pass": "安全なパスワード:", "btn_login_submit": "🔐 セッション接続を承認", "btn_register_submit": "🚀 新規観測者アイデンティティを鍛造"
     },
     "한국어 (Korean)": {
         "tab_explore": "🌐 세계선 탐색", "tab_my_creations": "📂 나의 창작물", "tab_create": "🚀 세계 창조", "tab_avatars": "🎭 커뮤니티 아바타", "tab_profile": "🔑 계정 프로필", "status_control": "📡 상태 제어 센터",
         "form_title": "### ⚔️ 세계 설계 아키텍트 폼", "form_subtitle": "서사 시드를 초기화하기 전에 커스텀 시간선의 기본 메커니즘을 조정하십시오.",
-        "lbl_celestial": "##### 🪐 천체 물리학 매개변수", "lbl_name": "세계선 이름:", "lbl_genre": "테마 장르 선택:", "lbl_gravity": "🪐 중력 수치", "lbl_atmosphere": "💨 대기 밀도",
-        "lbl_identity": "##### 🎭 캐릭터 신원 설정", "lbl_char_name": "캐릭터 이름:", "lbl_backstory": "캐릭터 프로필 / 배경 이야기:",
-        "lbl_factions": "##### 🦅 세력 아키텍처 & 마찰 대립 요소", "lbl_allies": "🦅 지배 세력 / 동맹 진영 이름", "lbl_enemies": "💀 반란 진영 / 적대 세력 이름", "lbl_directives": "✍️ 커스텀 환경 지침 / 세계선 제약 조건",
-        "btn_deploy": "🚀 코어 엔진 배포 및 점화", "msg_success": "🎉 커스텀 우주 시간선 시드가 성공적으로 컴파일되었습니다!",
+        "lbl_celestial": "##### 🪐 우주 물리학 매개변수", "lbl_name": "세계선 이름:", "lbl_genre": "테마 장르 선택:", "lbl_gravity": "🪐 중력 수치", "lbl_atmosphere": "💨 대기 밀도",
+        "lbl_identity": "##### 🎭 캐릭터 신원 설정", "lbl_char_name": "캐릭터 이름:", "lbl_backstory": "캐릭터 프로필:",
+        "lbl_factions": "##### 🦅 세력 아키텍처 & 마찰 대립 요소", "lbl_allies": "🦅 지배 세력 진영 이름", "lbl_enemies": "💀 반란 진영 이름", "lbl_directives": "✍️ 커스텀 환경 지침",
+        "btn_deploy": "🚀 코어 엔진 배포 및 점화", "msg_success": "🎉 우주 시간선 시드가 성공적으로 컴파일되었습니다!",
         "genres": ["SF", "다크 판타지", "사이버펑크", "공포", "로맨스", "기타"],
         "atmosphere_options": ["진공 (우주)", "희박 / 유독", "호흡 가능 기준선", "초고밀도 / 부식성"],
         "trial_active": "⏳ 체험판 활성화: {}회 작업 남음", "pool_depleted": "🔒 작업 풀이 모두 소진되었습니다!", "premium_pilot": "👑 인증된 프리미엄 파일럿: {}",
-        "active_records_title": "#### 👥 활성화된 커뮤니티 기록", "your_identity_title": "##### 👑 현재 활성화된 아바타", "allied_dreamers_title": "##### 👥 동맹 시간선의 관측자들", "empty_ledger": "✨ 공개 장부가 비어 있습니다. 첫 번째 아바타를 생성하세요!", "signin_prompt": "🔑 로그인 후 실시간 캐릭터 자산 및 데이터 스트림을 확인하세요.",
+        "active_records_title": "#### 👥 활성화된 커뮤니티 기록", "your_identity_title": "##### 👑 현재 활성화된 아바타", "allied_dreamers_title": "##### 👥 동맹 시간선의 관측자들", "empty_ledger": "✨ 공개 장부가 비어 있습니다.", "signin_prompt": "🔑 로그인 후 실시간 캐릭터 자산을 확인하세요.",
         "dreamer_lbl": "관측자... {}", "music_prompt": "🎵 음악을 들으려면 세계선에 참여하세요", "unlimited_actions": "무제한 작업을 원하십니까?", "btn_signin": "로그인", "btn_signup": "회원가입", "settings_control": "⚙️ 설정 제어", "sub_genre_title": "🌌 시간선 변체 선택", "community_timeline_title": "📜 공개 타임라인", "btn_join_world": "⚡ 이 세계선으로 진입",
-        "auth_title": "### 🔑 보안 신원 인증 포털", "auth_subtitle": "커스텀 세계선을 저장하고 제한을 해제하려면 프로필을 인증하십시오.",
-        "lbl_email": "계정 이메일 벡터:", "lbl_pass": "보안 비밀번호 서명:", "btn_login_submit": "🔐 통로 세션 승인", "btn_register_submit": "🚀 새로운 신원 관측자 생성"
+        "auth_title": "### 🔑 보안 신원 인증 포털", "auth_subtitle": "프로필을 인증하십시오.",
+        "lbl_email": "계정 이메일:", "lbl_pass": "보안 비밀번호:", "btn_login_submit": "🔐 통로 세션 승인", "btn_register_submit": "🚀 새로운 신원 생성"
     }
 })
 
@@ -1046,9 +1045,7 @@ if not engine["world_name"]:
         st.write(text_vault["auth_subtitle"])
         st.divider()
 
-        # 👑 STATE CHECK: If a user session is active, show the secure dashboard profile card
         if "user" in st.session_state:
-            # Dynamic remapping labels for the secure account session layout
             active_account_msg = "👑 Perfil Seguro Sincronizado:" if lang == "Español (Spanish)" else ("👑 安全个人资料已同步:" if lang == "简体中文 (Mandarin)" else "👑 Secure Profile Synchronized:")
             logout_btn_label = "🚪 Cerrar Sesión de la Cuenta" if lang == "Español (Spanish)" else ("🚪 登出平台账户" if lang == "简体中文 (Mandarin)" else "🚪 Log Out of Platform Account")
             
@@ -1058,14 +1055,11 @@ if not engine["world_name"]:
                 st.session_state.clear()
                 st.rerun()
         else:
-            # Split form into sign-in or register choice modes dynamically using vault data
             auth_mode = st.radio("Mode:", [text_vault["btn_signin"], text_vault["btn_signup"]], horizontal=True, key="auth_panel_mode_toggle")
 
-            # 🪐 SECURE IDENTITY FORM LAYOUT - READING FROM THE VAULT
             email = st.text_input(text_vault["lbl_email"], placeholder="name@domain.com", key="auth_email_input_field")
             password = st.text_input(text_vault["lbl_pass"], type="password", placeholder="••••••••", key="auth_password_input_field")
 
-            # SUCCESS ALERTS TRANSLATION SWITCHES
             reg_success_msg = "✅ ¡Cuenta verificada! Cambie a 'Iniciar sesión' para autenticarse." if lang == "Español (Spanish)" else ("✅ 账户已验证！请切换到“登录”进行身份验证。" if lang == "简体中文 (Mandarin)" else "✅ Account verified! Please switch to 'Sign In' to authenticate.")
 
             if auth_mode == text_vault["btn_signup"]:
@@ -1085,6 +1079,7 @@ if not engine["world_name"]:
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error: {e}")
+
 
 # 7. ACTIVE NARRATIVE DISPLAY CANVAS (COHESIVE iOS FLEX WRAPPERS)
 st.markdown("""
