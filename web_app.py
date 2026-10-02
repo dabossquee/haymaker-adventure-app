@@ -1339,8 +1339,9 @@ if not is_premium_active and not has_trial_tokens:
 
 # 9. INJECT DYNAMIC IMMERSIVE VISUAL BACKGROUND WINDOW WRAPPER
     # 🌌 SAFE INITIALIZATION DEPLOYMENT: Safe read with a structural default placeholder fallback path
-    bg_url = st.session_state.get("world_cover_url", "https://picsum.photos")
-st.markdown(f'<div class="immersive-chat-viewport" style="background-image: url(\'{bg_url}\');">', unsafe_allow_html=True)
+        # 🌌 SAFE THEME INJECTION: Dynamically grab the active background or default cleanly to prevent NameError crashes
+    safe_bg_url = st.session_state.get("world_cover_url", "https://picsum.photos")
+    st.markdown(f'<div class="immersive-chat-viewport" style="background-image: url(\'{safe_bg_url}\');">', unsafe_allow_html=True)
 st.markdown('<div class="glass-frosted-scroller">', unsafe_allow_html=True)
 
 # Dedicated structural container to force clean chronological rendering order inside the frosted scroller window
