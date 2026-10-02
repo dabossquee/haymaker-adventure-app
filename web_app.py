@@ -439,12 +439,13 @@ with st.sidebar:
             stripe_checkout_url = "https://stripe.com"
             
             st.markdown(
-                f'<a href="{stripe_checkout_url}" target="_blank" style="text-decoration: none;">'
-                f'<div style="background-color: #00FF66; color: black; text-align: center; padding: 14px; '
-                f'font-weight: bold; border-radius: 6px; font-size: 18px; margin-top: 15px; margin-bottom: 25px;">'
-                f'{btn_premium_text}</div></a>',
-                unsafe_allowed_html=True
-            )
+    f'<a href="{stripe_checkout_url}" target="_blank" style="text-decoration: none;">'
+    f'<div style="background-color: #00FF66; color: black; text-align: center; padding: 14px; '
+    f'font-weight: bold; border-radius: 6px; font-size: 18px; margin-top: 15px; margin-bottom: 25px;">'
+    f'{btn_premium_text}</div></a>',
+    unsafe_allow_html=True
+)
+
             
             st.warning(warning_msg)
             if st.button(btn_verify_text, key="sidebar_payment_manual_verify_btn"):
@@ -662,7 +663,6 @@ if not engine["world_name"]:
         # Initialize your dynamic 6-tab discovery navigation hub cleanly
         sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs(explore_tabs_labels)
 
-        
         with sub_ai:
             st.markdown("### Public Community Timelines")
             try:
@@ -670,16 +670,6 @@ if not engine["world_name"]:
                 if public_worlds.data:
                     cols_ai = st.columns(2)
                     for index, world_row in enumerate(public_worlds.data):
-                        with cols_ai[index % 2]:
-                            st.markdown(f"""
-                            <div class="premium-discovery-card">
-                                <div style="padding:20px;">
-                                    <h4>🪐 {world_row['world_name'].upper()}</h4>
-                                    <p style='color: #a78bfa; font-size: 12px; font-weight: bold;'>THEMATIC GENRE: {world_row['world_genre'].upper()}</p>
-                                    <p style='color: #94a3b8; font-size: 14px;'>A custom alternate timeline forged by an active player sandbox node.</p>
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
                         with cols_ai[index % 2]:
                             st.markdown(f"""
                             <div class="premium-discovery-card">
@@ -707,10 +697,11 @@ if not engine["world_name"]:
                             elif active_lang == "日本語 (Japanese)":
                                 btn_enter_lbl = "🎮 コミュニティ宇宙にダイブする"
                             elif active_lang == "한국어 (Korean)":
-                                btn_enter_lbl = "🎮 커뮤니ティ 우주로 진입"
+                                btn_enter_lbl = "🎮 커뮤니티 우주로 진입"
                             else:
                                 btn_enter_lbl = "🎮 Enter Community Universe"
 
+                            # 🟢 THE MASTER ENTRY GATE
                             if st.button(btn_enter_lbl, key=f"pub_{world_row['id']}_{index}", use_container_width=True):
                                 engine["world_id"] = world_row["id"]
                                 engine["world_name"] = world_row["world_name"]
@@ -718,12 +709,11 @@ if not engine["world_name"]:
                                 char["name"] = "Unknown Wanderer"
                                 char["backstory"] = "A traveler dropped suddenly into an unfamiliar alternate reality matrix checkpoint."
                                 st.rerun()
-                
-
                 else:
                     st.info("No player-built alternate universes have been mapped yet. Be the first to spark the cosmos under 'Create a World'!")
             except Exception as e:
                 st.error(f"Database Fetch Error: {e}")
+
                 
         with sub_cyberpunk:
             st.markdown("### Curated Cyberpunk Realities")
