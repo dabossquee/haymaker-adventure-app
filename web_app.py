@@ -680,13 +680,46 @@ if not engine["world_name"]:
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
-                            if st.button("🎮 Enter Community Universe", key=f"pub_{world_row['id']}_{index}", use_container_width=True):
+                        with cols_ai[index % 2]:
+                            st.markdown(f"""
+                            <div class="premium-discovery-card">
+                                <div style="padding:20px;">
+                                    <h4>🪐 {world_row['world_name'].upper()}</h4>
+                                    <p style='color: #a78bfa; font-size: 12px; font-weight: bold;'>THEMATIC GENRE: {world_row['world_genre'].upper()}</p>
+                                    <p style='color: #94a3b8; font-size: 14px;'>A custom alternate timeline forged by an active player sandbox node.</p>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                            # 🌎 DYNAMIC LOCALIZED ENTER THE WORLD MATRIX LABELS
+                            if active_lang == "Español (Spanish)":
+                                btn_enter_lbl = "🎮 Ingresar al Universo de la Comunidad"
+                            elif active_lang == "简体中文 (Mandarin)":
+                                btn_enter_lbl = "🎮 进入社区宇宙时间线"
+                            elif active_lang == "Русский (Russian)":
+                                btn_enter_lbl = "🎮 Войти в сообщество Вселенной"
+                            elif active_lang == "Français (French)":
+                                btn_enter_lbl = "🎮 Entrer dans l'Univers Communautaire"
+                            elif active_lang == "العربية (Arabic)":
+                                btn_enter_lbl = "🎮 دخول كون المجتمع"
+                            elif active_lang == "हिन्दी (Hindi)":
+                                btn_enter_lbl = "🎮 समुदाय ब्रह्मांड में प्रवेश करें"
+                            elif active_lang == "日本語 (Japanese)":
+                                btn_enter_lbl = "🎮 コミュニティ宇宙にダイブする"
+                            elif active_lang == "한국어 (Korean)":
+                                btn_enter_lbl = "🎮 커뮤니ティ 우주로 진입"
+                            else:
+                                btn_enter_lbl = "🎮 Enter Community Universe"
+
+                            if st.button(btn_enter_lbl, key=f"pub_{world_row['id']}_{index}", use_container_width=True):
                                 engine["world_id"] = world_row["id"]
                                 engine["world_name"] = world_row["world_name"]
                                 engine["world_genre"] = world_row["world_genre"]
                                 char["name"] = "Unknown Wanderer"
                                 char["backstory"] = "A traveler dropped suddenly into an unfamiliar alternate reality matrix checkpoint."
                                 st.rerun()
+                
+
                 else:
                     st.info("No player-built alternate universes have been mapped yet. Be the first to spark the cosmos under 'Create a World'!")
             except Exception as e:
