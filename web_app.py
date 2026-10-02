@@ -180,7 +180,8 @@ if "audio_state" not in st.session_state:
 # 🚨 LAYOUT RE-ALIGNMENT FLUSH MATRICES
 if "render_alignment_fixed" not in st.session_state:
     st.session_state.render_alignment_fixed = True
-    st.clear_cache()  # Hard clears internal Streamlit compilation memory buffers
+    st.cache_data.clear()  # Hard clears modern Streamlit internal data buffers
+
 
 
 # ---------------------------------------------------------
