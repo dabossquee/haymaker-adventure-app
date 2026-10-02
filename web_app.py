@@ -177,6 +177,11 @@ if "audio_state" not in st.session_state:
         "playing": True, 
         "track_url": "assets/menu_theme.mp3"  # Points to your fresh custom campaign file!
     }
+# 🚨 LAYOUT RE-ALIGNMENT FLUSH MATRICES
+if "render_alignment_fixed" not in st.session_state:
+    st.session_state.render_alignment_fixed = True
+    st.clear_cache()  # Hard clears internal Streamlit compilation memory buffers
+
 
 # ---------------------------------------------------------
 # 🌐 THE ENTERPRISE LOCALIZATION CHECKPOINT GATEWAY (FRONT GATE)
@@ -1363,7 +1368,7 @@ with chat_canvas_context:
             </div>
             """, unsafe_allow_html=True)
 
-user_action = st.chat_input("Describe your action or speak...")
+
 
 if user_action:
     if "user" not in st.session_state:
