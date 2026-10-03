@@ -14,7 +14,7 @@ st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 
 # 🌐 LOCALIZATION VAULT - BLOCK 1: CORE CHANNELS (FULLY REMAPPED)
 LOCALIZATION_VAULT = {
-    "English": {
+        "English": {
         "tab_explore": "🌐 Explore Universes", "tab_my_creations": "📂 My Creations", "tab_create": "🚀 Create a World", "tab_avatars": "🎭 Community Avatars", "tab_profile": "🔑 Account Profile", "status_control": "📡 STATUS CONTROL",
         "form_title": "### ⚔️ Universe Architect Form", "form_subtitle": "Tune the fundamental mechanics of your custom timeline before initializing the narrative seed.",
         "lbl_celestial": "##### 🪐 Celestial Physics", "lbl_name": "Universe Name:", "lbl_genre": "Select thematic genre:", "lbl_gravity": "🪐 Gravity Levels", "lbl_atmosphere": "💨 Atmospheric Density",
@@ -27,24 +27,39 @@ LOCALIZATION_VAULT = {
         "active_records_title": "#### 👥 Active Community Records", "your_identity_title": "##### 👑 YOUR ACTIVE FORGED IDENTITY", "allied_dreamers_title": "##### 👥 ALLIED TIMELINE DREAMERS", "empty_ledger": "✨ The public ledger is currently empty. Be the first to forge a custom avatar identity asset above!", "signin_prompt": "🔑 Please sign in via the 'Account Profile' tab to view live character assets and authorize database ledger streams.",
         "dreamer_lbl": "Dreamer... {}", "music_prompt": "🎵 To listen to music, join or forge a world timeline", "unlimited_actions": "Want unlimited actions?", "btn_signin": "Sign In", "btn_signup": "Sign Up", "settings_control": "⚙️ Settings Control", "sub_genre_title": "🌌 Select Your Timeline Variant", "community_timeline_title": "📜 Public Community Timeline", "btn_join_world": "⚡ Enter This World Timeline",
         "auth_title": "### 🔑 Secure Identification Portal", "auth_subtitle": "Authorize your profile identity node to save custom timelines and clear limits.",
-        "lbl_email": "Account Email Vector:", "lbl_pass": "Secure Password Signature:", "btn_login_submit": "🔐 Authorize Corridor Session", "btn_register_submit": "🚀 Forge New Profile Identity"
+        "lbl_email": "Account Email Vector:", "lbl_pass": "Secure Password Signature:", "btn_login_submit": "🔐 Authorize Corridor Session", "btn_register_submit": "🚀 Forge New Profile Identity",
+        "sub_genres_lbls": ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"],
+        "btn_launch_scenario": "🎮 Launch Scenario",
+        "settings_sub_status_title": "💳 Subscription Status",
+        "settings_status_free": "⏳ STATUS: Free Trial Mode (12 Actions)",
+        "settings_resync_title": "📡 Re-Sync Past Purchases",
+        "settings_resync_desc": "Changed phones or reinstalled? Tap below to scan Stripe for your active billing cycle account profiles.",
+        "settings_footer": "Haymaker Industry Security Architecture v1.02 • Privacy Framework Protected."
     },
     "Español (Spanish)": {
         "tab_explore": "🌐 Explorar Universos", "tab_my_creations": "📂 Mis Creaciones", "tab_create": "🚀 Crear un Universo", "tab_avatars": "🎭 Avatares de la Comunidad", "tab_profile": "🔑 Perfil de Cuenta", "status_control": "📡 CONTROL DE ESTADO",
         "form_title": "### ⚔️ Formulario de Arquitecto del Universo", "form_subtitle": "Ajusta las mecánicas fundamentales de tu línea de tiempo antes de inicializar la semilla narrativa.",
         "lbl_celestial": "##### 🪐 Física Celestial", "lbl_name": "Nombre del Universo:", "lbl_genre": "Selecciona el género temático:", "lbl_gravity": "🪐 Niveles de Gravedad", "lbl_atmosphere": "💨 Densidad Atmosférica",
         "lbl_identity": "##### 🎭 Configuración de Identidad de Personaje", "lbl_char_name": "Nombre de tu personaje:", "lbl_backstory": "Perfil/Trasfondo del personaje:",
-        "lbl_factions": "##### 🦅 Arquitectura de Facciones y Elementos de Fricción", "lbl_allies": "🦅 Nombre de la Facción Dominante / Aliada", "lbl_enemies": "💀 Nombre de la Facción Rebelde / Enemiga", "lbl_directives": "✍️ Directivas / Restricciones Ambientales Personalizadas",
+        "lbl_factions": "##### 🦅 Arquitetura de Facciones y Elementos de Fricción", "lbl_allies": "🦅 Nombre de la Facción Dominante / Aliada", "lbl_enemies": "💀 Nombre de la Facción Rebelde / Enemiga", "lbl_directives": "✍️ Directivas / Restricciones Ambientales Personalizadas",
         "btn_deploy": "🚀 Desplegar e Encender el Motor Central", "msg_success": "🎉 ¡Semilla de la línea de tiempo del universo compilada con éxito!",
         "genres": ["Ciencia Ficción", "Fantasía Oscura", "Cyberpunk", "Terror", "Romance", "Otro"],
-        "atmosphere_options": ["Vacío (Espacio)", "Delgada / Tóxica", "Línea Base Respirable", "Hiperdensa / Corrosiva"],
+        "atmosphere_options": ["Vacío (Espaço)", "Delgada / Tóxica", "Línea Base Respirable", "Hiperdensa / Corrosiva"],
         "trial_active": "⏳ PRUEBA ACTIVA: {} Acciones Restantes", "pool_depleted": "🔒 ¡Pool de Acciones Agotado!", "premium_pilot": "👑 PILOTO PREMIUM AUTENTICADO: {}",
         "active_records_title": "#### 👥 Registros Activos de la Comunidad", "your_identity_title": "##### 👑 TU IDENTIDAD ACTIVA FORJADA", "allied_dreamers_title": "##### 👥 SOÑADORES DE LÍNEAS DE TIEMPO ALIADAS", "empty_ledger": "✨ El registro público está actualmente vacío. ¡Sé el primero en forjar un avatar de identidad personalizado arriba!", "signin_prompt": "🔑 Inicie sesión a través de la pestaña 'Perfil de cuenta' para ver los activos de los personajes en vivo.",
         "dreamer_lbl": "Soñador... {}", "music_prompt": "🎵 Para escuchar música, únete o forja una línea de tiempo mundial", "unlimited_actions": "¿Quieres acciones ilimitadas?", "btn_signin": "Iniciar Sesión", "btn_signup": "Registrarse", "settings_control": "⚙️ Control de Configuración", "sub_genre_title": "🌌 Selecciona Tu Variante de Línea de Tiempo", "community_timeline_title": "📜 Línea de Tiempo Pública de la Comunidad", "btn_join_world": "⚡ Ingresar a Esta Línea de Tiempo",
         "auth_title": "### 🔑 Portal de Identificación Seguro", "auth_subtitle": "Autorice su nodo de identidad de perfil para guardar líneas de tiempo personalizadas.",
-        "lbl_email": "Correo Electrónico de la Cuenta:", "lbl_pass": "Contraseña de Seguridad:", "btn_login_submit": "🔐 Autorizar Sesión del Corredor", "btn_register_submit": "🚀 Forjar Nueva Identidad de Perfil"
+        "lbl_email": "Correo Electrónico de la Cuenta:", "lbl_pass": "Contraseña de Seguridad:", "btn_login_submit": "🔐 Autorizar Sesión del Corredor", "btn_register_submit": "🚀 Forjar Nueva Identidad de Perfil",
+        "sub_genres_lbls": ["Ciencia Ficción", "Fantasía Oscura", "Cyberpunk", "Terror", "Romance", "Otro"],
+        "btn_launch_scenario": "🎮 Iniciar Escenario",
+        "settings_sub_status_title": "💳 Estado de la Suscripción",
+        "settings_status_free": "⏳ ESTADO: Modo de Prueba Gratuita (12 Acciones)",
+        "settings_resync_title": "📡 Sincronizar Compras Pasadas",
+        "settings_resync_desc": "¿Cambió de teléfono o reinstaló? Toque a continuación para escanear Stripe en busca de sus perfiles de cuenta de ciclo de facturación activos.",
+        "settings_footer": "Arquitectura de Seguridad de Haymaker Industry v1.02 • Marco de Privacidad Protegido."
     },
-    "简体中文 (Mandarin)": {
+
+        "简体中文 (Mandarin)": {
         "tab_explore": "🌐 探索宇宙", "tab_my_creations": "📂 我的创作", "tab_create": "🚀 创造世界", "tab_avatars": "🎭 社区化身", "tab_profile": "🔑 账户个人资料", "status_control": "📡 状态控制",
         "form_title": "### 宇宙架构师表单", "form_subtitle": "在初始化叙事种子之前，调整自定义时间线的基础机制。",
         "lbl_celestial": "##### 🪐 天体物理学", "lbl_name": "宇宙名称:", "lbl_genre": "选择主题类型:", "lbl_gravity": "🪐 引力水平", "lbl_atmosphere": "💨 大气密度",
@@ -57,7 +72,14 @@ LOCALIZATION_VAULT = {
         "active_records_title": "#### 👥 活跃社区记录", "your_identity_title": "##### 👑 您当前处于激活状态的化身", "allied_dreamers_title": "##### 👥 盟友时间线追梦人", "empty_ledger": "✨ 公共账本目前为空。成为第一个在上方锻造自定义头像身份资产的人！", "signin_prompt": "🔑 请通过“账户个人资料”标签登录以查看实时角色资产并授权数据库账本流。",
         "dreamer_lbl": "追梦人... {}", "music_prompt": "🎵 要听音乐，请加入或打造 world 时间线", "unlimited_actions": "想要无限操作次数吗？", "btn_signin": "登录", "btn_signup": "注册", "settings_control": "⚙️ 设置控制", "sub_genre_title": "🌌 选择您的时间线变体", "community_timeline_title": "📜 公共社区时间线", "btn_join_world": "⚡ 进入此世界时间线",
         "auth_title": "### 🔑 安全身份验证门户", "auth_subtitle": "授权您的个人资料身份节点以保存自定义时间线并清除限制。",
-        "lbl_email": "账户电子邮件:", "lbl_pass": "安全密码签名:", "btn_login_submit": "🔐 授权通道会话", "btn_register_submit": "🚀 锻造新个人身份"
+        "lbl_email": "账户电子邮件:", "lbl_pass": "安全密码签名:", "btn_login_submit": "🔐 授权通道会话", "btn_register_submit": "🚀 锻造新个人身份",
+        "sub_genres_lbls": ["科幻小说", "黑暗幻想", "赛博朋克", "恐怖", "浪漫", "其他"],
+        "btn_launch_scenario": "🎮 启动场景",
+        "settings_sub_status_title": "💳 订阅状态",
+        "settings_status_free": "⏳ 状态：免费 trial 模式 (12 次操作)",
+        "settings_resync_title": "📡 重新同步历史购买",
+        "settings_resync_desc": "更换了手机或重新安装？点击下方扫描 Stripe 以获取您处于活跃计费周期的账户档案。",
+        "settings_footer": "Haymaker Industry 安全架构 v1.02 • 隐私框架保护。"
     }
 }
 # 🌐 LOCALIZATION VAULT - BLOCK 2: RUSSIAN, FRENCH, ARABIC EXPANSIONS
@@ -75,7 +97,14 @@ LOCALIZATION_VAULT.update({
         "active_records_title": "#### 👥 Активные Записи Сообщества", "your_identity_title": "##### 👑 ВАШ АКТИВНЫЙ АВАТАР", "allied_dreamers_title": "##### 👥 СОЮЗНЫЕ СТРАННИКИ ВРЕМЕНИ", "empty_ledger": "✨ Публичный реестр пуст.", "signin_prompt": "🔑 Пожалуйста, войдите в аккаунт.",
         "dreamer_lbl": "Мечтатель... {}", "music_prompt": "🎵 Чтобы слушать музыку, войдите в мир", "unlimited_actions": "Хотите безлимит?", "btn_signin": "Войти", "btn_signup": "Регистрация", "settings_control": "⚙️ Настройки", "sub_genre_title": "🌌 Выберите вариант временной шкалы", "community_timeline_title": "📜 Публичная хроника сообщества", "btn_join_world": "⚡ Войти в этот мир",
         "auth_title": "### 🔑 Безопасный портал идентификации", "auth_subtitle": "Авторизуйте свой идентификационный узел.",
-        "lbl_email": "Электронная почта:", "lbl_pass": "Пароль:", "btn_login_submit": "🔐 Авторизовать сессию коридора", "btn_register_submit": "🚀 Создать новый профиль"
+        "lbl_email": "Электронная почта:", "lbl_pass": "Пароль:", "btn_login_submit": "🔐 Авторизовать сессию коридора", "btn_register_submit": "🚀 Создать новый профиль",
+        "sub_genres_lbls": ["Научная фантастика", "Темное фэнтези", "Киберпанк", "Ужасы", "Романтика", "Другое"],
+        "btn_launch_scenario": "🎮 Запустить сценарий",
+        "settings_sub_status_title": "💳 Статус подписки",
+        "settings_status_free": "⏳ СТАТУС: Режим бесплатной версии (12 действий)",
+        "settings_resync_title": "📡 Синхронизация прошлых покупок",
+        "settings_resync_desc": "Поменяли телефон или переустановили? Нажмите ниже, чтобы отсканировать Stripe на наличие активных профилей биллинга.",
+        "settings_footer": "Архитектура безопасности Haymaker Industry v1.02 • Защищено структурой конфиденциальности."
     },
     "Français (French)": {
         "tab_explore": "🌐 Explorer les Univers", "tab_my_creations": "📂 Mes Créations", "tab_create": "🚀 Créer un Monde", "tab_avatars": "🎭 Avatars de la Communauté", "tab_profile": "🔑 Profil du Compte", "status_control": "📡 CONTRÔLE DE STATUT",
@@ -89,10 +118,18 @@ LOCALIZATION_VAULT.update({
         "trial_active": "⏳ ESSAI ACTIF: {} Actions Restantes", "pool_depleted": "🔒 Pool d'Actions Épuisé !", "premium_pilot": "👑 PILOTE PREMIUM AUTHENTIFIÉ: {}",
         "active_records_title": "#### 👥 Registres Actifs de la Communauté", "your_identity_title": "##### 👑 VOTRE IDENTITÉ ACTIVE", "allied_dreamers_title": "##### 👥 REVEURS CHRONOLOGIQUES ALLIÉS", "empty_ledger": "✨ Le registre public est vide.", "signin_prompt": "🔑 Veuillez vous connecter pour voir les enregistrements.",
         "dreamer_lbl": "Rêveur... {}", "music_prompt": "🎵 Pour écouter de la musique, rejoignez un monde", "unlimited_actions": "Actions illimitées ?", "btn_signin": "Connexion", "btn_signup": "S'inscrire", "settings_control": "⚙️ Réglages", "sub_genre_title": "🌌 Sélectionnez votre variante", "community_timeline_title": "📜 Chronologie publique", "btn_join_world": "⚡ Rejoindre ce monde",
-        "auth_title": "### 🔑 Portail d'Identification Sécurisé", "auth_subtitle": "Autorisez votre nœud d'identité pour sauvegarder vos univers.",
-        "lbl_email": "Email du Compte:", "lbl_pass": "Mot de Passe Sécurisé:", "btn_login_submit": "🔐 Autoriser la Session", "btn_register_submit": "🚀 Forger une Nouvelle Identité"
+        "auth_title": "### 🔑 Portail d'Identification Séquentiel Sécurisé", "auth_subtitle": "Autorisez votre nœud d'identité pour sauvegarder vos univers.",
+        "lbl_email": "Email du Compte:", "lbl_pass": "Mot de Passe Sécurisé:", "btn_login_submit": "🔐 Autoriser la Session", "btn_register_submit": "🚀 Forger une Nouvelle Identité",
+        "sub_genres_lbls": ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horreur", "Romance", "Autre"],
+        "btn_launch_scenario": "🎮 Lancer le Scénario",
+        "settings_sub_status_title": "💳 Statut de l'Abonnement",
+        "settings_status_free": "⏳ STATUT : Mode d'Essai Gratuit (12 Actions)",
+        "settings_resync_title": "📡 Re-synchroniser les Achats Passés",
+        "settings_resync_desc": "Changement de téléphone ou réinstallation ? Appuyez ci-dessous pour scanner Stripe pour vos profils de compte de cycle de facturation actifs.",
+        "settings_footer": "Architecture de Securité de Haymaker Industry v1.02 • Cadre de Confidentialité Protégé."
     },
-    "العربية (Arabic)": {
+
+        "العربية (Arabic)": {
         "tab_explore": "🌐 استكشاف العوالم", "tab_my_creations": "📂 إبداعاتي", "tab_create": "🚀 صنع عالمًا", "tab_avatars": "🎭 شخصيات المجتمع", "tab_profile": "🔑 ملف الحساب", "status_control": "📡 مراقبة الحالة",
         "form_title": "### ⚔️ نموذج مهندس الكون", "form_subtitle": "قم بضبط الآليات الأساسية لخطك الزمني قبل تهيئة النواة السردية.",
         "lbl_celestial": "##### 🪐 الفيزياء الفلكية", "lbl_name": "اسم الكون:", "lbl_genre": "اختر نوع القصة:", "lbl_gravity": "🪐 مستويات الجاذبية", "lbl_atmosphere": "💨 كثافة الغلاف الجوي",
@@ -105,7 +142,14 @@ LOCALIZATION_VAULT.update({
         "active_records_title": "#### 👥 سجلات المجتمع推力", "your_identity_title": "##### 👑 هويتك النشطة الحالية", "allied_dreamers_title": "##### 👥 الحالمون في الخطوط الزمنية الحليفة", "empty_ledger": "✨ السجل العام فارغ حاليًا.", "signin_prompt": "🔑 يرجى تسجيل الدخول لعرض السجلات.",
         "dreamer_lbl": "الحالم... {}", "music_prompt": "🎵 للاستماع للموسيقى، انضم لعالم", "unlimited_actions": "تريد إجراءات غير محدودة؟", "btn_signin": "تسجيل الدخول", "btn_signup": "إنشاء حساب", "settings_control": "⚙️ التحكم بالإعدادات", "sub_genre_title": "🌌 اختر بديل الخط الزمني", "community_timeline_title": "📜 الخط الزمني العام للمجتمع", "btn_join_world": "⚡ دخول هذا الخط الزمني",
         "auth_title": "### 🔑 بوابة التحقق الآمنة", "auth_subtitle": "قم بترخيص معرفك الشخصي لحفظ الخطوط الزمنية وتخطي القيود.",
-        "lbl_email": "البريد الإلكتروني:", "lbl_pass": "كلمة المرور الآمنة:", "btn_login_submit": "🔐 ترخيص جلسة الممر", "btn_register_submit": "🚀 إنشاء هوية جديدة"
+        "lbl_email": "البريد الإلكتروني:", "lbl_pass": "كلمة المرور الآمنة:", "btn_login_submit": "🔐 ترخيص جلسة الممر", "btn_register_submit": "🚀 إنشاء هوية جديدة",
+        "sub_genres_lbls": ["خيال علمي", "فانتازيا مظلمة", "سايبربانك", "رعب", "رومانسي", "آخر"],
+        "btn_launch_scenario": "🎮 بدء السيناريو",
+        "settings_sub_status_title": "💳 حالة الاشتراك",
+        "settings_status_free": "⏳ الحالة: وضع الفترة التجريبية المجانية (12 إجراء)",
+        "settings_resync_title": "📡 إعادة مزامنة المشتريات السابقة",
+        "settings_resync_desc": "هل قمت بتغيير هاتفك أو إعادة التثبيت؟ اضغط أدناه لمسح Stripe بحثًا عن ملفات تعريف حساب دورة الفوترة النشطة.",
+        "settings_footer": "بنية Haymaker Industry الأمنية إصدار v1.02 • إطار الخصوصية المحمي."
     }
 })
 # 🌐 LOCALIZATION VAULT - BLOCK 3: HINDI, JAPANESE, KOREAN ASIA POWERHOUSES
@@ -123,11 +167,18 @@ LOCALIZATION_VAULT.update({
         "active_records_title": "#### 👥 सक्रिय समुदाय रिकॉर्ड", "your_identity_title": "##### 👑 आपकी सक्रिय पहचान", "allied_dreamers_title": "##### 👥 संबद्ध सपने देखने वाले", "empty_ledger": "✨ सार्वजनिक खाता खाली है.", "signin_prompt": "🔑 कृपया रिकॉर्ड देखने के लिए लॉग इन करें.",
         "dreamer_lbl": "सपने देखने वाला... {}", "music_prompt": "🎵 संगीत सुनने के लिए, ब्रह्मांड से जुड़ें", "unlimited_actions": "असीमित क्रियाएं चाहिए?", "btn_signin": "लॉग इन करें", "btn_signup": "साइन अप करें", "settings_control": "⚙️ सेटिंग्स नियंत्रण", "sub_genre_title": "🌌 अपना समयरेखा संस्करण चुनें", "community_timeline_title": "📜 सार्वजनिक समुदाय समयरेखा", "btn_join_world": "⚡ इस ब्रह्मांड में प्रवेश करें",
         "auth_title": "### 🔑 सुरक्षित पहचान पोर्टल", "auth_subtitle": "अपनी प्रोफ़ाइल पहचान को अधिकृत करें.",
-        "lbl_email": "खाता ईमेल:", "lbl_pass": "सुरक्षित पासवर्ड:", "btn_login_submit": "🔐 कॉरिडोर सत्र अधिकृत करें", "btn_register_submit": "🚀 नई पहचान का निर्माण करें"
+        "lbl_email": "खाता ईमेल:", "lbl_pass": "सुरक्षित पासवर्ड:", "btn_login_submit": "🔐 कॉरिडोर सत्र अधिकृत करें", "btn_register_submit": "🚀 नई पहचान का निर्माण करें",
+        "sub_genres_lbls": ["साइंस-फिक्शन", "डार्क फंतासी", "साइबरपंक", "हॉरर", "रोमांस", "अन्य"],
+        "btn_launch_scenario": "🎮 परिदृश्य लॉन्च करें",
+        "settings_sub_status_title": "💳 सदस्यता की स्थिति",
+        "settings_status_free": "⏳ स्थिति: मुफ़्त परीक्षण मोड (12 क्रियाएं)",
+        "settings_resync_title": "📡 पिछली खरीदारी को पुन: सिंक करें",
+        "settings_resync_desc": "फोन बदल दिया या फिर से इंस्टॉल किया? अपने सक्रिय बिलिंग चक्र खाता प्रोफाइल के लिए स्ट्राइप को स्कैन करने के लिए नीचे टैप करें।",
+        "settings_footer": "Haymaker Industry सुरक्षा आर्किटेक्चर v1.02 • गोपनीयता ढांचा सुरक्षित।"
     },
     "日本語 (Japanese)": {
         "tab_explore": "🌐 タイムライン探索", "tab_my_creations": "📂 マイユニバース", "tab_create": "🚀 世界の創造", "tab_avatars": "🎭 コミュニティ共同体", "tab_profile": "🔑 アカウントプロファイル", "status_control": "📡 ステータス管理",
-        "form_title": "### ⚔️ 世界設計アーキテクトフォーム", "form_subtitle": "物語のシードを初期化する前に、カスタムタイムラインの根本的なメカニズムを調整します。",
+        "form_title": "### ⚔️ 世界設計アーキテクトフォーム", "form_subtitle": "物語 of シードを初期化する前に、カスタムタイムラインの根本的なメカニズムを調整します。",
         "lbl_celestial": "##### 🪐 天体物理学パラメーター", "lbl_name": "世界・固有名称:", "lbl_genre": "テーマジャンル選択:", "lbl_gravity": "🪐 重力係数", "lbl_atmosphere": "💨 大気濃度レイヤー",
         "lbl_identity": "##### 🎭 キャラクター固有アイデンティティ", "lbl_char_name": "プレイヤーキャラクター名:", "lbl_backstory": "キャラクタープロファイル/背景設定:",
         "lbl_factions": "##### 🦅 勢力アーキテクチャ & 摩擦対立エレメント", "lbl_allies": "🦅 支配勢力 / 同盟クラン名称", "lbl_enemies": "💀 反乱勢力 / 敵対組織名称", "lbl_directives": "✍️ 固有環境指令 / 世界の制約・ルール",
@@ -138,8 +189,16 @@ LOCALIZATION_VAULT.update({
         "active_records_title": "#### 👥 アクティブなタイムライン記録", "your_identity_title": "##### 👑 あなたの現在のアバター", "allied_dreamers_title": "##### 👥 同盟関係の時空観測者", "empty_ledger": "✨ パブリックレジャーは現在空です。", "signin_prompt": "🔑 アカウントプロファイルからログインしてください。",
         "dreamer_lbl": "観測者... {}", "music_prompt": "🎵 音楽を聴くには世界線に参加してください", "unlimited_actions": "無制限のアクセスを解放しますか？", "btn_signin": "ログイン", "btn_signup": "新規登録", "settings_control": "⚙️ 制御システム", "sub_genre_title": "🌌 タイムラインのバリアントを選択", "community_timeline_title": "📜 パブリックコミュニティタイムライン", "btn_join_world": "⚡ この世界線にダイブする",
         "auth_title": "### 🔑 セキュア身元認証ポータル", "auth_subtitle": "プロファイルを認証します。",
-        "lbl_email": "メールアドレス:", "lbl_pass": "安全なパスワード:", "btn_login_submit": "🔐 セッション接続を承認", "btn_register_submit": "🚀 新規観測者アイデンティティを鍛造"
+        "lbl_email": "メールアドレス:", "lbl_pass": "安全なパスワード:", "btn_login_submit": "🔐 セッション接続を承認", "btn_register_submit": "🚀 新規観測者アイデンティティを鍛造",
+        "sub_genres_lbls": ["SF", "ダークファンタジー", "サイバーパンク", "ホラー", "ロマンス", "その他"],
+        "btn_launch_scenario": "🎮 シナリオを起動",
+        "settings_sub_status_title": "💳 サブスクリプションステータス",
+        "settings_status_free": "⏳ ステータス: 無料トライアルモード (残り12アクション)",
+        "settings_resync_title": "📡 過去の購入を再同期",
+        "settings_resync_desc": "機種変更または再インストールしましたか？以下をタップしてStripeをスキャンし、アクティブな課金サイクルアカウントを確認します。",
+        "settings_footer": "Haymaker Industry セキュリティアーキテクチャ v1.02 • プライバシーフレームワーク保護"
     },
+
     "한국어 (Korean)": {
         "tab_explore": "🌐 세계선 탐색", "tab_my_creations": "📂 나의 창작물", "tab_create": "🚀 세계 창조", "tab_avatars": "🎭 커뮤니티 아바타", "tab_profile": "🔑 계정 프로필", "status_control": "📡 상태 제어 센터",
         "form_title": "### ⚔️ 세계 설계 아키텍트 폼", "form_subtitle": "서사 시드를 초기화하기 전에 커스텀 시간선의 기본 메커니즘을 조정하십시오.",
@@ -153,7 +212,14 @@ LOCALIZATION_VAULT.update({
         "active_records_title": "#### 👥 활성화된 커뮤니티 기록", "your_identity_title": "##### 👑 현재 활성화된 아바타", "allied_dreamers_title": "##### 👥 동맹 시간선의 관측자들", "empty_ledger": "✨ 공개 장부가 비어 있습니다.", "signin_prompt": "🔑 로그인 후 실시간 캐릭터 자산을 확인하세요.",
         "dreamer_lbl": "관측자... {}", "music_prompt": "🎵 음악을 들으려면 세계선에 참여하세요", "unlimited_actions": "무제한 작업을 원하십니까?", "btn_signin": "로그인", "btn_signup": "회원가입", "settings_control": "⚙️ 설정 제어", "sub_genre_title": "🌌 시간선 변체 선택", "community_timeline_title": "📜 공개 타임라인", "btn_join_world": "⚡ 이 세계선으로 진입",
         "auth_title": "### 🔑 보안 신원 인증 포털", "auth_subtitle": "프로필을 인증하십시오.",
-        "lbl_email": "계정 이메일:", "lbl_pass": "보안 비밀번호:", "btn_login_submit": "🔐 통로 세션 승인", "btn_register_submit": "🚀 새로운 신원 생성"
+        "lbl_email": "계정 이메일:", "lbl_pass": "보안 비밀번호:", "btn_login_submit": "🔐 통로 세션 승인", "btn_register_submit": "🚀 새로운 신원 생성",
+        "sub_genres_lbls": ["SF", "다크 판타지", "사이버펑크", "공포", "로맨스", "기타"],
+        "btn_launch_scenario": "🎮 시나リオ 시작",
+        "settings_sub_status_title": "💳 구독 상태",
+        "settings_status_free": "⏳ 상태: 무료 체험 모드 (12회 남음)",
+        "settings_resync_title": "📡 과거 구매 내역 재동기화",
+        "settings_resync_desc": "휴대폰을 변경했거나 재설치하셨나요? 아래를 탭하여 Stripe에서 활성 결제 주기 계정 프로필을 스캔하세요.",
+        "settings_footer": "Haymaker Industry 보안 아키텍처 v1.02 • 개인정보 보호 프레임워크 적용"
     },
     "Português (Portuguese)": {
         "tab_explore": "🌐 Explorar Universos", "tab_my_creations": "📂 Minhas Criações", "tab_create": "🚀 Criar um Mundo", "tab_avatars": "🎭 Avatares da Comunidade", "tab_profile": "🔑 Perfil de Conta", "status_control": "📡 CONTROLE DE STATUS",
@@ -165,12 +231,20 @@ LOCALIZATION_VAULT.update({
         "genres": ["Ficção Científica", "Fantasia Sombria", "Cyberpunk", "Terror", "Romance", "Outro"],
         "atmosphere_options": ["Vácuo (Espaço)", "Rara / Tóxica", "Linha de Base Respirável", "Hipertensa / Corrosiva"],
         "trial_active": "⏳ TESTE ATIVO: {} Ações Restantes", "pool_depleted": "🔒 Pool de Ações Esgotado!", "premium_pilot": "👑 PILOTO PREMIUM AUTENTICADO: {}",
-        "active_records_title": "#### 👥 Registros Ativos da Comunidade", "your_identity_title": "##### 👑 SUA IDENTIDADE ATIVA FORJADA", "allied_dreamers_title": "##### 👥 SONHADORES DE LINHAS DO TEMPO ALIADAS", "empty_ledger": "✨ O registro público está atualmente vazio. Seja o primeiro a forjar uma identidade acima!", "signin_prompt": "🔑 Por favor, faça login na aba 'Perfil de Conta' para ver os registros dos personagens ao vivo.",
+        "active_records_title": "#### 👥 Registros Ativos da Comunidade", "your_identity_title": "##### 👑 SUA IDENTIDADE ATIVA FORJADA", "allied_dreamers_title": "##### 👥 SONHADORES DE LINHAS DO TEMPO ALIADAS", "empty_ledger": "✨ O registro público estálayer atualmente vazio. Seja o primeiro a forjar uma identidade acima!", "signin_prompt": "🔑 Por favor, faça login na aba 'Perfil de Conta' para ver os registros dos personagens ao vivo.",
         "dreamer_lbl": "Sonhador... {}", "music_prompt": "🎵 Para ouvir música, junte-se ou forje uma linha do tempo mundial", "unlimited_actions": "Quer ações ilimitadas?", "btn_signin": "Entrar", "btn_signup": "Cadastrar-se", "settings_control": "⚙️ Controle de Configurações", "sub_genre_title": "🌌 Selecione Sua Variante de Linha do Tempo", "community_timeline_title": "📜 Linha do Tempo Pública da Comunidade", "btn_join_world": "⚡ Entrar Neste Universo da Comunidade",
-        "auth_title": "### 🔑 Portal de Identificação Seguro", "auth_subtitle": "Autorize seu nó de identidade de perfil para salvar linhas do tempo personalizadas.",
-        "lbl_email": "E-mail da Conta:", "lbl_pass": "Senha de Segurança:", "btn_login_submit": "🔐 Autorizar Sessão", "btn_register_submit": "🚀 Forjar Nova Identidade de Perfil"
+        "auth_title": "### 🔑 Portal de Identificação Seguro", "auth_subtitle": "Autorize seu nó de identity de perfil para salvar linhas do tempo personalizadas.",
+        "lbl_email": "E-mail da Conta:", "lbl_pass": "Senha de Segurança:", "btn_login_submit": "🔐 Autorizar Sessão", "btn_register_submit": "🚀 Forjar Nova Identidade de Perfil",
+        "sub_genres_lbls": ["Ficção Científica", "Fantasia Sombria", "Cyberpunk", "Terror", "Romance", "Outro"],
+        "btn_launch_scenario": "🎮 Iniciar Cenário",
+        "settings_sub_status_title": "💳 Status da Assinatura",
+        "settings_status_free": "⏳ STATUS: Modo de Teste Gratuito (12 Ações)",
+        "settings_resync_title": "📡 Re-sincronizar Compras Passadas",
+        "settings_resync_desc": "Mudou de telefone ou reinstalou? Toque abaixo para escanear o Stripe em busca de perfis de conta com ciclo de faturamento ativo.",
+        "settings_footer": "Arquitetura de Segurança da Haymaker Industry v1.02 • Estrutura de Privacidade Protegida."
     }
-}) # 🚨 FIXED: Closed with matching curly brace AND trailing parenthesis cleanly!
+}) # 🚨 MASTER DICTIONARY VAULT UPDATE SECURELY CLOSED AND PINNED
+
 
     
 
@@ -674,20 +748,21 @@ with st.sidebar:
 with st.expander(text_vault.get("settings_control", "⚙️ SETTINGS CONTROL").upper(), expanded=False):
 
         st.caption("🔒 Sandbox Platform Account Verified")
-        st.subheader("💳 Subscription Status")
+        st.subheader(text_vault.get("settings_sub_status_title", "💳 Subscription Status"))
         
         if getattr(st.session_state, 'is_premium', False):
             st.success("👑 STATUS: Premium Pass Active")
             st.caption("Your timeline capabilities are fully un-capped.")
         else:
-            st.warning("⏳ STATUS: Free Trial Mode (12 Actions)")
+            st.warning(text_vault.get("settings_status_free", "⏳ STATUS: Free Trial Mode (12 Actions)"))
             
         st.divider()
-        st.markdown("#### 📡 Re-Sync Past Purchases")
-        st.caption("Changed phones or reinstalled? Tap below to scan Stripe for your active billing cycle account profiles.")
+        st.markdown(f"#### {text_vault.get('settings_resync_title', '📡 Re-Sync Past Purchases')}")
+        st.caption(text_vault.get("settings_resync_desc", "Changed phones or reinstalled? Tap below to scan Stripe for your active billing cycle account profiles."))
         
         # 🔄 DYNAMIC REACTIVE SUB RECOVERY MATRIX
-        if st.button("🔄 Sync & Restore Subscription", key="btn_reactive_sync_stripe_gate", use_container_width=True):
+        btn_sync_lbl = text_vault.get("settings_resync_title", "📡 Re-Sync Past Purchases")
+        if st.button(btn_sync_lbl, key="btn_reactive_sync_stripe_gate", use_container_width=True):
             if "user" not in st.session_state:
                 st.error("🔒 Please sign in via the 'Account Profile' tab first so we can map your purchase history securely!")
             else:
@@ -721,7 +796,7 @@ with st.expander(text_vault.get("settings_control", "⚙️ SETTINGS CONTROL").u
                         st.caption("Ensure your STRIPE_SECRET_KEY is fully written inside your hidden .env file container.")
                         
         st.divider()
-        st.markdown("<p style='font-size: 11px; color: #475569; font-style: italic; text-align: center;'>Haymaker Industry Security Architecture v1.02 • Privacy Framework Protected</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 11px; color: #475569; font-style: italic; text-align: center;'>{text_vault.get('settings_footer', 'Haymaker Industry Security Architecture v1.02 • Privacy Framework Protected')}</p>", unsafe_allow_html=True)
 
 # 6. BALA DISCOVERY CORE ARCHITECTURE
 if not engine["world_name"]:
@@ -749,17 +824,13 @@ if not engine["world_name"]:
 
         # 🪐 DYNAMIC LOCALIZED SUB-GENRE VARIANT SELECTION TABS
         # Map localized sub-genre labels from your master vault keys securely
-        if active_lang == "Español (Spanish)":
-            explore_tabs_labels = ["Comunidad y IA", "Cyberpunk", "Fantasía Oscura", "Terror", "Romance", "Ciencia Ficción"]
-        elif active_lang == "简体中文 (Mandarin)":
-            explore_tabs_labels = ["社区与人工智能", "赛博朋克", "黑暗奇幻", "恐怖", "浪漫", "科幻"]
-        else:
-            explore_tabs_labels = ["Community & AI", "Cyberpunk", "Dark Fantasy", "Horror", "Romance", "Sci-Fi"]
+                # 🌎 DYNAMICALLY LOCALIZED SUB-GENRE VARIANT SELECTION TABS
+        explore_tabs_labels = text_vault.get("sub_genres_lbls", ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"])
 
         st.markdown(text_vault["sub_genre_title"])
         
         # Initialize your dynamic 6-tab discovery navigation hub cleanly
-        sub_ai, sub_cyberpunk, sub_fantasy, sub_horror, sub_romance, sub_scifi = st.tabs(explore_tabs_labels)
+        sub_scifi, sub_fantasy, sub_cyberpunk, sub_horror, sub_romance, sub_oth = st.tabs(explore_tabs_labels)
 
         with sub_ai:
             st.markdown("### Public Community Timelines")
