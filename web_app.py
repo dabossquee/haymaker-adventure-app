@@ -801,10 +801,9 @@ with st.expander(text_vault.get("settings_control", "⚙️ SETTINGS CONTROL").u
 # 6. BALA DISCOVERY CORE ARCHITECTURE
 if not engine["world_name"]:
     # 🌎 FULLY CONFORMED MULTI-LINGUAL APP LANDING HEADERS
-st.title(text_vault.get("hub_title", "🪐 Haymaker Industry Hub"))
-st.write(text_vault.get("hub_subtitle", "Explore alternate realities or forge your own timeline"))
+    st.title(text_vault.get("hub_title", "🪐 Haymaker Industry Hub"))
+    st.write(text_vault.get("hub_subtitle", "Explore alternate realities or forge your own timeline"))
 
-    
     # 🗺️ READ ACTIVE LOCALIZATION MATRIX STATES
     active_lang = st.session_state.get("app_language", "English")
     text_vault = LOCALIZATION_VAULT[active_lang]
@@ -817,6 +816,7 @@ st.write(text_vault.get("hub_subtitle", "Explore alternate realities or forge yo
         text_vault["tab_avatars"],
         text_vault["tab_profile"]
     ])
+
 
     
     with tab_explore:
