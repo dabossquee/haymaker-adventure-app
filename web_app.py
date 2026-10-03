@@ -800,8 +800,10 @@ with st.expander(text_vault.get("settings_control", "⚙️ SETTINGS CONTROL").u
 
 # 6. BALA DISCOVERY CORE ARCHITECTURE
 if not engine["world_name"]:
-    st.title("🪐 Haymaker Industry Hub")
-    st.subheader("Explore alternate realities or forge your own timeline")
+    # 🌎 FULLY CONFORMED MULTI-LINGUAL APP LANDING HEADERS
+st.title(text_vault.get("hub_title", "🪐 Haymaker Industry Hub"))
+st.write(text_vault.get("hub_subtitle", "Explore alternate realities or forge your own timeline"))
+
     
     # 🗺️ READ ACTIVE LOCALIZATION MATRIX STATES
     active_lang = st.session_state.get("app_language", "English")
@@ -830,7 +832,17 @@ if not engine["world_name"]:
         st.markdown(text_vault["sub_genre_title"])
         
         # Initialize your dynamic 6-tab discovery navigation hub cleanly
+               # 🌎 MASTER ARRAY SYNC: Inject a 7th string label directly to match your 7 variables!
+        explore_tabs_labels = text_vault.get("sub_genres_lbls", ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"])
+        if len(explore_tabs_labels) == 6:
+            explore_tabs_labels = ["Community & AI"] + explore_tabs_labels
+
+        st.markdown(text_vault.get("sub_genre_title", "🌌 Select Your Timeline Variant"))
+        
+        # 🪐 THE PERFECT UNPACK: 7 Variables for 7 Labels. Absolute balance.
         sub_ai, sub_scifi, sub_fantasy, sub_cyberpunk, sub_horror, sub_romance, sub_oth = st.tabs(explore_tabs_labels)
+
+
 
         with sub_ai:
             st.markdown("### Public Community Timelines")
