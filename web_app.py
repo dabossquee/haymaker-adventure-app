@@ -1472,7 +1472,8 @@ lang = st.session_state.get("app_language", "English")
 text_vault = LOCALIZATION_VAULT[lang]
 
 # 🎛️ FIXED PLACEMENT: Define user_action right here!
-user_action = st.chat_input(text_vault["chat_placeholder"])
+user_action = st.chat_input(text_vault.get("chat_placeholder", "Describe your action or speak..."))
+
 
 if user_action:
     if "user" not in st.session_state:
