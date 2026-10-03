@@ -411,9 +411,19 @@ with st.sidebar:
         except Exception:
             is_premium = False  # Strict default safety gate fallback position
 
-        # 👑 THE PAYWALL GATEWAY: Halt non-paying accounts instantly before loading any story engines
-        if not is_premium:
-            # Dynamic multi-lingual conversion mappings for the payment gateway layout screens
+               # 👑 THE PAYWALL GATEWAY: Halt non-paying accounts instantly, but bypass entirely for the Premium Pilot
+        is_admin_override = False
+        ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+        
+        if "user" in st.session_state and ADMIN_EMAIL:
+            if str(st.session_state.user.email).strip().lower() == str(ADMIN_EMAIL).strip().lower():
+                is_admin_override = True
+
+        # ⏳ TRIAL PROTOCOL ENFORCEMENT: Normal users only hit the wall once BOTH their premium pass and trial tokens are gone
+        has_trial_tokens = st.session_state.get("guest_tokens", 0) > 0
+
+        if not is_premium and not is_admin_override and not has_trial_tokens:
+            # 🟢 BASIC USER RESTRICTION GATEWAY (Fires ONLY when trial tokens hit 0)
             if active_lang == "Español (Spanish)":
                 st.markdown("### ⚔️ DESATA TU UNIVERSO")
                 st.write("Para los que trabajan duro, los soñadores y los creadores: Trabajas duro. Ahora es el momento de jugar duro. Las aplicaciones corporativas censuran tu imaginación; este es tu santuario independiente y sin filtros. Desbloquea mundos infinitos, historias personalizadas y bandas sonoras atmosféricas al instante.")
@@ -424,7 +434,7 @@ with st.sidebar:
             elif active_lang == "简体中文 (Mandarin)":
                 st.markdown("### ⚔️ 解放你的宇宙")
                 st.write("献给苦干者、白日梦想家和创作者：你工作努力。现在是尽情玩耍的时候了。企业级应用会审查你的想象力——这是你未经过滤的独立避难所。立即解锁无限的文字冒险世界、自定义故事情节和环境原声带。")
-                st.info("💡 专业提示：在激活访问权限之前，请先在选项标签中完成您的角色和世界架构自定义框架。")
+                st.info("💡 专业提示：在激活访问权限之前，请先在选项标签中完成您的角色 and 世界架构自定义框架。")
                 btn_premium_text = "🚀 激活尊享通行证 — $10 / 周"
                 warning_msg = "⚠️ 访问挂起：您的 Stripe 交易处理完成后，请点击下方刷新按钮验证代币状态以解锁工作区。"
                 btn_verify_text = "🔄 验证支付代币状态"
@@ -439,12 +449,19 @@ with st.sidebar:
             stripe_checkout_url = "https://stripe.com"
             
             st.markdown(
-    f'<a href="{stripe_checkout_url}" target="_blank" style="text-decoration: none;">'
-    f'<div style="background-color: #00FF66; color: black; text-align: center; padding: 14px; '
-    f'font-weight: bold; border-radius: 6px; font-size: 18px; margin-top: 15px; margin-bottom: 25px;">'
-    f'{btn_premium_text}</div></a>',
-    unsafe_allow_html=True
-)
+                f'<a href="{stripe_checkout_url}" target="_blank" style="text-decoration: none;">'
+                f'<div style="background-color: #00FF66; color: black; text-align: center; padding: 14px; '
+                f'font-weight: bold; border-radius: 6px; font-size: 18px; margin-top: 15px; margin-bottom: 25px;">'
+                f'{btn_premium_text}</div></a>',
+                unsafe_allow_html=True
+            )
+            
+            st.warning(warning_msg)
+            if st.button(btn_verify_text, key="sidebar_payment_manual_verify_btn"):
+                st.rerun()
+                
+            st.stop() # Stops execution ONLY for basic trial users who haven't paid and have 0 tokens
+
 
             
             st.warning(warning_msg)
