@@ -1375,11 +1375,13 @@ if not is_premium_active and not has_trial_tokens:
             f"- Custom Universe Directives/Lore: {cust['lore']}\n\n"
             f"Strictly weave these physics, environmental states, and faction friction parameters into the story log details. Actions taken must realistically reflect these environmental rules.\n\n"
             f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
-            f"⚠️ CRITICAL GAMEPLAY & FORMATTING RULES:\n"
-            f"1. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
-            f"2. Never play for the user or repeat their setup words. Establish the opening scene and stop instantly.\n"
-            f"3. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: **\"Dialogue text here\"** in standard bold."
-        )
+                    f"⚠️ CRITICAL GAMEPLAY & FORMATTING RULES:\n"
+        f"1. MANDATORY: Write your entire narrative output strictly in the {lang} language. The user selected {lang} at the front gate node; do not respond in English unless English is explicitly chosen.\n"
+        f"2. Be extremely concise. Deliver exactly ONE detailed short paragraph. Maximum 3 sentences.\n"
+        f"3. Never play for the user or repeat their setup words. Establish the opening scene and stop instantly.\n"
+        f"4. MULTI-CHARACTER FORMAT: If an NPC character speaks, format it on a new line exactly like this: CharacterName: **\"Dialogue text here\"** in standard bold."
+    )
+
         
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
@@ -1440,18 +1442,20 @@ if user_action:
         </div>
         """, unsafe_allow_html=True)
     
-    master_prompt = (
+        master_prompt = (
         f"You are the master narrator for a text adventure game called Haymaker.\n"
         f"World: '{engine['world_name']}' | Genre: '{engine['world_genre']}'.\n"
         f"Character: '{char['name']}' | Backstory: '{char['backstory']}'.\n"
         f"Inventory: {', '.join(char['inventory'])} | Health: {char['health']}/100.\n\n"
         f"⚠️ CRITICAL NARRATOR & DIALOGUE ENFORCEMENT RULES:\n"
-        f"1. Be concise. Respond in exactly ONE high-impact paragraph. Maximum 3 sentences total.\n"
-        f"2. NEVER repeat the user's input phrase or mirror their exact sentences back to them. Advance the plot immediately.\n"
-        f"3. USER ACCESS CONTROLS: The user uses double quotes \" \" to speak in the world. If they talk to someone, you must handle the response for that character.\n"
-        f"4. NPC DIALOGUE SEPARATION: Keep your narrator descriptions standard. If an NPC character answers, place it on a clean line formatted exactly like this: CharacterName: <span style='color:#FF4B4B; font-weight:bold;'>\"Dialogue text here\"</span> to isolate dialogue in bold orange-red. Do not use markdown tags like :orange[].\n"
-        f"5. Append system data tags at the absolute bottom if changes occur: [LOOT: item_name] or [HEALTH: -15]."
+        f"1. MANDATORY: You must generate your entire response exclusively in the {lang} language. Adapt your vocabulary perfectly to match native structural pacing and tone for {lang}.\n"
+        f"2. Be concise. Respond in exactly ONE high-impact paragraph. Maximum 3 sentences total.\n"
+        f"3. NEVER repeat the user's input phrase or mirror their exact sentences back to them. Advance the plot immediately.\n"
+        f"4. USER ACCESS CONTROLS: The user uses double quotes \" \" to speak in the world. If they talk to someone, you must handle the response for that character.\n"
+        f"5. NPC DIALOGUE SEPARATION: Keep your narrator descriptions standard. If an NPC character answers, place it on a clean line formatted exactly like this: CharacterName: <span style='color:#FF4B4B; font-weight:bold;'>\"Dialogue text here\"</span> to isolate dialogue in bold orange-red. Do not use markdown tags like :orange[].\n"
+        f"6. Append system data tags at the absolute bottom if changes occur: [LOOT: item_name] or [HEALTH: -15]."
     )
+
     
     messages = [{"role": "system", "content": master_prompt}]
     for past_turn in engine["story_log"]:
