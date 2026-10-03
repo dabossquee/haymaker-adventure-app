@@ -830,7 +830,7 @@ if not engine["world_name"]:
         st.markdown(text_vault["sub_genre_title"])
         
         # Initialize your dynamic 6-tab discovery navigation hub cleanly
-        sub_scifi, sub_fantasy, sub_cyberpunk, sub_horror, sub_romance, sub_oth = st.tabs(explore_tabs_labels)
+        sub_ai, sub_scifi, sub_fantasy, sub_cyberpunk, sub_horror, sub_romance, sub_oth = st.tabs(explore_tabs_labels)
 
         with sub_ai:
             st.markdown("### Public Community Timelines")
