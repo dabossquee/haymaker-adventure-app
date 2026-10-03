@@ -529,8 +529,27 @@ with st.sidebar:
 
                         
             with col_m2:
-                if st.button("🔀 Next Track", use_container_width=True, key="btn_next_audio_track"):
-                    # Define our master 11-track general post-rock campaign playlist map array
+                # 🌎 DYNAMIC LOCALIZED NEXT TRACK LABELS
+                if active_lang == "Español (Spanish)":
+                    btn_next_lbl = "🔀 Siguiente Pista"
+                elif active_lang == "简体中文 (Mandarin)":
+                    btn_next_lbl = "🔀 下一首曲目"
+                elif active_lang == "Русский (Russian)":
+                    btn_next_lbl = "🔀 Следующий трек"
+                elif active_lang == "Français (French)":
+                    btn_next_lbl = "🔀 Piste Suivante"
+                elif active_lang == "العربية (Arabic)":
+                    btn_next_lbl = "🔀 المسار التالي"
+                elif active_lang == "हिन्दी (Hindi)":
+                    btn_next_lbl = "🔀 अगला ट्रैक"
+                elif active_lang == "日本語 (Japanese)":
+                    btn_next_lbl = "🔀 次のトラック"
+                elif active_lang == "한국어 (Korean)":
+                    btn_next_lbl = "🔀 다음 트랙"
+                else:
+                    btn_next_lbl = "🔀 Next Track"
+
+                if st.button(btn_next_lbl, use_container_width=True, key="btn_next_audio_track"):
                     playlist_deck = [
                         "assets/menu_theme.mp3",
                         "assets/adventure_loop.mp3",
@@ -558,11 +577,31 @@ with st.sidebar:
                     
             if st.session_state.audio_state["playing"]:
                 st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
-                st.caption("🔊 Click play on the official deck to authorize stream")
+                
+                # 🌎 DYNAMIC LOCALIZED STREAM AUTHORIZATION CAPTIONS
+                if active_lang == "Español (Spanish)":
+                    caption_lbl = "🔊 Haga clic en reproducir en el reproductor oficial para autorizar la transmissão"
+                elif active_lang == "简体中文 (Mandarin)":
+                    caption_lbl = "🔊 点击官方播放面板上的播放键以授权音频流"
+                elif active_lang == "Русский (Russian)":
+                    caption_lbl = "🔊 Нажмите кнопку воспроизведения на официальной панели для авторизации потока"
+                elif active_lang == "Français (French)":
+                    caption_lbl = "🔊 Cliquez sur lecture sur le lecteur officiel pour autoriser le flux"
+                elif active_lang == "العربية (Arabic)":
+                    caption_lbl = "🔊 انقر فوق تشغيل في اللوحة الرسمية للمصادقة على البث"
+                elif active_lang == "हिन्दी (Hindi)":
+                    caption_lbl = "🔊 स्ट्रीम को अधिकृत करने के लिए आधिकारिक डेक पर प्ले पर क्लिक करें"
+                elif active_lang == "日本語 (Japanese)":
+                    caption_lbl = "🔊 ストリーム配信を承認するには公式プレイヤーの再生ボタンを押してください"
+                elif active_lang == "한국어 (Korean)":
+                    caption_lbl = "🔊 스트림 스트리밍을 승인하려면 공식 데크에서 재생을 클릭하십시오"
+                else:
+                    caption_lbl = "🔊 Click play on the official deck to authorize stream"
+                    
+                st.caption(caption_lbl)
             else:
                 st.markdown("<p style='font-size: 11px; text-align: center; color: #7f1d1d; margin: 10px 0 0 0; font-weight: bold;'>⚠️ System Audio Channel Disabled 🔴</p>", unsafe_allow_html=True)
 
-    
     # SIDEBAR LOGIN & LOGOUT TOGGLE CONTROLS
     if "user" in st.session_state:
         if st.button("🚪 LOG OUT ACCOUNT", type="primary", key="sidebar_logout_gate", use_container_width=True):
@@ -1428,6 +1467,13 @@ with chat_canvas_context:
 
 
 
+# 🌎 READ ACTIVE LOCALIZATION MATRIX STATES FOR PLACEHOLDERS
+lang = st.session_state.get("app_language", "English")
+text_vault = LOCALIZATION_VAULT[lang]
+
+# 🎛️ FIXED PLACEMENT: Define user_action right here!
+user_action = st.chat_input(text_vault["chat_placeholder"])
+
 if user_action:
     if "user" not in st.session_state:
         st.session_state.guest_tokens -= 1
@@ -1441,6 +1487,7 @@ if user_action:
             <div class="avatar-box">👤</div>
         </div>
         """, unsafe_allow_html=True)
+
     
         master_prompt = (
         f"You are the master narrator for a text adventure game called Haymaker.\n"
