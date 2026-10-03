@@ -115,7 +115,7 @@ LOCALIZATION_VAULT.update({
         "form_title": "### ⚔️ ब्रह्मांड आर्किटेक्ट फॉर्म", "form_subtitle": "कथा बीज शुरू करने से पहले अपनी समयरेखा के बुनियादी तंत्र को ट्यून करें.",
         "lbl_celestial": "##### 🪐 खगोलीय भौतिकी", "lbl_name": "ब्रह्मांड का नाम:", "lbl_genre": "शैली चुनें:", "lbl_gravity": "🪐 गुरुत्वाकर्षण स्तर", "lbl_atmosphere": "💨 वायुमंडलीय घनत्व",
         "lbl_identity": "##### 🎭 चरित्र पहचान सेटिंग्स", "lbl_char_name": "आपके चरित्र का नाम:", "lbl_backstory": "चरित्र प्रोफ़ाइल:",
-        "lbl_factions": "##### 🦅 गुट वास्तुकла", "lbl_allies": "🦅 प्रमुख गुट का नाम", "lbl_enemies": "💀 विरोधी गुट का नाम", "lbl_directives": "✍️ कस्टम निर्देश",
+        "lbl_factions": "##### 🦅 गुट वास्तुकला", "lbl_allies": "🦅 प्रमुख गुट का नाम", "lbl_enemies": "💀 विरोधी गुट का नाम", "lbl_directives": "✍️ कस्टम निर्देश",
         "btn_deploy": "🚀 कोर इंजन तैनात करें", "msg_success": "🎉 ब्रह्मांड समयरेखा सफलतापूर्वक संकलित की गई!",
         "genres": ["साइंस-फिक्शन", "डार्क फंतासी", "साइबरपंक", "हॉरर", "रोमांस", "अन्य"],
         "atmosphere_options": ["वैक्यूम (अंतरिक्ष)", "पतली / जहरीली", "सांस लेने योग्य", "अत्यधिक घनी"],
@@ -132,7 +132,7 @@ LOCALIZATION_VAULT.update({
         "lbl_identity": "##### 🎭 キャラクター固有アイデンティティ", "lbl_char_name": "プレイヤーキャラクター名:", "lbl_backstory": "キャラクタープロファイル/背景設定:",
         "lbl_factions": "##### 🦅 勢力アーキテクチャ & 摩擦対立エレメント", "lbl_allies": "🦅 支配勢力 / 同盟クラン名称", "lbl_enemies": "💀 反乱勢力 / 敵対組織名称", "lbl_directives": "✍️ 固有環境指令 / 世界の制約・ルール",
         "btn_deploy": "🚀 世界線構築エンジン点火", "msg_success": "🎉 カスタムタイムラインの構築に成功しました！",
-        "genres": ["SF", "ダークファンタジー", "サイ버パンク", "ホラー", "ロマンス", "その他"],
+        "genres": ["SF", "ダークファンタジー", "サイバーパンク", "ホラー", "ロマンス", "その他"],
         "atmosphere_options": ["真空 (宇宙)", "希薄 / 有毒", "標準呼吸可能環境", "超高密度 / 腐食性"],
         "trial_active": "⏳ トライアル有効: 残り {} アクション", "pool_depleted": "🔒 アクションプールが枯渇しました！", "premium_pilot": "👑 認定プレミアムパイロット: {}",
         "active_records_title": "#### 👥 アクティブなタイムライン記録", "your_identity_title": "##### 👑 あなたの現在のアバター", "allied_dreamers_title": "##### 👥 同盟関係の時空観測者", "empty_ledger": "✨ パブリックレジャーは現在空です。", "signin_prompt": "🔑 アカウントプロファイルからログインしてください。",
@@ -154,8 +154,25 @@ LOCALIZATION_VAULT.update({
         "dreamer_lbl": "관측자... {}", "music_prompt": "🎵 음악을 들으려면 세계선에 참여하세요", "unlimited_actions": "무제한 작업을 원하십니까?", "btn_signin": "로그인", "btn_signup": "회원가입", "settings_control": "⚙️ 설정 제어", "sub_genre_title": "🌌 시간선 변체 선택", "community_timeline_title": "📜 공개 타임라인", "btn_join_world": "⚡ 이 세계선으로 진입",
         "auth_title": "### 🔑 보안 신원 인증 포털", "auth_subtitle": "프로필을 인증하십시오.",
         "lbl_email": "계정 이메일:", "lbl_pass": "보안 비밀번호:", "btn_login_submit": "🔐 통로 세션 승인", "btn_register_submit": "🚀 새로운 신원 생성"
+    },
+    "Português (Portuguese)": {
+        "tab_explore": "🌐 Explorar Universos", "tab_my_creations": "📂 Minhas Criações", "tab_create": "🚀 Criar um Mundo", "tab_avatars": "🎭 Avatares da Comunidade", "tab_profile": "🔑 Perfil de Conta", "status_control": "📡 CONTROLE DE STATUS",
+        "form_title": "### ⚔️ Formulário do Arquiteto do Universo", "form_subtitle": "Ajuste a mecânica fundamental da sua linha do tempo antes de inicializar a semente narrativa.",
+        "lbl_celestial": "##### 🪐 Física Celestial", "lbl_name": "Nome do Universo:", "lbl_genre": "Selecione o gênero temático:", "lbl_gravity": "🪐 Níveis de Gravidade", "lbl_atmosphere": "💨 Densidade Atmosférica",
+        "lbl_identity": "##### 🎭 Configuração de Identidade do Personagem", "lbl_char_name": "Nome do seu personagem:", "lbl_backstory": "Perfil/Histórico do personagem:",
+        "lbl_factions": "##### 🦅 Arquitetura de Facções e Elementos de Fricção", "lbl_allies": "🦅 Nome da Facção Dominante / Aliada", "lbl_enemies": "💀 Nome da Facção Rebelde / Inimiga", "lbl_directives": "✍️ Diretrizes / Restrições Ambientais Personalizadas",
+        "btn_deploy": "🚀 Implantar e Acender o Motor Central", "msg_success": "🎉 Semente da linha do tempo do universo compilada com sucesso!",
+        "genres": ["Ficção Científica", "Fantasia Sombria", "Cyberpunk", "Terror", "Romance", "Outro"],
+        "atmosphere_options": ["Vácuo (Espaço)", "Rara / Tóxica", "Linha de Base Respirável", "Hipertensa / Corrosiva"],
+        "trial_active": "⏳ TESTE ATIVO: {} Ações Restantes", "pool_depleted": "🔒 Pool de Ações Esgotado!", "premium_pilot": "👑 PILOTO PREMIUM AUTENTICADO: {}",
+        "active_records_title": "#### 👥 Registros Ativos da Comunidade", "your_identity_title": "##### 👑 SUA IDENTIDADE ATIVA FORJADA", "allied_dreamers_title": "##### 👥 SONHADORES DE LINHAS DO TEMPO ALIADAS", "empty_ledger": "✨ O registro público está atualmente vazio. Seja o primeiro a forjar uma identidade acima!", "signin_prompt": "🔑 Por favor, faça login na aba 'Perfil de Conta' para ver os registros dos personagens ao vivo.",
+        "dreamer_lbl": "Sonhador... {}", "music_prompt": "🎵 Para ouvir música, junte-se ou forje uma linha do tempo mundial", "unlimited_actions": "Quer ações ilimitadas?", "btn_signin": "Entrar", "btn_signup": "Cadastrar-se", "settings_control": "⚙️ Controle de Configurações", "sub_genre_title": "🌌 Selecione Sua Variante de Linha do Tempo", "community_timeline_title": "📜 Linha do Tempo Pública da Comunidade", "btn_join_world": "⚡ Entrar Neste Universo da Comunidade",
+        "auth_title": "### 🔑 Portal de Identificação Seguro", "auth_subtitle": "Autorize seu nó de identidade de perfil para salvar linhas do tempo personalizadas.",
+        "lbl_email": "E-mail da Conta:", "lbl_pass": "Senha de Segurança:", "btn_login_submit": "🔐 Autorizar Sessão", "btn_register_submit": "🚀 Forjar Nova Identidade de Perfil"
     }
-})
+}) # 🚨 FIXED: Closed with matching curly brace AND trailing parenthesis cleanly!
+
+    
 
 
 
@@ -189,16 +206,35 @@ if "render_alignment_fixed" not in st.session_state:
 # ---------------------------------------------------------
 if st.session_state.get("app_language") is None:
     st.markdown("# ⚔️ HAYMAKER INDUSTRY")
-    st.markdown("### 🪐 Select Your Structural Language Matrix / Seleccione Su Idioma / 请选择您的语言")
-    st.write("Establish your dynamic profile localization interface parameters before entering the sandbox workspace.")
+    st.markdown("""
+    <div style="background: rgba(16, 12, 31, 0.6); padding: 24px; border-radius: 16px; border: 1px solid #3b2c63; margin-bottom: 25px;">
+        <h3 style="color: #ffffff; margin: 0 0 10px 0; font-family: monospace; letter-spacing: 1px; font-size: 18px;">🪐 SELECT YOUR STRUCTURAL LANGUAGE MATRIX</h3>
+        <p style="color: #94a3b8; font-size: 13px; margin: 0 0 20px 0; line-height: 1.6;">
+            Establish your dynamic profile localization interface parameters before entering the sandbox workspace.
+        </p>
+        <hr style="border-color: #2e234e; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-family: monospace; font-size: 12px; color: #a78bfa;">
+            <div>• English (US / Global)</div>
+            <div>• Español (Seleccione Su Idioma)</div>
+            <div>• 简体中文 (请选择您的语言)</div>
+            <div>• Русский (Выберите ваш язык)</div>
+            <div>• Français (Choisissez votre langue)</div>
+            <div>• العربية (اختر لغة الواجهة)</div>
+            <div>• हिन्दी (अपनी भाषा चुनें)</div>
+            <div>• 日本語 (インターフェース言語の選択)</div>
+            <div>• 한국어 (인터페이스 언어 선택)</div>
+            <div>• Português (Selecione o seu idioma)</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     
     # 🪐 STEP 1 UPGRADE: Expanded list layout to capture all 9 major global traffic streams
     selected_matrix_lang = st.selectbox(
         "🌐 Choose Interface Language Node / Seleccione Su Idioma / 请选择您的语言:",
         [
-            "English", "Español (Spanish)", "简体中文 (Mandarin)", 
-            "Русский (Russian)", "Français (French)", "العربية (Arabic)", 
-            "हिन्दी (Hindi)", "日本語 (Japanese)", "한국어 (Korean)"
+           "English", "Español (Spanish)", "简体中文 (Mandarin)", "Русский (Russian)", "Français (French)", "العربية (Arabic)", "हिन्दी (Hindi)", "日本語 (Japanese)", "한국어 (Korean)", "Português (Portuguese)"
+
         ],
         key="sb_global_onboarding_language_picker"
     )
@@ -546,8 +582,11 @@ with st.sidebar:
                     btn_next_lbl = "🔀 次のトラック"
                 elif active_lang == "한국어 (Korean)":
                     btn_next_lbl = "🔀 다음 트랙"
+                elif active_lang == "Português (Portuguese)":
+                    btn_next_lbl = "🔀 Próxima Faixa"
                 else:
                     btn_next_lbl = "🔀 Next Track"
+
 
                 if st.button(btn_next_lbl, use_container_width=True, key="btn_next_audio_track"):
                     playlist_deck = [
@@ -578,9 +617,9 @@ with st.sidebar:
             if st.session_state.audio_state["playing"]:
                 st.audio(st.session_state.audio_state['track_url'], format="audio/mp3", loop=True)
                 
-                # 🌎 DYNAMIC LOCALIZED STREAM AUTHORIZATION CAPTIONS
+                               # 🌎 DYNAMIC LOCALIZED STREAM AUTHORIZATION CAPTIONS
                 if active_lang == "Español (Spanish)":
-                    caption_lbl = "🔊 Haga clic en reproducir en el reproductor oficial para autorizar la transmissão"
+                    caption_lbl = "🔊 Haga clic en reproducir en el reproductor oficial para autorizar la transmisión"
                 elif active_lang == "简体中文 (Mandarin)":
                     caption_lbl = "🔊 点击官方播放面板上的播放键以授权音频流"
                 elif active_lang == "Русский (Russian)":
@@ -595,8 +634,11 @@ with st.sidebar:
                     caption_lbl = "🔊 ストリーム配信を承認するには公式プレイヤーの再生ボタンを押してください"
                 elif active_lang == "한국어 (Korean)":
                     caption_lbl = "🔊 스트림 스트리밍을 승인하려면 공식 데크에서 재생을 클릭하십시오"
+                elif active_lang == "Português (Portuguese)":
+                    caption_lbl = "🔊 Clique em reproduzir no player oficial para autorizar a transmissão"
                 else:
                     caption_lbl = "🔊 Click play on the official deck to authorize stream"
+
                     
                 st.caption(caption_lbl)
             else:
@@ -737,7 +779,7 @@ if not engine["world_name"]:
                             </div>
                             """, unsafe_allow_html=True)
 
-                            # 🌎 DYNAMIC LOCALIZED ENTER THE WORLD MATRIX LABELS
+                                                        # 🌎 DYNAMIC LOCALIZED ENTER THE WORLD MATRIX LABELS
                             if active_lang == "Español (Spanish)":
                                 btn_enter_lbl = "🎮 Ingresar al Universo de la Comunidad"
                             elif active_lang == "简体中文 (Mandarin)":
@@ -754,6 +796,8 @@ if not engine["world_name"]:
                                 btn_enter_lbl = "🎮 コミュニティ宇宙にダイブする"
                             elif active_lang == "한국어 (Korean)":
                                 btn_enter_lbl = "🎮 커뮤니티 우주로 진입"
+                            elif active_lang == "Português (Portuguese)":
+                                btn_enter_lbl = "🎮 Entrar Neste Universo da Comunidade"
                             else:
                                 btn_enter_lbl = "🎮 Enter Community Universe"
 
@@ -1271,7 +1315,7 @@ if not is_premium_active and not has_trial_tokens:
         st.markdown("""
         <div style="background: #110c1f; padding: 20px; border-radius: 16px; border: 1px solid #3b2c63; text-align: center; height: 320px;">
             <h3 style="color: #ffffff; margin: 0;">💨 AVATAR PASS</h3>
-            <h2 style="color: #7c5dfa; margin: 10px 0;">$4.99<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
+            <h2 style="color: #7c5dfa; margin: 10px 0;">$10.00<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
             <p style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 10px;">📦 ALLOWANCE PROTOCOLS:</p>
             <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 40,000 Narrative Tokens / wk</p>
             <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 20 Cinematic Images / wk</p>
@@ -1286,7 +1330,7 @@ if not is_premium_active and not has_trial_tokens:
                         'price_data': {
                             'currency': 'usd',
                             'product_data': {'name': 'Haymaker Avatar Pass'},
-                            'unit_amount': 499, 'recurring': {'interval': 'week'}
+                            'unit_amount': 1000, 'recurring': {'interval': 'week'} # 💰 UPDATED TO $10
                         },
                         'quantity': 1,
                     }],
@@ -1302,7 +1346,7 @@ if not is_premium_active and not has_trial_tokens:
         st.markdown("""
         <div style="background: #161026; padding: 20px; border-radius: 16px; border: 2px solid #7c5dfa; text-align: center; height: 320px; box-shadow: 0 0 15px rgba(124, 93, 250, 0.2);">
             <h3 style="color: #ffffff; margin: 0;">🎖️ SPARTAN PASS</h3>
-            <h2 style="color: #a78bfa; margin: 10px 0;">$9.99<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
+            <h2 style="color: #a78bfa; margin: 10px 0;">$15.00<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
             <p style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 10px;">📦 ALLOWANCE PROTOCOLS:</p>
             <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 100,000 Narrative Tokens / wk</p>
             <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 60 Cinematic Images / wk</p>
@@ -1317,7 +1361,7 @@ if not is_premium_active and not has_trial_tokens:
                         'price_data': {
                             'currency': 'usd',
                             'product_data': {'name': 'Haymaker Spartan Pass'},
-                            'unit_amount': 999, 'recurring': {'interval': 'week'}
+                            'unit_amount': 1500, 'recurring': {'interval': 'week'} # 💰 UPDATED TO $15
                         },
                         'quantity': 1,
                     }],
@@ -1328,6 +1372,7 @@ if not is_premium_active and not has_trial_tokens:
                 st.markdown(f"[👉 Click Here to Open Secure Stripe Checkout]({checkout_session.url})")
             except Exception as e:
                 st.error(f"Stripe Portal Error: {e}")
+
                 
     with col_t3:
         st.markdown("""
