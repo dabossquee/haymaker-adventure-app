@@ -505,15 +505,12 @@ if "active_modal" in st.session_state and st.session_state.active_modal:
             st.rerun()
     render_modal_window()
 
-# STRIPE SUITE CHECKS
-if "success" in st.query_params and st.query_params["success"] == "true":
-    st.session_state.is_premium = True
-    st.toast("👑 Premium Unlimited Pass Activated Successfully!")
-
 # TRIAL VARIABLES STORAGE INITIALIZATION
 if "user" not in st.session_state:
     if "guest_tokens" not in st.session_state:
         st.session_state.guest_tokens = 12  
+    if "is_premium" not in st.session_state:
+        st.session_state.is_premium = False
     if "world_engine" not in st.session_state:
         st.session_state.world_engine = {
             "world_id": None, "world_name": "", "world_genre": "",
@@ -521,10 +518,29 @@ if "user" not in st.session_state:
             "story_log": []
         }
 else:
-    st.session_state.guest_tokens = 999999  
+    # 🔒 SECURE RE-AUTHENTICATION GATEWAY: Query Supabase for real historical tokens and billing truth
+    if "is_premium" not in st.session_state or "guest_tokens" not in st.session_state:
+        try:
+            profile_query = supabase_client.table("profiles").select("is_premium", "tokens_remaining").eq("id", st.session_state.user.id).single().execute()
+            if profile_query.data:
+                st.session_state.is_premium = bool(profile_query.data.get("is_premium", False))
+                # Pull their true remaining tokens directly from the database row ledger
+                st.session_state.guest_tokens = int(profile_query.data.get("tokens_remaining", 12))
+            else:
+                st.session_state.is_premium = False
+                st.session_state.guest_tokens = 12
+        except Exception:
+            st.session_state.is_premium = False
+            st.session_state.guest_tokens = 0  # Lock out if database fetch fails
+
+    # Allocate token buckets dynamically based on verified premium purchase history
+    if st.session_state.is_premium:
+        st.session_state.guest_tokens = 999999
+
 
 engine = st.session_state.world_engine
 char = engine["player_character"]
+
 # ---------------------------------------------------------
 # # 5. DYNAMIC SIDEBAR OVERWATCH PANEL
 # ---------------------------------------------------------
@@ -1435,8 +1451,28 @@ if not is_premium_active and not has_trial_tokens:
                             st.error(f"Authorization Denied: {auth_err}")
                 else:
                     st.warning("⚠️ Enter both your registered email and password to pull your account file.")
+            
+            # 🚪 SECURE PASSWORD RECOVERY EXPENSION (DYNAMIC LOCALIZATION CONFORM)
+            with st.expander(text_vault.get("forgot_pass_link", "❓ Forgot Password?")):
+                st.markdown(text_vault.get("forgot_pass_desc", "Enter your account email below to receive a secure terminal password reset link."))
+                recovery_email = st.text_input("📩 Email Address for Reset:", key="paywall_recovery_email_input").strip()
+                
+                if st.button(text_vault.get("btn_send_recovery", "🚀 Send Reset Token Link"), key="btn_trigger_paywall_recovery", use_container_width=True):
+                    if recovery_email:
+                        try:
+                            # 📡 CRITICAL GATEWAY: Fire secure reset call down to your Supabase backend
+                            supabase_client.auth.reset_password_for_email(
+                                email=recovery_email,
+                                options={"redirect_to": "https://onrender.com"}
+                            )
+                            st.success(text_vault.get("msg_recovery_sent", "📧 Secure reset token link dispatched to your inbox! Check your spam folder if it doesn't arrive in 60 seconds."))
+                        except Exception as recovery_err:
+                            st.error(f"Gateway Error: {recovery_err}")
+                    else:
+                        st.warning("⚠️ Please provide a valid email destination vector.")
         
         st.stop() # Stops the page execution right here so they CANNOT see the pricing cards until logged in!
+
 
     # 💳 LAYER 2 PROTECTION CHECK: Once they successfully log in, show the checkout cards automatically
     st.title("💳 PLATFORM ACCESS LOCKED")
