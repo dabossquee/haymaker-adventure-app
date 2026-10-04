@@ -340,8 +340,8 @@ def render_auth_form(prefix):
                     sb.auth.sign_up({"email": email, "password": password})
                     st.success(x("signup_ok"))
                 except Exception as e:
-                    print("signup error:", e)
-                    st.error(x("DEBUG: {e}"))
+                    print("signup error:", repr(e))
+                    st.exception(e)
     else:
         if st.button(x("btn_login_submit"), key=f"{prefix}_login", use_container_width=True):
             try:
