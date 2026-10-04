@@ -1485,17 +1485,18 @@ if not is_premium_active and not has_trial_tokens:
 
 
     
+        # 💳 BLOCK 18: HIGH-VOLUME STRIPE WEB CHECKOUT SUITE (FULLY UPGRADED TIER ARRAYS)
+    col_t1, col_t2, col_t3 = st.columns(3)
+
     with col_t1:
         st.markdown("""
-        <div style="background: #110c1f; padding: 20px; border-radius: 16px; border: 1px solid #3b2c63; text-align: center; height: 320px;">
-            <h3 style="color: #ffffff; margin: 0;">💨 AVATAR PASS</h3>
-            <h2 style="color: #7c5dfa; margin: 10px 0;">$10.00<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
-            <p style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 10px;">📦 ALLOWANCE PROTOCOLS:</p>
-            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 40,000 Narrative Tokens / wk</p>
-            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 20 Cinematic Images / wk</p>
-            <p style="color: #94a3b8; font-size: 12px; font-style: italic; margin-top: 10px;">Built to be completely affordable for everyday dreamers to escape reality.</p>
+        <div style="background: rgba(16, 12, 31, 0.5); padding: 20px; border-radius: 12px; border: 1px solid #2e234e; text-align: center; min-height: 280px;">
+            <h4 style="color: #a78bfa; margin: 0;">👑 AVATAR PASS</h4>
+            <h2 style="color: #ffffff; margin: 10px 0;">$5.00 <span style="font-size: 14px; color: #94a3b8;">/ wk</span></h2>
+            <p style="color: #94a3b8; font-size: 12px;">Standard tier access to our dynamic text corridors. Fully optimized for everyday storytellers.</p>
         </div>
         """, unsafe_allow_html=True)
+        
         if st.button("Activate Avatar Pass", key="btn_checkout_tier_1", use_container_width=True):
             try:
                 checkout_session = stripe.checkout.Session.create(
@@ -1503,8 +1504,8 @@ if not is_premium_active and not has_trial_tokens:
                     line_items=[{
                         'price_data': {
                             'currency': 'usd',
-                            'product_data': {'name': 'Haymaker Avatar Pass'},
-                            'unit_amount': 1000, 'recurring': {'interval': 'week'} # 💰 UPDATED TO $10
+                            'product_data': {'name': 'Haymaker Avatar Premium Pass'},
+                            'unit_amount': 500, 'recurring': {'interval': 'week'} # 💰 HARDCODED TO $5.00
                         },
                         'quantity': 1,
                     }],
@@ -1513,20 +1514,18 @@ if not is_premium_active and not has_trial_tokens:
                     cancel_url='https://onrender.com',
                 )
                 st.markdown(f"[👉 Click Here to Open Secure Stripe Checkout]({checkout_session.url})")
-            except Exception as e:
-                st.error(f"Stripe Portal Error: {e}")
-                
+            except Exception as stripe_err:
+                st.error(f"Stripe Gateway Fault: {stripe_err}")
+
     with col_t2:
         st.markdown("""
-        <div style="background: #161026; padding: 20px; border-radius: 16px; border: 2px solid #7c5dfa; text-align: center; height: 320px; box-shadow: 0 0 15px rgba(124, 93, 250, 0.2);">
-            <h3 style="color: #ffffff; margin: 0;">🎖️ SPARTAN PASS</h3>
-            <h2 style="color: #a78bfa; margin: 10px 0;">$15.00<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
-            <p style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 10px;">📦 ALLOWANCE PROTOCOLS:</p>
-            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 100,000 Narrative Tokens / wk</p>
-            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 60 Cinematic Images / wk</p>
-            <p style="color: #94a3b8; font-size: 12px; font-style: italic; margin-top: 10px;">Our standard premium experience for extended multi-hour sessions.</p>
+        <div style="background: rgba(16, 12, 31, 0.5); padding: 20px; border-radius: 12px; border: 2px solid #7c5dfa; text-align: center; min-height: 280px; box-shadow: 0 0 15px rgba(124, 93, 250, 0.15);">
+            <h4 style="color: #c084fc; margin: 0;">⚔️ SPARTAN PASS</h4>
+            <h2 style="color: #ffffff; margin: 10px 0;">$10.00 <span style="font-size: 14px; color: #94a3b8;">/ wk</span></h2>
+            <p style="color: #94a3b8; font-size: 12px;">Extended memory contexts and faster processing speeds for multi-hour narrative sequences.</p>
         </div>
         """, unsafe_allow_html=True)
+        
         if st.button("Activate Spartan Pass", key="btn_checkout_tier_2", type="primary", use_container_width=True):
             try:
                 checkout_session = stripe.checkout.Session.create(
@@ -1534,8 +1533,8 @@ if not is_premium_active and not has_trial_tokens:
                     line_items=[{
                         'price_data': {
                             'currency': 'usd',
-                            'product_data': {'name': 'Haymaker Spartan Pass'},
-                            'unit_amount': 1500, 'recurring': {'interval': 'week'} # 💰 UPDATED TO $15
+                            'product_data': {'name': 'Haymaker Spartan Elite Pass'},
+                            'unit_amount': 1000, 'recurring': {'interval': 'week'} # 💰 HARDCODED TO $10.00
                         },
                         'quantity': 1,
                     }],
@@ -1544,30 +1543,27 @@ if not is_premium_active and not has_trial_tokens:
                     cancel_url='https://onrender.com',
                 )
                 st.markdown(f"[👉 Click Here to Open Secure Stripe Checkout]({checkout_session.url})")
-            except Exception as e:
-                st.error(f"Stripe Portal Error: {e}")
+            except Exception as stripe_err:
+                st.error(f"Stripe Gateway Fault: {stripe_err}")
 
-                
     with col_t3:
         st.markdown("""
-        <div style="background: #110c1f; padding: 20px; border-radius: 16px; border: 1px solid #3b2c63; text-align: center; height: 320px;">
-            <h3 style="color: #ffffff; margin: 0;">🧠 STEM PASS</h3>
-            <h2 style="color: #f43f5e; margin: 10px 0;">$19.99<span style="font-size: 14px; color: #94a3b8;"> / wk</span></h2>
-            <p style="color: #a78bfa; font-size: 12px; font-weight: bold; margin-bottom: 10px;">📦 ALLOWANCE PROTOCOLS:</p>
-            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• UNLIMITED Narrative Tokens</p>
-            <p style="color: #cbd5e1; font-size: 13px; margin: 2px 0;">• 150 Cinematic Images / wk</p>
-            <p style="color: #94a3b8; font-size: 12px; font-style: italic; margin-top: 10px;">Un-capped matrix shield. Built for heavy, continuous 24/7 world roleplay.</p>
+        <div style="background: rgba(16, 12, 31, 0.5); padding: 20px; border-radius: 12px; border: 1px solid #4c1d95; text-align: center; min-height: 280px;">
+            <h4 style="color: #f472b6; margin: 0;">🪐 TITAN PASS</h4>
+            <h2 style="color: #ffffff; margin: 10px 0;">$20.00 <span style="font-size: 14px; color: #94a3b8;">/ wk</span></h2>
+            <p style="color: #94a3b8; font-size: 12px;">The absolute elite tier. Infinite character saving protocols and priority access to engine updates.</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Activate STEM Pass", key="btn_checkout_tier_3", use_container_width=True):
+        
+        if st.button("Activate Titan Pass", key="btn_checkout_tier_3", use_container_width=True):
             try:
                 checkout_session = stripe.checkout.Session.create(
                     payment_method_types=['card'],
                     line_items=[{
                         'price_data': {
                             'currency': 'usd',
-                            'product_data': {'name': 'Haymaker STEM Pass'},
-                            'unit_amount': 1999, 'recurring': {'interval': 'week'}
+                            'product_data': {'name': 'Haymaker Titan Master Pass'},
+                            'unit_amount': 2000, 'recurring': {'interval': 'week'} # 💰 HARDCODED TO $20.00
                         },
                         'quantity': 1,
                     }],
@@ -1576,8 +1572,29 @@ if not is_premium_active and not has_trial_tokens:
                     cancel_url='https://onrender.com',
                 )
                 st.markdown(f"[👉 Click Here to Open Secure Stripe Checkout]({checkout_session.url})")
-            except Exception as e:
-                st.error(f"Stripe Portal Error: {e}")
+            except Exception as stripe_err:
+                st.error(f"Stripe Gateway Fault: {stripe_err}")
+
+    # ---------------------------------------------------------
+    # ⚖️ LEGAL PROTECTION COMPLIANCE ARCHITECTURE (BLOCK 18)
+    # ---------------------------------------------------------
+    st.markdown("---")
+    with st.expander(text_vault.get("legal_link", "⚖️ Terms of Service & Privacy Protection Policy")):
+        st.markdown(f"""
+        ### {text_vault.get("legal_header", "Haymaker Industry End-User Terms & Privacy Charter")}
+        
+        1. **{text_vault.get("legal_sec1_title", "1. Creative Autonomy & Limitation of Liability")}**
+        {text_vault.get("legal_sec1_text", "Haymaker Industry provides an unfiltered, multi-lingual dynamic narrative text-adventure playground environment. This platform operates purely as a fictional sandbox engine. The platform, its infrastructure, and its independent founder hold absolute zero liability for user-generated inputs, storyline directions, emotional responses, or character actions forged inside the simulation corridors.")}
+        
+        2. **{text_vault.get("legal_sec2_title", "2. Subscription Terms & Capital Refunding")}**
+        {text_vault.get("legal_sec2_text", "By submitting a credit card payment via our secure Stripe gateway, you are authorizing a recurring weekly billing pass subscription cycle ($5, $10, or $20 based on your selection). Due to immediate up-front OpenAI API data streaming costs generated by world initialization seeds, all subscription transactions are final and 100% non-refundable. Users hold full control and can terminate their recurring cycle via their personal Account Profile tab at any moment.")}
+        
+        3. **{text_vault.get("legal_sec3_title", "3. Data Encryption & Profile Retention")}**
+        {text_vault.get("legal_sec3_text", "We respect user privacy and operate under an independent software sanctuary matrix. Your account email address, secure encrypted password signature, and saved custom universe timelines are securely mapped inside protected cloud database vaults. We do not sell, trade, or distribute your identity vector data to any corporate third-party networks or analytics engines.")}
+        
+        *Haymaker Industry Security Architecture v1.02 • Framework Protected.*
+        """)
+
                 
     st.stop()
 
