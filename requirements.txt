@@ -1,7 +1,10 @@
-streamlit
+streamlit>=1.40
+openai>=1.50
+supabase>=2.9
+stripe>=10
+python-dotenv>=1.0
+replicate>=0.34
 requests
-replicate
-openai
-supabase
-stripe
-python-dotenv
+fastapi
+uvicorn[standard]
+
