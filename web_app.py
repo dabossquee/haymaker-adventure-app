@@ -34,7 +34,12 @@ LOCALIZATION_VAULT = {
         "settings_status_free": "⏳ STATUS: Free Trial Mode (12 Actions)",
         "settings_resync_title": "📡 Re-Sync Past Purchases",
         "settings_resync_desc": "Changed phones or reinstalled? Tap below to scan Stripe for your active billing cycle account profiles.",
-        "settings_footer": "Haymaker Industry Security Architecture v1.02 • Privacy Framework Protected."
+        "settings_footer": "Haymaker Industry Security Architecture v1.02 • Privacy Framework Protected.",
+        "hub_title": "🪐 Haymaker Industry Hub",
+        "hub_subtitle": "Explore alternate realities or forge your own timeline",
+        "profile_sync_lbl": "👑 Secure Profile Synchronized",
+        "btn_logout_sidebar": "🚪 Log Out",
+        "btn_logout_main": "🚪 Log Out of Platform Account"
     },
     "Español (Spanish)": {
         "tab_explore": "🌐 Explorar Universos", "tab_my_creations": "📂 Mis Creaciones", "tab_create": "🚀 Crear un Universo", "tab_avatars": "🎭 Avatares de la Comunidad", "tab_profile": "🔑 Perfil de Cuenta", "status_control": "📡 CONTROL DE ESTADO",
@@ -46,7 +51,7 @@ LOCALIZATION_VAULT = {
         "genres": ["Ciencia Ficción", "Fantasía Oscura", "Cyberpunk", "Terror", "Romance", "Otro"],
         "atmosphere_options": ["Vacío (Espaço)", "Delgada / Tóxica", "Línea Base Respirable", "Hiperdensa / Corrosiva"],
         "trial_active": "⏳ PRUEBA ACTIVA: {} Acciones Restantes", "pool_depleted": "🔒 ¡Pool de Acciones Agotado!", "premium_pilot": "👑 PILOTO PREMIUM AUTENTICADO: {}",
-        "active_records_title": "#### 👥 Registros Activos de la Comunidad", "your_identity_title": "##### 👑 TU IDENTIDAD ACTIVA FORJADA", "allied_dreamers_title": "##### 👥 SOÑADORES DE LÍNEAS DE TIEMPO ALIADAS", "empty_ledger": "✨ El registro público está actualmente vacío. ¡Sé el primero en forjar un avatar de identidad personalizado arriba!", "signin_prompt": "🔑 Inicie sesión a través de la pestaña 'Perfil de cuenta' para ver los activos de los personajes en vivo.",
+        "active_records_title": "#### 👥 Registros Activos de la Comunidad", "your_identity_title": "##### 👑 TU IDENTIDAD ACTIVA FORJADA", "allied_dreamers_title": "##### 👥 SOÑADORES DE LÍNEAS DE TIEMPO ALIADAS", "empty_ledger": "✨ El registro público está actualmente vacío. ¡Sé el primero en forjar un avatar de identidad personalizado arriba!", "signin_prompt": "🔑 Inicie sesión a través de la pestaña 'Perfil de cuenta' para ver los activos de los personagens en vivo.",
         "dreamer_lbl": "Soñador... {}", "music_prompt": "🎵 Para escuchar música, únete o forja una línea de tiempo mundial", "unlimited_actions": "¿Quieres acciones ilimitadas?", "btn_signin": "Iniciar Sesión", "btn_signup": "Registrarse", "settings_control": "⚙️ Control de Configuración", "sub_genre_title": "🌌 Selecciona Tu Variante de Línea de Tiempo", "community_timeline_title": "📜 Línea de Tiempo Pública de la Comunidad", "btn_join_world": "⚡ Ingresar a Esta Línea de Tiempo",
         "auth_title": "### 🔑 Portal de Identificación Seguro", "auth_subtitle": "Autorice su nodo de identidad de perfil para guardar líneas de tiempo personalizadas.",
         "lbl_email": "Correo Electrónico de la Cuenta:", "lbl_pass": "Contraseña de Seguridad:", "btn_login_submit": "🔐 Autorizar Sesión del Corredor", "btn_register_submit": "🚀 Forjar Nueva Identidad de Perfil",
@@ -56,10 +61,15 @@ LOCALIZATION_VAULT = {
         "settings_status_free": "⏳ ESTADO: Modo de Prueba Gratuita (12 Acciones)",
         "settings_resync_title": "📡 Sincronizar Compras Pasadas",
         "settings_resync_desc": "¿Cambió de teléfono o reinstaló? Toque a continuación para escanear Stripe en busca de sus perfiles de cuenta de ciclo de facturación activos.",
-        "settings_footer": "Arquitectura de Seguridad de Haymaker Industry v1.02 • Marco de Privacidad Protegido."
+        "settings_footer": "Arquitectura de Seguridad de Haymaker Industry v1.02 • Marco de Privacidad Protegido.",
+        "hub_title": "🪐 Eje Central de Haymaker Industry",
+        "hub_subtitle": "Explora realidades alternativas o forja tu propia línea de tiempo",
+        "profile_sync_lbl": "👑 Perfil Seguro Sincronizado",
+        "btn_logout_sidebar": "🚪 Cerrar Sesión",
+        "btn_logout_main": "🚪 Cerrar Sesión de la Cuenta de la Plataforma"
     },
 
-        "简体中文 (Mandarin)": {
+            "简体中文 (Mandarin)": {
         "tab_explore": "🌐 探索宇宙", "tab_my_creations": "📂 我的创作", "tab_create": "🚀 创造世界", "tab_avatars": "🎭 社区化身", "tab_profile": "🔑 账户个人资料", "status_control": "📡 状态控制",
         "form_title": "### 宇宙架构师表单", "form_subtitle": "在初始化叙事种子之前，调整自定义时间线的基础机制。",
         "lbl_celestial": "##### 🪐 天体物理学", "lbl_name": "宇宙名称:", "lbl_genre": "选择主题类型:", "lbl_gravity": "🪐 引力水平", "lbl_atmosphere": "💨 大气密度",
@@ -79,7 +89,12 @@ LOCALIZATION_VAULT = {
         "settings_status_free": "⏳ 状态：免费 trial 模式 (12 次操作)",
         "settings_resync_title": "📡 重新同步历史购买",
         "settings_resync_desc": "更换了手机或重新安装？点击下方扫描 Stripe 以获取您处于活跃计费周期的账户档案。",
-        "settings_footer": "Haymaker Industry 安全架构 v1.02 • 隐私框架保护。"
+        "settings_footer": "Haymaker Industry 安全架构 v1.02 • 隐私框架保护。",
+        "hub_title": "🪐 Haymaker Industry 中心枢纽",
+        "hub_subtitle": "探索交错现实或锻造属于您自己的时间线",
+        "profile_sync_lbl": "👑 安全 profile 已同步",
+        "btn_logout_sidebar": "🚪 退出登录",
+        "btn_logout_main": "🚪 退出平台账户"
     }
 }
 # 🌐 LOCALIZATION VAULT - BLOCK 2: RUSSIAN, FRENCH, ARABIC EXPANSIONS
@@ -104,9 +119,15 @@ LOCALIZATION_VAULT.update({
         "settings_status_free": "⏳ СТАТУС: Режим бесплатной версии (12 действий)",
         "settings_resync_title": "📡 Синхронизация прошлых покупок",
         "settings_resync_desc": "Поменяли телефон или переустановили? Нажмите ниже, чтобы отсканировать Stripe на наличие активных профилей биллинга.",
-        "settings_footer": "Архитектура безопасности Haymaker Industry v1.02 • Защищено структурой конфиденциальности."
+        "settings_footer": "Архитектура безопасности Haymaker Industry v1.02 • Защищено структурой конфиденциальности.",
+        "hub_title": "🪐 Главный хаб Haymaker Industry",
+        "hub_subtitle": "Исследуйте альтернативные реальности или создайте свою временную шкалу",
+        "profile_sync_lbl": "👑 Безопасный профиль синхронизирован",
+        "btn_logout_sidebar": "🚪 Выйти",
+        "btn_logout_main": "🚪 Выйти из аккаунта платформы"
     },
-    "Français (French)": {
+
+        "Français (French)": {
         "tab_explore": "🌐 Explorer les Univers", "tab_my_creations": "📂 Mes Créations", "tab_create": "🚀 Créer un Monde", "tab_avatars": "🎭 Avatars de la Communauté", "tab_profile": "🔑 Profil du Compte", "status_control": "📡 CONTRÔLE DE STATUT",
         "form_title": "### ⚔️ Formulaire d'Architecte d'Univers", "form_subtitle": "Ajustez les mécaniques fondamentales de votre chronologie avant d'initialiser le code narratif.",
         "lbl_celestial": "##### 🪐 Physique Céleste", "lbl_name": "Nom de l'Univers:", "lbl_genre": "Sélectionnez le genre:", "lbl_gravity": "🪐 Niveaux de Gravité", "lbl_atmosphere": "💨 Densité Atmosphérique",
@@ -126,10 +147,15 @@ LOCALIZATION_VAULT.update({
         "settings_status_free": "⏳ STATUT : Mode d'Essai Gratuit (12 Actions)",
         "settings_resync_title": "📡 Re-synchroniser les Achats Passés",
         "settings_resync_desc": "Changement de téléphone ou réinstallation ? Appuyez ci-dessous pour scanner Stripe pour vos profils de compte de cycle de facturation actifs.",
-        "settings_footer": "Architecture de Securité de Haymaker Industry v1.02 • Cadre de Confidentialité Protégé."
+        "settings_footer": "Architecture de Securité de Haymaker Industry v1.02 • Cadre de Confidentialité Protégé.",
+        "hub_title": "🪐 Hub Central de Haymaker Industry",
+        "hub_subtitle": "Explorez des réalités alternatives ou forgez votre propre chronologie",
+        "profile_sync_lbl": "👑 Profil Sécurisé Synchronisé",
+        "btn_logout_sidebar": "🚪 Se Déconnecter",
+        "btn_logout_main": "🚪 Se Déconnecter du Compte de la Plateforme"
     },
 
-        "العربية (Arabic)": {
+    "العربية (Arabic)": {
         "tab_explore": "🌐 استكشاف العوالم", "tab_my_creations": "📂 إبداعاتي", "tab_create": "🚀 صنع عالمًا", "tab_avatars": "🎭 شخصيات المجتمع", "tab_profile": "🔑 ملف الحساب", "status_control": "📡 مراقبة الحالة",
         "form_title": "### ⚔️ نموذج مهندس الكون", "form_subtitle": "قم بضبط الآليات الأساسية لخطك الزمني قبل تهيئة النواة السردية.",
         "lbl_celestial": "##### 🪐 الفيزياء الفلكية", "lbl_name": "اسم الكون:", "lbl_genre": "اختر نوع القصة:", "lbl_gravity": "🪐 مستويات الجاذبية", "lbl_atmosphere": "💨 كثافة الغلاف الجوي",
@@ -140,7 +166,7 @@ LOCALIZATION_VAULT.update({
         "atmosphere_options": ["فراغ (الفضاء)", "رقيق / سام", "قابل للتنفس", "كثيف جدًا / أكّال"],
         "trial_active": "⏳ الفترة التجريبية: متبقي {} إجراءات", "pool_depleted": "🔒 تم استنفاد رصيد الإجراءات!", "premium_pilot": "👑 تم التحقق من الطيار المتميز: {}",
         "active_records_title": "#### 👥 سجلات المجتمع推力", "your_identity_title": "##### 👑 هويتك النشطة الحالية", "allied_dreamers_title": "##### 👥 الحالمون في الخطوط الزمنية الحليفة", "empty_ledger": "✨ السجل العام فارغ حاليًا.", "signin_prompt": "🔑 يرجى تسجيل الدخول لعرض السجلات.",
-        "dreamer_lbl": "الحالم... {}", "music_prompt": "🎵 للاستماع للموسيقى، انضم لعالم", "unlimited_actions": "تريد إجراءات غير محدودة؟", "btn_signin": "تسجيل الدخول", "btn_signup": "إنشاء حساب", "settings_control": "⚙️ التحكم بالإعدادات", "sub_genre_title": "🌌 اختر بديل الخط الزمني", "community_timeline_title": "📜 الخط الزمني العام للمجتمع", "btn_join_world": "⚡ دخول هذا الخط الزمني",
+        "dreamer_lbl": "الحالم... {}", "music_prompt": "🎵 للاستماع للموسيقى，انضم لعالم", "unlimited_actions": "تريد إجراءات غير محدودة؟", "btn_signin": "تسجيل الدخول", "btn_signup": "إنشاء حساب", "settings_control": "⚙️ التحكم بالإعدادات", "sub_genre_title": "🌌 اختر بديل الخط الزمني", "community_timeline_title": "📜 الخط الزمني العام للمجتمع", "btn_join_world": "⚡ دخول هذا الخط الزمني",
         "auth_title": "### 🔑 بوابة التحقق الآمنة", "auth_subtitle": "قم بترخيص معرفك الشخصي لحفظ الخطوط الزمنية وتخطي القيود.",
         "lbl_email": "البريد الإلكتروني:", "lbl_pass": "كلمة المرور الآمنة:", "btn_login_submit": "🔐 ترخيص جلسة الممر", "btn_register_submit": "🚀 إنشاء هوية جديدة",
         "sub_genres_lbls": ["خيال علمي", "فانتازيا مظلمة", "سايبربانك", "رعب", "رومانسي", "آخر"],
@@ -149,10 +175,16 @@ LOCALIZATION_VAULT.update({
         "settings_status_free": "⏳ الحالة: وضع الفترة التجريبية المجانية (12 إجراء)",
         "settings_resync_title": "📡 إعادة مزامنة المشتريات السابقة",
         "settings_resync_desc": "هل قمت بتغيير هاتفك أو إعادة التثبيت؟ اضغط أدناه لمسح Stripe بحثًا عن ملفات تعريف حساب دورة الفوترة النشطة.",
-        "settings_footer": "بنية Haymaker Industry الأمنية إصدار v1.02 • إطار الخصوصية المحمي."
+        "settings_footer": "بنية Haymaker Industry الأمنية إصدار v1.02 • إطار الخصوصية المحمي.",
+        "hub_title": "🪐 مركز Haymaker Industry الرئيسي",
+        "hub_subtitle": "استكشف العوالم البديلة أو اصنع خطك الزمني الخاص",
+        "profile_sync_lbl": "👑 تم مزامنة الملف الشخصي الآمن",
+        "btn_logout_sidebar": "🚪 تسجيل الخروج",
+        "btn_logout_main": "🚪 تسجيل الخروج من حساب المنصة"
     }
 })
-# 🌐 LOCALIZATION VAULT - BLOCK 3: HINDI, JAPANESE, KOREAN ASIA POWERHOUSES
+
+## 🌐 LOCALIZATION VAULT - BLOCK 3: HINDI, JAPANESE, KOREAN ASIA POWERHOUSES
 LOCALIZATION_VAULT.update({
     "हिन्दी (Hindi)": {
         "tab_explore": "🌐 ब्रह्मांड खोजें", "tab_my_creations": "📂 मेरी रचनाएँ", "tab_create": "🚀 ब्रह्मांड बनाएं", "tab_avatars": "🎭 समुदाय अवतार", "tab_profile": "🔑 खाता प्रोफ़ाइल", "status_control": "📡 स्थिति नियंत्रण",
@@ -174,7 +206,12 @@ LOCALIZATION_VAULT.update({
         "settings_status_free": "⏳ स्थिति: मुफ़्त परीक्षण मोड (12 क्रियाएं)",
         "settings_resync_title": "📡 पिछली खरीदारी को पुन: सिंक करें",
         "settings_resync_desc": "फोन बदल दिया या फिर से इंस्टॉल किया? अपने सक्रिय बिलिंग चक्र खाता प्रोफाइल के लिए स्ट्राइप को स्कैन करने के लिए नीचे टैप करें।",
-        "settings_footer": "Haymaker Industry सुरक्षा आर्किटेक्चर v1.02 • गोपनीयता ढांचा सुरक्षित।"
+        "settings_footer": "Haymaker Industry सुरक्षा आर्किटेक्चर v1.02 • गोपनीयता ढांचा सुरक्षित।",
+        "hub_title": "🪐 Haymaker Industry मुख्य हब",
+        "hub_subtitle": "वैकल्पिक वास्तविकताओं का पता लगाएं या अपनी खुद की समयरेखा बनाएं",
+        "profile_sync_lbl": "👑 सुरक्षित प्रोफ़ाइल सिंक्रनाइज़",
+        "btn_logout_sidebar": "🚪 लॉग आउट",
+        "btn_logout_main": "🚪 प्लेटफ़ॉर्म खाते से लॉग आउट करें"
     },
     "日本語 (Japanese)": {
         "tab_explore": "🌐 タイムライン探索", "tab_my_creations": "📂 マイユニバース", "tab_create": "🚀 世界の創造", "tab_avatars": "🎭 コミュニティ共同体", "tab_profile": "🔑 アカウントプロファイル", "status_control": "📡 ステータス管理",
@@ -196,10 +233,16 @@ LOCALIZATION_VAULT.update({
         "settings_status_free": "⏳ ステータス: 無料トライアルモード (残り12アクション)",
         "settings_resync_title": "📡 過去の購入を再同期",
         "settings_resync_desc": "機種変更または再インストールしましたか？以下をタップしてStripeをスキャンし、アクティブな課金サイクルアカウントを確認します。",
-        "settings_footer": "Haymaker Industry セキュリティアーキテクチャ v1.02 • プライバシーフレームワーク保護"
+        "settings_footer": "Haymaker Industry セキュリティアーキテクチャ v1.02 • プライバシーフレームワーク保護",
+        "hub_title": "🪐 Haymaker Industry 総合ハブ",
+        "hub_subtitle": "仮想現実を探索、またはあなた自身のタイムラインを構築",
+        "profile_sync_lbl": "👑 セキュアなプロファイルが同期されました",
+        "btn_logout_sidebar": "🚪 ログアウト",
+        "btn_logout_main": "🚪 プラットフォームアカウントからログアウト"
     },
 
-    "한국어 (Korean)": {
+
+       "한국어 (Korean)": {
         "tab_explore": "🌐 세계선 탐색", "tab_my_creations": "📂 나의 창작물", "tab_create": "🚀 세계 창조", "tab_avatars": "🎭 커뮤니티 아바타", "tab_profile": "🔑 계정 프로필", "status_control": "📡 상태 제어 센터",
         "form_title": "### ⚔️ 세계 설계 아키텍트 폼", "form_subtitle": "서사 시드를 초기화하기 전에 커스텀 시간선의 기본 메커니즘을 조정하십시오.",
         "lbl_celestial": "##### 🪐 우주 물리학 매개변수", "lbl_name": "세계선 이름:", "lbl_genre": "테마 장르 선택:", "lbl_gravity": "🪐 중력 수치", "lbl_atmosphere": "💨 대기 밀도",
@@ -214,12 +257,17 @@ LOCALIZATION_VAULT.update({
         "auth_title": "### 🔑 보안 신원 인증 포털", "auth_subtitle": "프로필을 인증하십시오.",
         "lbl_email": "계정 이메일:", "lbl_pass": "보안 비밀번호:", "btn_login_submit": "🔐 통로 세션 승인", "btn_register_submit": "🚀 새로운 신원 생성",
         "sub_genres_lbls": ["SF", "다크 판타지", "사이버펑크", "공포", "로맨스", "기타"],
-        "btn_launch_scenario": "🎮 시나リオ 시작",
+        "btn_launch_scenario": "🎮 시나리오 시작",
         "settings_sub_status_title": "💳 구독 상태",
         "settings_status_free": "⏳ 상태: 무료 체험 모드 (12회 남음)",
         "settings_resync_title": "📡 과거 구매 내역 재동기화",
         "settings_resync_desc": "휴대폰을 변경했거나 재설치하셨나요? 아래를 탭하여 Stripe에서 활성 결제 주기 계정 프로필을 스캔하세요.",
-        "settings_footer": "Haymaker Industry 보안 아키텍처 v1.02 • 개인정보 보호 프레임워크 적용"
+        "settings_footer": "Haymaker Industry 보안 아키텍처 v1.02 • 개인정보 보호 프레임워크 적용",
+        "hub_title": "🪐 Haymaker Industry 중앙 허브",
+        "hub_subtitle": "가상 현실을 탐색하거나 자신만의 시간선을 구축하십시오",
+        "profile_sync_lbl": "👑 보안 프로필이 동기화되었습니다",
+        "btn_logout_sidebar": "🚪 로그아웃",
+        "btn_logout_main": "🚪 플랫폼 계정에서 로그아웃"
     },
     "Português (Portuguese)": {
         "tab_explore": "🌐 Explorar Universos", "tab_my_creations": "📂 Minhas Criações", "tab_create": "🚀 Criar um Mundo", "tab_avatars": "🎭 Avatares da Comunidade", "tab_profile": "🔑 Perfil de Conta", "status_control": "📡 CONTROLE DE STATUS",
@@ -231,9 +279,9 @@ LOCALIZATION_VAULT.update({
         "genres": ["Ficção Científica", "Fantasia Sombria", "Cyberpunk", "Terror", "Romance", "Outro"],
         "atmosphere_options": ["Vácuo (Espaço)", "Rara / Tóxica", "Linha de Base Respirável", "Hipertensa / Corrosiva"],
         "trial_active": "⏳ TESTE ATIVO: {} Ações Restantes", "pool_depleted": "🔒 Pool de Ações Esgotado!", "premium_pilot": "👑 PILOTO PREMIUM AUTENTICADO: {}",
-        "active_records_title": "#### 👥 Registros Ativos da Comunidade", "your_identity_title": "##### 👑 SUA IDENTIDADE ATIVA FORJADA", "allied_dreamers_title": "##### 👥 SONHADORES DE LINHAS DO TEMPO ALIADAS", "empty_ledger": "✨ O registro público estálayer atualmente vazio. Seja o primeiro a forjar uma identidade acima!", "signin_prompt": "🔑 Por favor, faça login na aba 'Perfil de Conta' para ver os registros dos personagens ao vivo.",
+        "active_records_title": "#### 👥 Registros Ativos da Comunidade", "your_identity_title": "##### 👑 SUA IDENTIDADE ATIVA FORJADA", "allied_dreamers_title": "##### 👥 SONHADORES DE LINHAS DO TEMPO ALIADAS", "empty_ledger": "✨ O registro público está atualmente vazio. Seja o primeiro a forjar uma identidade acima!", "signin_prompt": "🔑 Por favor, faça login na aba 'Perfil de Conta' para ver os registros dos personagens ao vivo.",
         "dreamer_lbl": "Sonhador... {}", "music_prompt": "🎵 Para ouvir música, junte-se ou forje uma linha do tempo mundial", "unlimited_actions": "Quer ações ilimitadas?", "btn_signin": "Entrar", "btn_signup": "Cadastrar-se", "settings_control": "⚙️ Controle de Configurações", "sub_genre_title": "🌌 Selecione Sua Variante de Linha do Tempo", "community_timeline_title": "📜 Linha do Tempo Pública da Comunidade", "btn_join_world": "⚡ Entrar Neste Universo da Comunidade",
-        "auth_title": "### 🔑 Portal de Identificação Seguro", "auth_subtitle": "Autorize seu nó de identity de perfil para salvar linhas do tempo personalizadas.",
+        "auth_title": "### 🔑 Portal de Identificação Secure", "auth_subtitle": "Autorize seu nó de identidade de perfil para salvar linhas do tempo personalizadas.",
         "lbl_email": "E-mail da Conta:", "lbl_pass": "Senha de Segurança:", "btn_login_submit": "🔐 Autorizar Sessão", "btn_register_submit": "🚀 Forjar Nova Identidade de Perfil",
         "sub_genres_lbls": ["Ficção Científica", "Fantasia Sombria", "Cyberpunk", "Terror", "Romance", "Outro"],
         "btn_launch_scenario": "🎮 Iniciar Cenário",
@@ -241,7 +289,12 @@ LOCALIZATION_VAULT.update({
         "settings_status_free": "⏳ STATUS: Modo de Teste Gratuito (12 Ações)",
         "settings_resync_title": "📡 Re-sincronizar Compras Passadas",
         "settings_resync_desc": "Mudou de telefone ou reinstalou? Toque abaixo para escanear o Stripe em busca de perfis de conta com ciclo de faturamento ativo.",
-        "settings_footer": "Arquitetura de Segurança da Haymaker Industry v1.02 • Estrutura de Privacidade Protegida."
+        "settings_footer": "Arquitetura de Segurança da Haymaker Industry v1.02 • Estrutura de Privacidade Protegida.",
+        "hub_title": "🪐 Hub Central da Haymaker Industry",
+        "hub_subtitle": "Explore realidades alternativas ou forje a sua própria linha do tempo",
+        "profile_sync_lbl": "👑 Perfil Seguro Sincronizado",
+        "btn_logout_sidebar": "🚪 Sair",
+        "btn_logout_main": "🚪 Sair da Conta da Plataforma"
     }
 }) # 🚨 MASTER DICTIONARY VAULT UPDATE SECURELY CLOSED AND PINNED
 
@@ -800,13 +853,14 @@ with st.expander(text_vault.get("settings_control", "⚙️ SETTINGS CONTROL").u
 
 # 6. BALA DISCOVERY CORE ARCHITECTURE
 if not engine["world_name"]:
+    # 🗺️ READ ACTIVE LOCALIZATION MATRIX STATES (MUST COME FIRST)
+    active_lang = st.session_state.get("app_language", "English")
+    text_vault = LOCALIZATION_VAULT[active_lang]
+
     # 🌎 FULLY CONFORMED MULTI-LINGUAL APP LANDING HEADERS
     st.title(text_vault.get("hub_title", "🪐 Haymaker Industry Hub"))
     st.write(text_vault.get("hub_subtitle", "Explore alternate realities or forge your own timeline"))
 
-    # 🗺️ READ ACTIVE LOCALIZATION MATRIX STATES
-    active_lang = st.session_state.get("app_language", "English")
-    text_vault = LOCALIZATION_VAULT[active_lang]
 
     # 🪐 DYNAMIC LOCALIZED 5-TAB NAVIGATION SYSTEM
     tab_explore, tab_my_creations, tab_create, tab_avatars, tab_profile = st.tabs([
@@ -1273,9 +1327,10 @@ if not engine["world_name"]:
         st.divider()
 
         if "user" in st.session_state:
-            active_account_msg = "👑 Perfil Seguro Sincronizado:" if lang == "Español (Spanish)" else ("👑 安全个人资料已同步:" if lang == "简体中文 (Mandarin)" else "👑 Secure Profile Synchronized:")
-            logout_btn_label = "🚪 Cerrar Sesión de la Cuenta" if lang == "Español (Spanish)" else ("🚪 登出平台账户" if lang == "简体中文 (Mandarin)" else "🚪 Log Out of Platform Account")
-            
+                       # 🌎 FULLY CONFORMED MULTI-LINGUAL PROFILE STATUS & LOGOUT LABELS
+            active_account_msg = text_vault.get("profile_sync_lbl", "👑 Secure Profile Synchronized:")
+            logout_btn_label = text_vault.get("btn_logout_main", "🚪 Log Out of Platform Account")
+
             st.success(f"{active_account_msg} `{st.session_state.user.email}`")
             if st.button(logout_btn_label, type="primary", key="main_hub_profile_logout_gate", use_container_width=True):
                 supabase_client.auth.sign_out()
