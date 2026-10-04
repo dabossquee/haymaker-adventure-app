@@ -341,7 +341,7 @@ def render_auth_form(prefix):
                     st.success(x("signup_ok"))
                 except Exception as e:
                     print("signup error:", e)
-                    st.error(x("generic_err"))
+                    st.error(x("DEBUG: {e}"))
     else:
         if st.button(x("btn_login_submit"), key=f"{prefix}_login", use_container_width=True):
             try:
