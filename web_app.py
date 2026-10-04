@@ -192,9 +192,11 @@ def lang():
 def t(key, default=""):
     return LOCALIZATION_VAULT.get(lang(), {}).get(key) or LOCALIZATION_VAULT["English"].get(key) or default
 
-
 def x(key):
-    return EXTRA.get(LANG_CODE.get(lang(), "en"), {}).get(key) or EXTRA["en"][key]
+    return (LOCALIZATION_VAULT.get(lang(), {}).get(key)
+            or EXTRA.get(LANG_CODE.get(lang(), "en"), {}).get(key)
+            or EXTRA["en"].get(key)
+            or LOCALIZATION_VAULT["English"].get(key, ""))
 
 
 def new_engine():
@@ -324,14 +326,12 @@ def billing_button(key):
             print("portal error:", e)
             st.error(x("generic_err"))
 
-
 def render_legal():
-    with st.expander(t("legal_link")):
-        st.markdown(f"### {t('legal_header')}")
+    with st.expander(x("legal_compliance_link")):
+        st.markdown(f"### {x('legal_header')}")
         for n in (1, 2, 3):
-            st.markdown(f"**{t('legal_sec%d_title' % n)}**")
-            st.markdown(t("legal_sec%d_text" % n).replace("$", "\\$"))  # stop "$5 ... $10" rendering as math
-
+            st.markdown(f"**{x('legal_sec%d_title' % n)}**")
+            st.markdown(x("legal_sec%d_text" % n).replace("$", "\\$"))  # stop "$5 ... $10" rendering as math
 
 def render_auth_form(prefix):
     mode = st.radio("mode", [t("btn_signin"), t("btn_signup")], horizontal=True,
@@ -374,25 +374,31 @@ def render_auth_form(prefix):
                 st.success(t("msg_recovery_sent"))  # same message either way (no account probing)
 
 
+dTIER_ORDER = [("avatar", "tier1", "👑"), ("spartan", "tier2", "⚔️"), ("titan", "tier3", "🪐")]
+
+
 def render_paywall():
     st.title(x("paywall_title"))
     if not ss.get("user"):
         st.write(x("paywall_login"))
         render_auth_form("paywall")
     else:
-        st.write(x("paywall_pick"))
-        for col, (key, tier) in zip(st.columns(3), TIERS.items()):
+        st.write(x("paywall_subtitle"))
+        for col, (key, prefix, emoji) in zip(st.columns(3), TIER_ORDER):
+            tier = TIERS[key]
             with col:
                 st.markdown(
                     f'<div style="background:rgba(16,12,31,.5);padding:20px;border-radius:12px;border:1px solid #2e234e;'
-                    f'text-align:center;min-height:200px;"><h4 style="color:{tier["color"]};margin:0;">{tier["label"]}</h4>'
-                    f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] / 100:.2f} '
-                    f'<span style="font-size:14px;color:#94a3b8;">{x("per_week")}</span></h2>'
-                    f'<p style="color:#94a3b8;font-size:12px;">{tier["desc"]}</p></div>',
+                    f'text-align:center;min-height:200px;"><h4 style="color:{tier["color"]};margin:0;">'
+                    f'{emoji} {esc(x(prefix + "_name").upper())}</h4>'
+                    f'<h2 style="color:#fff;margin:10px 0;">${tier["cents"] / 100:.2f} '
+                    f'<span style="font-size:14px;color:#94a3b8;">{esc(x("per_week"))}</span></h2>'
+                    f'<p style="color:#94a3b8;font-size:12px;">{esc(x(prefix + "_desc"))}</p></div>',
                     unsafe_allow_html=True)
-                if st.button(f'{x("pass_btn")} {tier["name"]}', key=f"buy_{key}", use_container_width=True):
+                if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
                     go_checkout(key)
     render_legal()
+
 
 
 # ---------------------------------------------------------------- game helpers

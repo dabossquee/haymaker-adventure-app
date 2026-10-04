@@ -397,3 +397,153 @@ LOCALIZATION_VAULT.update({
         "legal_sec3_text": "Respeitamos a privacidade do usuário e operamos sob uma matriz de santuário de software independente. O endereço de e-mail da sua conta, a assinatura de senha criptografada segura e as linhas do tempo salvas do universo personalizado são mapeados de forma segura dentro de cofres de banco de dados protegidos na nuvem. Não vendemos, comercializamos ou distribuímos seus dados de vetor de identidade para redes corporativas de terceiros ou mecanismos de análise."
     }
 }) # 🚨 MASTER DICTIONARY VAULT UPDATE SECURELY CLOSED AND PINNED
+# 🔒 EXTRA RE-SYNC AND PREMIUM PAYWALL KEY INJECTIONS
+LOCALIZATION_VAULT["Русский (Russian)"].update({
+    "paywall_title": "🔒 Бесплатные действия закончились",
+    "paywall_subtitle": "Выберите пропуск, чтобы продолжить исследовать миры.",
+    "paywall_login": "Создайте бесплатный аккаунт или войдите, чтобы продолжить и открыть доступ.",
+    "tier1_name": "Пропуск «Аватар»",
+    "tier1_desc": "Безлимитные действия во всех мирах и надёжная память истории.",
+    "tier2_name": "Пропуск «Спартанец»",
+    "tier2_desc": "Всё из «Аватара» плюс более долгая память истории для многочасовых приключений.",
+    "tier3_name": "Пропуск «Титан»",
+    "tier3_desc": "Всё из «Спартанца», самая долгая память истории и ранний доступ к новым функциям.",
+    "btn_activate": "Активировать пропуск",
+    "legal_compliance_link": "⚖️ Условия использования и политика конфиденциальности",
+    "per_week": "/ нед.",
+})
+
+LOCALIZATION_VAULT["Français (French)"].update({
+    "paywall_title": "🔒 Vos actions gratuites sont épuisées",
+    "paywall_subtitle": "Choisissez un pass pour continuer à explorer.",
+    "paywall_login": "Créez un compte gratuit ou connectez-vous pour continuer et débloquer un pass.",
+    "tier1_name": "Pass Avatar",
+    "tier1_desc": "Actions illimitées dans tous les mondes, avec une bonne mémoire d'histoire.",
+    "tier2_name": "Pass Spartan",
+    "tier2_desc": "Tout le Pass Avatar, plus une mémoire d'histoire plus longue pour des aventures de plusieurs heures.",
+    "tier3_name": "Pass Titan",
+    "tier3_desc": "Tout le Pass Spartan, avec la plus longue mémoire d'histoire et un accès anticipé aux nouveautés.",
+    "btn_activate": "Activer le pass",
+    "legal_compliance_link": "⚖️ Conditions d'utilisation et politique de confidentialité",
+    "per_week": "/ sem.",
+})
+
+LOCALIZATION_VAULT["العربية (Arabic)"].update({
+    "paywall_title": "🔒 انتهت إجراءاتك المجانية",
+    "paywall_subtitle": "اختر باقة لمواصلة الاستكشاف.",
+    "paywall_login": "أنشئ حسابًا مجانيًا أو سجّل الدخول للمتابعة وفتح باقة.",
+    "tier1_name": "باقة أفاتار",
+    "tier1_desc": "إجراءات غير محدودة في جميع العوالم مع ذاكرة قصة جيدة.",
+    "tier2_name": "باقة سبارتان",
+    "tier2_desc": "كل ما في باقة أفاتار، بالإضافة إلى ذاكرة قصة أطول لمغامرات تمتد لساعات.",
+    "tier3_name": "باقة تايتن",
+    "tier3_desc": "كل ما في باقة سبارتان، مع أطول ذاكرة قصة ووصول مبكر إلى الميزات الجديدة.",
+    "btn_activate": "تفعيل الباقة",
+    "legal_compliance_link": "⚖️ شروط الخدمة وسياسة الخصوصية",
+    "per_week": "/ أسبوعيًا",
+})
+
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({
+    "paywall_title": "🔒 आपके मुफ़्त एक्शन समाप्त हो गए हैं",
+    "paywall_subtitle": "खोज जारी रखने के लिए एक पास चुनें।",
+    "paywall_login": "जारी रखने... और पास अनलॉक करने के लिए मुफ़्त खाता बनाएँ या लॉग इन करें।",
+    "tier1_name": "अवतार पास",
+    "tier1_desc": "सभी दुनियाओं में असीमित एक्शन, साथ में भरोसेमंद कहानी-स्मृति।",
+    "tier2_name": "स्पार्टन पास",
+    "tier2_desc": "अवतार पास की सभी सुविधाएँ, साथ में घंटों लंबे रोमांच के लिए ज़्यादा लंबी कहानी-स्मृति।",
+    "tier3_name": "टाइटन पास",
+    "tier3_desc": "स्पार्टन पास की सभी सुविधाएँ, सबसे लंबी कहानी-स्मृति और नई सुविधाओं तक जल्दी पहुँच।",
+    "btn_activate": "पास सक्रिय करें",
+    "legal_compliance_link": "⚖️ सेवा की शर्तें और गोपनीयता नीति",
+    "per_week": "/ सप्ताह",
+})
+
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({
+    "paywall_title": "🔒 無料アクションを使い切りました",
+    "paywall_subtitle": "冒険を続けるには、パスを選んでください。",
+    "paywall_login": "続行してパスを利用するには、無料アカウントを作成するかログインしてください。",
+    "tier1_name": "アバターパス",
+    "tier1_desc": "すべての世界で無制限にアクションでき、しっかりとしたストーリーメモリー付き。",
+    "tier2_name": "スパルタンパス",
+    "tier2_desc": "アバターパスの全機能に加え、数時間におよぶ冒険に対応する、より長いストーリーメモリー。",
+    "tier3_name": "タイタンパス",
+    "tier3_desc": "スパルタンパスの全機能に加え、最本のストーリーメモリーと新機能の先行アクセス。",
+    "btn_activate": "パスを有効にする",
+    "legal_compliance_link": "⚖️ 利用規約とプライバシーポリシー",
+    "per_week": "/ 週",
+})
+
+LOCALIZATION_VAULT["한국어 (Korean)"].update({
+    "paywall_title": "🔒 무료 액션을 모두 사용했습니다",
+    "paywall_subtitle": "계속 탐험하려면 이용권을 선택하세요.",
+    "paywall_login": "계속하고 이용권을 사용하려면 무료 계정을 만들거나 로그인하세요.",
+    "tier1_name": "아바타 패스",
+    "tier1_desc": "모든 월드에서 무제한 액션과 안정적인 스토리 메모리를 제공합니다.",
+    "tier2_name": "스파르탄 패스",
+    "tier2_desc": "아바타 패스의 모든 혜택에 더해, 몇 시간짜리 모험을 위한 더 긴 스토리 메모리.",
+    "tier3_name": "타이탄 패스",
+    "tier3_desc": "스파르탄 패스의 모든 혜택에 더해, 가장 긴 스토리 메모리와 신기능 우선 체험.",
+    "btn_activate": "패스 활성화",
+    "legal_compliance_link": "⚖️ 이용약관 및 개인정보 처리방침",
+    "per_week": "/ 주",
+})
+
+LOCALIZATION_VAULT["Português (Portuguese)"].update({
+    "paywall_title": "🔒 Suas ações gratuitas acabaram",
+    "paywall_subtitle": "Escolha um passe para continuar explorando.",
+    "paywall_login": "Crie uma conta gratuita ou entre para continuar e desbloquear um passe.",
+    "tier1_name": "Passe Avatar",
+    "tier1_desc": "Ações ilimitadas em todos os mundos, com uma boa memória de história.",
+    "tier2_name": "Passe Spartan",
+    "tier2_desc": "Tudo do Passe Avatar, mais uma memória de história maior para aventuras de várias horas.",
+    "tier3_name": "Passe Titan",
+    "tier3_desc": "Tudo do Passe Spartan, com a maior memória de história e acesso antecipado a novidades.",
+    "btn_activate": "Ativar passe",
+    "legal_compliance_link": "⚖️ Termos de Serviço e Política de Privacidade",
+    "per_week": "/ sem.",
+})
+# 🌐 MASTER CORE PAYWALL INTEGRATIONS (ENGLISH, SPANISH, MANDARIN SUB-SETS)
+LOCALIZATION_VAULT["English"].update({
+    "paywall_title": "🔒 Your free actions are used up",
+    "paywall_subtitle": "Choose a pass to keep exploring.",
+    "paywall_login": "Create a free account or log in to continue and unlock a pass.",
+    "tier1_name": "Avatar Pass",
+    "tier1_desc": "Unlimited actions across every world, with a solid story memory.",
+    "tier2_name": "Spartan Pass",
+    "tier2_desc": "Everything in Avatar, plus a longer story memory for multi-hour adventures.",
+    "tier3_name": "Titan Pass",
+    "tier3_desc": "Everything in Spartan, with the longest story memory and early access to new features.",
+    "btn_activate": "Activate Pass",
+    "legal_compliance_link": "⚖️ Terms of Service & Privacy Policy",
+    "per_week": "/ wk",
+})
+
+LOCALIZATION_VAULT["Español (Spanish)"].update({
+    "paywall_title": "🔒 Tus acciones gratuitas se agotaron",
+    "paywall_subtitle": "Elige un pase para seguir explorando.",
+    "paywall_login": "Crea una cuenta gratuita o inicia sesión para continuar y desbloquear un pase.",
+    "tier1_name": "Pase Avatar",
+    "tier1_desc": "Acciones ilimitadas en todos los mundos, con uma buena memoria de historia.",
+    "tier2_name": "Pase Spartan",
+    "tier2_desc": "Todo el Pase Avatar, más una memoria de historia más larga para aventuras de varias horas.",
+    "tier3_name": "Pase Titan",
+    "tier3_desc": "Todo el Pase Spartan, con la memoria de historia más larga y acceso anticipado a novedades.",
+    "btn_activate": "Activar pase",
+    "legal_compliance_link": "⚖️ Términos de Servicio y Política de Privacidad",
+    "per_week": "/ sem",
+})
+
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({
+    "paywall_title": "🔒 您的免费次数已用完",
+    "paywall_subtitle": "请选择一个通行证以继续探索。",
+    "paywall_login": "创建免费账户或登录以继续并解锁通行证。",
+    "tier1_name": "化身通行证",
+    "tier1_desc": "所有世界无限行动，并配备可靠的故事记忆。",
+    "tier2_name": "斯巴达通行证",
+    "tier2_desc": "包含化身通行证的全部权益，并提供更长的故事记忆，适合数小时的冒险。",
+    "tier3_name": "泰坦通行证",
+    "tier3_desc": "包含斯巴达通行证의 전부 권익, 유구한 고사 기억 구비, 신기능 선행 체험 가능.",
+    "btn_activate": "激活通行证",
+    "legal_compliance_link": "⚖️ 服务条款与隐私政策",
+    "per_week": "/ 周",
+})
