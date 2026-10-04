@@ -36,147 +36,134 @@ REPLICATE_TOKEN = os.getenv("REPLICATE_API_TOKEN")
 ss = st.session_state
 
 # ---------------------------------------------------------------- constants
-TIERS = {
-    "avatar": {"label": "👑 AVATAR PASS", "name": "Avatar Pass", "cents": 499, "color": "#a78bfa",
-               "desc": "Unlimited actions across every world, with a solid story memory."},
-    "spartan": {"label": "⚔️ SPARTAN PASS", "name": "Spartan Pass", "cents": 1099, "color": "#c084fc",
-                "desc": "Everything in Avatar, plus a longer story memory for multi-hour adventures."},
-    "titan": {"label": "🪐 TITAN PASS", "name": "Titan Pass", "cents": 1999, "color": "#f472b6",
-              "desc": "Everything in Spartan, with the longest story memory and early access to new features."},
+TIERS = {  # keys must match the "tier" values the Stripe webhook stores
+    "avatar": {"name": "Avatar Pass", "cents": 499, "color": "#a78bfa"},
+    "spartan": {"name": "Spartan Pass", "cents": 1099, "color": "#c084fc"},
+    "titan": {"name": "Titan Pass", "cents": 1999, "color": "#f472b6"},
 }
+TIER_ORDER = [("avatar", "tier1", "👑"), ("spartan", "tier2", "⚔️"), ("titan", "tier3", "🪐")]
 MEMORY_TURNS = {"avatar": 12, "spartan": 24, "titan": 40}  # how many past messages the narrator sees
 
 PLAYLIST = ["assets/menu_theme.mp3", "assets/adventure_loop.mp3"] + [f"assets/track_{i}.mp3" for i in range(1, 9)]
 
-AVATARS = {
-    "🥷 Cybernetic Shinobi / Tactical Operator": "https://picsum.photos/seed/shinobi/400/400",
-    "🧙‍♂️ Arcane Runemaster / Dark Sorcerer": "https://picsum.photos/seed/runemaster/400/400",
-    "🚀 Dreadnought Pilot / Space Marine": "https://picsum.photos/seed/dreadnought/400/400",
-    "💀 Wasteland Scavenger / Nomad Raider": "https://picsum.photos/seed/scavenger/400/400",
-}
+# (id, emoji, image URL). The visible names come from localization keys avatar_1 ... avatar_4.
+AVATAR_OPTIONS = [
+    ("avatar_1", "🥷", "https://picsum.photos/seed/shinobi/400/400"),
+    ("avatar_2", "🧙‍♂️", "https://picsum.photos/seed/runemaster/400/400"),
+    ("avatar_3", "🚀", "https://picsum.photos/seed/dreadnought/400/400"),
+    ("avatar_4", "💀", "https://picsum.photos/seed/scavenger/400/400"),
+]
+AVATAR_EMOJI = {a[0]: a[1] for a in AVATAR_OPTIONS}
+AVATAR_URLS = {a[0]: a[2] for a in AVATAR_OPTIONS}
 
-# (id, name, bio, character, backstory)
+# genre, icon, [(preset id, character name, backstory sent to the narrator)].
+# Scenario names and plot descriptions come from localization keys preset_<id>_name / preset_<id>_bio.
 PRESETS = [
     ("Sci-Fi", "🚀", [
-        ("s1", "Sector 7 Nomad", "Grit, survival, and starship dogfights across an outlaw solar system.", "Pilot Vance", "A disgraced military pilot running illicit scrap metal through asteroid fields."),
-        ("s2", "Chronos Station", "A psychological thriller aboard a deep-space station stuck in a time anomaly.", "Dr. Aris", "The chief technician investigating a quantum pulse that locked the terminal clock."),
+        ("s1", "Pilot Vance", "A disgraced military pilot running illicit scrap metal through asteroid fields."),
+        ("s2", "Dr. Aris", "The chief technician investigating a quantum pulse that locked the terminal clock."),
     ]),
     ("Dark Fantasy", "🧙", [
-        ("f1", "Vampire Nomad", "Navigate exile, bloodlines, and dark covens in a gothic world of endless night.", "Kaelen Voss", "An ancient rogue vampire cast out of the High Court, hunting bounty squads."),
-        ("f2", "Ashelands Renegade", "A tactical swords-and-sorcery survival gauntlet across a ruined kingdom.", "Gideon Black", "A weathered mercenary carrying a broken crown across fields of ash."),
+        ("f1", "Kaelen Voss", "An ancient rogue vampire cast out of the High Court, hunting bounty squads."),
+        ("f2", "Gideon Black", "A weathered mercenary carrying a broken crown across fields of ash."),
     ]),
     ("Cyberpunk", "🏙️", [
-        ("c1", "Neo-Tokyo Runner", "High-stakes tech espionage, corporate warfare, and neon-lit street racing.", "Ren Tanaka", "A street racer with a corporate data package hardwired into his skull."),
-        ("c2", "Gridlock Underground", "Hack deep mainframe grids and lead a digital rebellion against mega-corps.", "Echo", "A phantom hacker who lives inside deep mainframe server nodes."),
+        ("c1", "Ren Tanaka", "A street racer with a corporate data package hardwired into his skull."),
+        ("c2", "Echo", "A phantom hacker who lives inside deep mainframe server nodes."),
     ]),
     ("Horror", "🩸", [
-        ("h1", "Asylum Phantoms", "Escape an abandoned psychiatric hospital while tracking sanity meters.", "Arthur Vance", "An investigative journalist locked inside an asylum wing with moving shadows."),
-        ("h2", "Cabin Isolation", "Survive a night in a remote woodland estate stalked by masked cultists.", "Sarah", "A standard hiker forced to fortify a hunting cabin before midnight strikes."),
+        ("h1", "Arthur Vance", "An investigative journalist locked inside an asylum wing with moving shadows."),
+        ("h2", "Sarah", "A standard hiker forced to fortify a hunting cabin before midnight strikes."),
     ]),
     ("Romance", "❤️", [
-        ("r1", "Neon Heartbeats", "A high-stakes corporate romance tangled inside a Tokyo cyber espionage ring.", "Leo Cruz", "A security auditor falling for the rival terminal hacker assigned to clear his deck."),
-        ("r2", "Starlight Station", "Find love and connection at the absolute edge of an expanding galaxy.", "Elena", "A deep-space botanist stationed on a lonely supply node with a rogue freighter captain."),
+        ("r1", "Leo Cruz", "A security auditor falling for the rival terminal hacker assigned to clear his deck."),
+        ("r2", "Elena", "A deep-space botanist stationed on a lonely supply node with a rogue freighter captain."),
     ]),
 ]
 
-AUDIO_NEXT = {
-    "Español (Spanish)": "🔀 Siguiente Pista", "简体中文 (Mandarin)": "🔀 下一首曲目", "Русский (Russian)": "🔀 Следующий трек",
-    "Français (French)": "🔀 Piste Suivante", "العربية (Arabic)": "🔀 المسار التالي", "हिन्दी (Hindi)": "🔀 अगला ट्रैक",
-    "日本語 (Japanese)": "🔀 次のトラック", "한국어 (Korean)": "🔀 다음 트랙", "Português (Portuguese)": "🔀 Próxima Faixa",
-}
-AUDIO_CAPTION = {
-    "Español (Spanish)": "🔊 Haga clic en reproducir en el reproductor oficial para autorizar la transmisión",
-    "简体中文 (Mandarin)": "🔊 点击官方播放面板上的播放键以授权音频流",
-    "Русский (Russian)": "🔊 Нажмите кнопку воспроизведения на официальной панели для авторизации потока",
-    "Français (French)": "🔊 Cliquez sur lecture sur le lecteur officiel pour autoriser le flux",
-    "العربية (Arabic)": "🔊 انقر فوق تشغيل في اللوحة الرسمية للمصادقة على البث",
-    "हिन्दी (Hindi)": "🔊 स्ट्रीम को अधिकृत करने के लिए आधिकारिक डेक पर प्ले पर क्लिक करें",
-    "日本語 (Japanese)": "🔊 ストリーム配信を承認するには公式プレイヤーの再生ボタンを押してください",
-    "한국어 (Korean)": "🔊 스트림 스트리밍을 승인하려면 공식 데크에서 재생을 클릭하십시오",
-    "Português (Portuguese)": "🔊 Clique em reproduzir no player oficial para autorizar a transmissão",
-}
-
-# Extra UI strings. Missing languages fall back to English key by key.
-LANG_CODE = {"Español (Spanish)": "es", "简体中文 (Mandarin)": "zh"}
-EXTRA = {
-    "en": {
-        "paywall_title": "🔒 Your free actions are used up",
-        "paywall_login": "Create a free account or log in to continue and unlock a pass.",
-        "paywall_pick": "Choose a pass to keep exploring.",
-        "pass_btn": "Activate",
-        "checkout_open": "👉 Open secure Stripe Checkout",
-        "checkout_fail": "Couldn't start checkout. Please try again.",
-        "checkout_done": "✅ Payment received! If you don't see your pass yet, refresh in a few seconds (log in again if needed).",
-        "manage_sub": "💳 Manage / cancel subscription",
-        "portal_open": "Open billing portal",
-        "agree": "I am 18 or older and agree to the Terms of Service & Privacy Policy",
-        "agree_warn": "Please confirm you are 18+ and accept the terms.",
-        "pw_short": "Use a valid email and a password of at least 8 characters.",
-        "signup_ok": "✅ Check your email to confirm your account, then sign in.",
-        "login_fail": "Sign-in failed. Check your email and password (and confirm your email first).",
-        "generic_err": "Something went wrong. Please try again.",
-        "per_week": "/ wk",
-        "abandon": "🚪 ABANDON TIMELINE",
-        "mute": "🔇 Mute Audio",
-        "play": "🔊 Play Audio",
-        "narrator_down": "The narrator is unavailable right now. Please try again.",
-        "blocked": "That request can't be played here. Try a different direction for your story.",
-        "crisis": "It sounds like you may be going through something hard. You matter. If you are in danger or thinking about harming yourself, please contact your local emergency number or a crisis line right now.",
-        "chat_placeholder": "✍️ Describe your action or speak...",
-        "go_profile": "Open the 'Account Profile' tab to sign in or sign up.",
-    },
-    "es": {
-        "paywall_title": "🔒 Tus acciones gratuitas se agotaron",
-        "paywall_login": "Crea una cuenta gratuita o inicia sesión para continuar y desbloquear un pase.",
-        "paywall_pick": "Elige un pase para seguir explorando.",
-        "pass_btn": "Activar",
-        "checkout_open": "👉 Abrir pago seguro de Stripe",
-        "checkout_fail": "No se pudo iniciar el pago. Inténtalo de nuevo.",
-        "checkout_done": "✅ ¡Pago recibido! Si aún no ves tu pase, actualiza en unos segundos (inicia sesión de nuevo si es necesario).",
-        "manage_sub": "💳 Gestionar / cancelar suscripción",
-        "portal_open": "Abrir portal de facturación",
-        "agree": "Tengo 18 años o más y acepto los Términos de Servicio y la Política de Privacidad",
-        "agree_warn": "Confirma que tienes 18+ y que aceptas los términos.",
-        "pw_short": "Usa un correo válido y una contraseña de al menos 8 caracteres.",
-        "signup_ok": "✅ Revisa tu correo para confirmar tu cuenta y luego inicia sesión.",
-        "login_fail": "No se pudo iniciar sesión. Revisa tu correo y contraseña (y confirma tu correo primero).",
-        "generic_err": "Algo salió mal. Inténtalo de nuevo.",
-        "per_week": "/ sem",
-        "abandon": "🚪 ABANDONAR LÍNEA DE TIEMPO",
-        "mute": "🔇 Silenciar Audio",
-        "play": "🔊 Reproducir Audio",
-        "narrator_down": "El narrador no está disponible ahora. Inténtalo de nuevo.",
-        "blocked": "Eso no se puede jugar aquí. Prueba otra dirección para tu historia.",
-        "crisis": "Parece que estás pasando por algo difícil. Importas. Si estás en peligro o piensas en hacerte daño, contacta ahora a los servicios de emergencia de tu país o a una línea de crisis.",
-        "chat_placeholder": "✍️ Describe tu acción o habla...",
-        "go_profile": "Abre la pestaña 'Perfil de Cuenta' para iniciar sesión o registrarte.",
-    },
-    "zh": {
-        "paywall_title": "🔒 您的免费次数已用完",
-        "paywall_login": "创建免费账户或登录以继续并解锁通行证。",
-        "paywall_pick": "选择一个通行证继续探索。",
-        "pass_btn": "激活",
-        "checkout_open": "👉 打开 Stripe 安全结账",
-        "checkout_fail": "无法开始结账，请重试。",
-        "checkout_done": "✅ 已收到付款！如果尚未看到通行证，请几秒后刷新（必要时重新登录）。",
-        "manage_sub": "💳 管理 / 取消订阅",
-        "portal_open": "打开账单门户",
-        "agree": "我已年满18岁，并同意服务条款和隐私政策",
-        "agree_warn": "请确认您已年满18岁并接受条款。",
-        "pw_short": "请使用有效邮箱和至少8位字符的密码。",
-        "signup_ok": "✅ 请查收邮件确认账户，然后登录。",
-        "login_fail": "登录失败。请检查邮箱和密码（并先确认邮箱）。",
-        "generic_err": "出错了，请重试。",
-        "per_week": "/ 周",
-        "abandon": "🚪 放弃时间线",
-        "mute": "🔇 静音音频",
-        "play": "🔊 播放音频",
-        "narrator_down": "叙述者暂时不可用，请重试。",
-        "blocked": "这里无法进行该内容。请换一个故事方向。",
-        "crisis": "听起来您可能正经历困难时刻。您很重要。如果您处于危险中或想伤害自己，请立即联系当地紧急电话或心理危机热线。",
-        "chat_placeholder": "✍️ 描述你的行动或说话...",
-        "go_profile": "请打开“账户个人资料”标签页登录或注册。",
-    },
+# English safety net. Every other language is read from localization.py through x().
+DEFAULT_TEXT = {
+    "paywall_title": "🔒 Your free actions are used up",
+    "paywall_subtitle": "Choose a pass to keep exploring.",
+    "paywall_login": "Create a free account or log in to continue and unlock a pass.",
+    "tier1_name": "Avatar Pass",
+    "tier1_desc": "Unlimited actions across every world, with a solid story memory.",
+    "tier2_name": "Spartan Pass",
+    "tier2_desc": "Everything in Avatar, plus a longer story memory for multi-hour adventures.",
+    "tier3_name": "Titan Pass",
+    "tier3_desc": "Everything in Spartan, with the longest story memory and early access to new features.",
+    "btn_activate": "Activate Pass",
+    "legal_compliance_link": "⚖️ Terms of Service & Privacy Policy",
+    "per_week": "/ wk",
+    "lbl_age_gate": "I am 18 or older and agree to the Terms of Service & Privacy Policy",
+    "btn_open_stripe": "👉 Open secure Stripe Checkout",
+    "msg_payment_success": "✅ Payment received! If you don't see your pass yet, refresh in a few seconds (log in again if needed).",
+    "btn_abandon_timeline": "🚪 ABANDON TIMELINE",
+    "btn_mute_audio": "🔇 Mute Audio",
+    "btn_play_audio": "🔊 Play Audio",
+    "lbl_audio_scape": "🎵 AMBIENT AUDIOSCAPE",
+    "agree_warn": "Please confirm you are 18+ and accept the terms.",
+    "pw_short": "Use a valid email and a password of at least 8 characters.",
+    "signup_ok": "✅ Check your email to confirm your account, then sign in.",
+    "login_fail": "Sign-in failed. Check your email and password (and confirm your email first).",
+    "generic_err": "Something went wrong. Please try again.",
+    "checkout_fail": "Couldn't start checkout. Please try again.",
+    "manage_sub": "💳 Manage / cancel subscription",
+    "portal_open": "Open billing portal",
+    "narrator_down": "The narrator is unavailable right now. Please try again.",
+    "blocked": "That request can't be played here. Try a different direction for your story.",
+    "crisis": "It sounds like you may be going through something hard. You matter. If you are in danger or thinking about harming yourself, please contact your local emergency number or a crisis line right now.",
+    "chat_placeholder": "✍️ Describe your action or speak...",
+    "go_profile": "Open the 'Account Profile' tab to sign in or sign up.",
+    "tab_community": "Community & AI",
+    "msg_no_worlds": "No player-built universes yet. Be the first to create one!",
+    "lbl_genre_prefix": "THEMATIC GENRE:",
+    "msg_coming_soon": "More realities are coming soon.",
+    "hdr_my_universes": "Your Universes",
+    "msg_no_my_worlds": "You haven't created any universes yet. Forge one in the 'Create a World' tab!",
+    "btn_start_timeline": "🎮 Start Timeline",
+    "btn_delete_world": "🗑️ Delete World",
+    "msg_fill_fields": "⚠️ Fill out all required fields to launch.",
+    "hdr_avatars_portal": "Community Avatars Portal",
+    "cap_avatars_portal": "Browse live identities forged across active world timelines.",
+    "lbl_avatar_pick": "Choose your visual identity archetype:",
+    "btn_lock_avatar": "✨ Lock Identity Profile",
+    "msg_avatar_signin": "🔒 Please sign in via the Account Profile tab first.",
+    "msg_avatar_premium": "🔒 A premium pass is required to change your identity card.",
+    "lbl_premium_active": "👑 Premium Pass Active",
+    "avatar_1": "Cybernetic Shinobi / Tactical Operator",
+    "avatar_2": "Arcane Runemaster / Dark Sorcerer",
+    "avatar_3": "Dreadnought Pilot / Space Marine",
+    "avatar_4": "Wasteland Scavenger / Nomad Raider",
+    "ph_world_name": "e.g., Sector 7, Neo-Tokyo",
+    "ph_char_name": "e.g., Kira Voss",
+    "ph_backstory": "e.g., A rogue corporate spy hiding a stolen data core",
+    "ph_allies": "e.g., Vanguard Coalition",
+    "ph_enemies": "e.g., Sector Insurgency",
+    "ph_lore": "e.g., Magic is outlawed and the sun never rises",
+    "lbl_wanderer": "Unknown Wanderer",
+    "btn_next_track": "🔀 Next Track",
+    "cap_audio_authorize": "🔊 Click play on the official deck to authorize stream",
+    "preset_s1_name": "Sector 7 Nomad",
+    "preset_s1_bio": "Grit, survival, and starship dogfights across an outlaw solar system.",
+    "preset_s2_name": "Chronos Station",
+    "preset_s2_bio": "A psychological thriller aboard a deep-space station stuck in a time anomaly.",
+    "preset_f1_name": "Vampire Nomad",
+    "preset_f1_bio": "Navigate exile, bloodlines, and dark covens in a gothic world of endless night.",
+    "preset_f2_name": "Ashelands Renegade",
+    "preset_f2_bio": "A tactical swords-and-sorcery survival gauntlet across a ruined kingdom.",
+    "preset_c1_name": "Neo-Tokyo Runner",
+    "preset_c1_bio": "High-stakes tech espionage, corporate warfare, and neon-lit street racing.",
+    "preset_c2_name": "Gridlock Underground",
+    "preset_c2_bio": "Hack deep mainframe grids and lead a digital rebellion against mega-corps.",
+    "preset_h1_name": "Asylum Phantoms",
+    "preset_h1_bio": "Escape an abandoned psychiatric hospital while tracking sanity meters.",
+    "preset_h2_name": "Cabin Isolation",
+    "preset_h2_bio": "Survive a night in a remote woodland estate stalked by masked cultists.",
+    "preset_r1_name": "Neon Heartbeats",
+    "preset_r1_bio": "A high-stakes corporate romance tangled inside a Tokyo cyber espionage ring.",
+    "preset_r2_name": "Starlight Station",
+    "preset_r2_bio": "Find love and connection at the absolute edge of an expanding galaxy.",
 }
 
 
@@ -189,14 +176,15 @@ def lang():
     return ss.get("app_language") or "English"
 
 
-def t(key, default=""):
-    return LOCALIZATION_VAULT.get(lang(), {}).get(key) or LOCALIZATION_VAULT["English"].get(key) or default
-
 def x(key):
+    """The single text lookup: active language, then English vault, then built-in English default."""
     return (LOCALIZATION_VAULT.get(lang(), {}).get(key)
-            or EXTRA.get(LANG_CODE.get(lang(), "en"), {}).get(key)
-            or EXTRA["en"].get(key)
-            or LOCALIZATION_VAULT["English"].get(key, ""))
+            or LOCALIZATION_VAULT["English"].get(key)
+            or DEFAULT_TEXT.get(key, ""))
+
+
+def avatar_label(avatar_id):
+    return f"{AVATAR_EMOJI[avatar_id]} {x(avatar_id)}"
 
 
 def new_engine():
@@ -222,7 +210,7 @@ if ss.app_language not in LOCALIZATION_VAULT:
 if ss.app_language is None:
     st.markdown("# ⚔️ HAYMAKER INDUSTRY")
     choice = st.selectbox("🌐 Language / Idioma / 语言 / भाषा / 言語 / 언어 / اللغة", list(LOCALIZATION_VAULT), key="lang_picker")
-    if st.button("🚀 CONTINUE", use_container_width=True):
+    if st.button("🚀 CONTINUE / CONTINUAR / 继续 / जारी रखें / 続ける / 계속", use_container_width=True):
         ss.app_language = choice
         st.rerun()
     st.stop()
@@ -326,6 +314,7 @@ def billing_button(key):
             print("portal error:", e)
             st.error(x("generic_err"))
 
+
 def render_legal():
     with st.expander(x("legal_compliance_link")):
         st.markdown(f"### {x('legal_header')}")
@@ -333,14 +322,15 @@ def render_legal():
             st.markdown(f"**{x('legal_sec%d_title' % n)}**")
             st.markdown(x("legal_sec%d_text" % n).replace("$", "\\$"))  # stop "$5 ... $10" rendering as math
 
+
 def render_auth_form(prefix):
-    mode = st.radio("mode", [t("btn_signin"), t("btn_signup")], horizontal=True,
+    mode = st.radio("mode", [x("btn_signin"), x("btn_signup")], horizontal=True,
                     key=f"{prefix}_mode", label_visibility="collapsed")
-    email = st.text_input(t("lbl_email"), key=f"{prefix}_email", max_chars=254).strip()
-    password = st.text_input(t("lbl_pass"), type="password", key=f"{prefix}_pw", max_chars=128)
-    if mode == t("btn_signup"):
+    email = st.text_input(x("lbl_email"), key=f"{prefix}_email", max_chars=254).strip()
+    password = st.text_input(x("lbl_pass"), type="password", key=f"{prefix}_pw", max_chars=128)
+    if mode == x("btn_signup"):
         agreed = st.checkbox(x("lbl_age_gate"), key=f"{prefix}_agree")
-        if st.button(t("btn_register_submit"), key=f"{prefix}_signup", use_container_width=True):
+        if st.button(x("btn_register_submit"), key=f"{prefix}_signup", use_container_width=True):
             if not agreed:
                 st.warning(x("agree_warn"))
             elif "@" not in email or len(password) < 8:
@@ -353,7 +343,7 @@ def render_auth_form(prefix):
                     print("signup error:", e)
                     st.error(x("generic_err"))
     else:
-        if st.button(t("btn_login_submit"), key=f"{prefix}_login", use_container_width=True):
+        if st.button(x("btn_login_submit"), key=f"{prefix}_login", use_container_width=True):
             try:
                 res = sb.auth.sign_in_with_password({"email": email, "password": password})
                 ss.user = res.user
@@ -363,18 +353,15 @@ def render_auth_form(prefix):
                 st.error(x("login_fail"))
                 return
             st.rerun()
-        with st.expander(t("forgot_pass_link")):
-            st.write(t("forgot_pass_desc"))
-            rec = st.text_input(t("lbl_email"), key=f"{prefix}_rec", max_chars=254).strip()
-            if st.button(t("btn_send_recovery"), key=f"{prefix}_recbtn", use_container_width=True) and "@" in rec:
+        with st.expander(x("forgot_pass_link")):
+            st.write(x("forgot_pass_desc"))
+            rec = st.text_input(x("lbl_email"), key=f"{prefix}_rec", max_chars=254).strip()
+            if st.button(x("btn_send_recovery"), key=f"{prefix}_recbtn", use_container_width=True) and "@" in rec:
                 try:
                     sb.auth.reset_password_for_email(rec, {"redirect_to": APP_URL})
                 except Exception as e:
                     print("reset error:", e)
-                st.success(t("msg_recovery_sent"))  # same message either way (no account probing)
-
-
-dTIER_ORDER = [("avatar", "tier1", "👑"), ("spartan", "tier2", "⚔️"), ("titan", "tier3", "🪐")]
+                st.success(x("msg_recovery_sent"))  # same message either way (no account probing)
 
 
 def render_paywall():
@@ -391,14 +378,13 @@ def render_paywall():
                     f'<div style="background:rgba(16,12,31,.5);padding:20px;border-radius:12px;border:1px solid #2e234e;'
                     f'text-align:center;min-height:200px;"><h4 style="color:{tier["color"]};margin:0;">'
                     f'{emoji} {esc(x(prefix + "_name").upper())}</h4>'
-                    f'<h2 style="color:#fff;margin:10px 0;">${tier["cents"] / 100:.2f} '
+                    f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] / 100:.2f} '
                     f'<span style="font-size:14px;color:#94a3b8;">{esc(x("per_week"))}</span></h2>'
                     f'<p style="color:#94a3b8;font-size:12px;">{esc(x(prefix + "_desc"))}</p></div>',
                     unsafe_allow_html=True)
                 if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
                     go_checkout(key)
     render_legal()
-
 
 
 # ---------------------------------------------------------------- game helpers
@@ -521,7 +507,7 @@ char = engine["player_character"]
 
 # ---------------------------------------------------------------- sidebar
 with st.sidebar:
-    st.title(t("status_control"))
+    st.title(x("status_control"))
     st.divider()
     if engine["world_name"]:
         if st.button(x("btn_abandon_timeline"), key="abandon_btn", use_container_width=True):
@@ -531,15 +517,15 @@ with st.sidebar:
         st.divider()
 
     if ss.is_premium:
-        st.success(t("premium_pilot").format(ss.user.email))
+        st.success(x("premium_pilot").format(ss.user.email))
     elif ss.guest_tokens > 0:
-        st.warning(t("trial_active").format(ss.guest_tokens))
+        st.warning(x("trial_active").format(ss.guest_tokens))
     else:
-        st.error(t("pool_depleted"))
+        st.error(x("pool_depleted"))
     st.divider()
 
     frame = "🎭" if engine["world_name"] else "👤"
-    shown = t("dreamer_lbl").format(esc(char["name"] or "Wanderer"))
+    shown = x("dreamer_lbl").format(esc(char["name"] or x("lbl_wanderer")))
     st.markdown(f'<div class="sidebar-avatar-frame">{frame}</div>', unsafe_allow_html=True)
     st.markdown(f"<p style='text-align:center;font-size:16px;margin:0;color:white;'>"
                 f"<span style='font-weight:800;color:#a78bfa;'>{shown}</span></p>", unsafe_allow_html=True)
@@ -550,15 +536,15 @@ with st.sidebar:
     with st.expander(x("lbl_audio_scape"), expanded=True):
         audio = ss.audio_state
         if not engine["world_name"]:
-            st.caption(t("music_prompt"))
+            st.caption(x("music_prompt"))
         else:
             c1, c2 = st.columns(2)
             with c1:
-                if st.button(x("btn_mute") if audio["playing"] else x("btn_play_audio"), key="audio_toggle", use_container_width=True):
+                if st.button(x("btn_mute_audio") if audio["playing"] else x("btn_play_audio"), key="audio_toggle", use_container_width=True):
                     audio["playing"] = not audio["playing"]
                     st.rerun()
             with c2:
-                if st.button(AUDIO_NEXT.get(lang(), "🔀 Next Track"), key="audio_next", use_container_width=True):
+                if st.button(x("btn_next_track"), key="audio_next", use_container_width=True):
                     tracks = [p for p in PLAYLIST if os.path.exists(p)]
                     if tracks:
                         i = tracks.index(audio["track_url"]) + 1 if audio["track_url"] in tracks else 0
@@ -567,24 +553,24 @@ with st.sidebar:
                     st.rerun()
             if audio["playing"] and os.path.exists(audio["track_url"]):
                 st.audio(audio["track_url"], format="audio/mp3", loop=True)
-                st.caption(AUDIO_CAPTION.get(lang(), "🔊 Click play on the official deck to authorize stream"))
+                st.caption(x("cap_audio_authorize"))
 
     if ss.get("user"):
-        if st.button(t("btn_logout_sidebar"), type="primary", key="logout_sidebar", use_container_width=True):
+        if st.button(x("btn_logout_sidebar"), type="primary", key="logout_sidebar", use_container_width=True):
             do_logout()
     else:
-        st.info(t("unlimited_actions"))
+        st.info(x("unlimited_actions"))
         st.caption(x("go_profile"))
     st.divider()
 
-    with st.expander(t("settings_control").upper()):
-        st.subheader(t("settings_sub_status_title"))
+    with st.expander(x("settings_control").upper()):
+        st.subheader(x("settings_sub_status_title"))
         if ss.is_premium:
-            st.success("👑 Premium Pass Active")
+            st.success(x("lbl_premium_active"))
         else:
-            st.warning(t("settings_status_free"))
+            st.warning(x("settings_status_free"))
         billing_button("sidebar")
-        st.caption(t("settings_footer"))
+        st.caption(x("settings_footer"))
 
 # ---------------------------------------------------------------- paywall
 if st.query_params.get("checkout") == "success":
@@ -596,11 +582,13 @@ if not (ss.is_premium or ss.guest_tokens > 0):
 
 # ---------------------------------------------------------------- hub
 def tab_explore():
-    labels = t("sub_genres_lbls") or ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"]
-    st.markdown(t("sub_genre_title"))
-    tabs = st.tabs(["Community & AI"] + list(labels))
+    defaults = ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"]
+    got = list(x("sub_genres_lbls") or defaults)
+    labels = [got[i] if i < len(got) else defaults[i] for i in range(6)]
+    st.markdown(x("sub_genre_title"))
+    tabs = st.tabs([x("tab_community")] + labels)
     with tabs[0]:
-        st.markdown(f"### {t('community_timeline_title')}")
+        st.markdown(f"### {x('community_timeline_title')}")
         try:
             rows = (sb.table("worlds").select("id,world_name,world_genre")
                     .order("created_at", desc=True).limit(50).execute().data or [])
@@ -609,31 +597,32 @@ def tab_explore():
             rows = []
             st.error(x("generic_err"))
         if not rows:
-            st.info("No player-built universes yet. Be the first to create one!")
+            st.info(x("msg_no_worlds"))
         cols = st.columns(2)
         for i, w in enumerate(rows):
             with cols[i % 2]:
-                card("🪐", w["world_name"], "THEMATIC GENRE: " + str(w["world_genre"]))
-                if st.button(t("btn_join_world"), key=f"pub_{w['id']}", use_container_width=True):
-                    enter_world(w["id"], w["world_name"], w["world_genre"], "Unknown Wanderer",
+                card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + str(w["world_genre"]))
+                if st.button(x("btn_join_world"), key=f"pub_{w['id']}", use_container_width=True):
+                    enter_world(w["id"], w["world_name"], w["world_genre"], x("lbl_wanderer"),
                                 "A traveler dropped into an unfamiliar alternate reality.")
-    for tab, (genre, icon, items) in zip(tabs[1:6], PRESETS):
+    for idx, (tab, (genre, icon, items)) in enumerate(zip(tabs[1:6], PRESETS)):
         with tab:
-            st.markdown(f"### {genre}")
+            st.markdown(f"### {labels[idx]}")
             cols = st.columns(2)
-            for i, (pid, name, bio, cname, story) in enumerate(items):
+            for i, (pid, cname, story) in enumerate(items):
                 with cols[i % 2]:
-                    card(icon, name, bio)
-                    if st.button(t("btn_launch_scenario"), key=f"preset_{pid}", use_container_width=True):
+                    name = x(f"preset_{pid}_name")
+                    card(icon, name, x(f"preset_{pid}_bio"))
+                    if st.button(x("btn_launch_scenario"), key=f"preset_{pid}", use_container_width=True):
                         enter_world(f"pre_{pid}", name, genre, cname, story)
     with tabs[6]:
-        st.info("More realities are coming soon.")
+        st.info(x("msg_coming_soon"))
 
 
 def tab_mine():
-    st.markdown("### Your Universes")
+    st.markdown("### " + x("hdr_my_universes"))
     if not ss.get("user"):
-        st.warning(t("signin_prompt"))
+        st.warning(x("signin_prompt"))
         return
     try:
         rows = (sb.table("worlds").select("id,world_name,world_genre").eq("creator_id", ss.user.id)
@@ -643,16 +632,16 @@ def tab_mine():
         st.error(x("generic_err"))
         return
     if not rows:
-        st.info("You haven't created any universes yet. Forge one in the 'Create a World' tab!")
+        st.info(x("msg_no_my_worlds"))
     for w in rows:
-        card("🪐", w["world_name"], "THEMATIC GENRE: " + str(w["world_genre"]))
+        card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + str(w["world_genre"]))
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("🎮 Start Timeline", key=f"resume_{w['id']}", use_container_width=True):
-                enter_world(w["id"], w["world_name"], w["world_genre"], "Unknown Wanderer",
+            if st.button(x("btn_start_timeline"), key=f"resume_{w['id']}", use_container_width=True):
+                enter_world(w["id"], w["world_name"], w["world_genre"], x("lbl_wanderer"),
                             "A traveler stepping back into their alternate reality.")
         with c2:
-            if st.button("🗑️ Delete World", key=f"purge_{w['id']}", type="primary", use_container_width=True):
+            if st.button(x("btn_delete_world"), key=f"purge_{w['id']}", type="primary", use_container_width=True):
                 try:
                     sb.table("worlds").delete().eq("id", w["id"]).eq("creator_id", ss.user.id).execute()
                 except Exception as e:
@@ -664,28 +653,28 @@ def tab_mine():
 
 
 def tab_create():
-    st.markdown(t("form_title"))
-    st.write(t("form_subtitle"))
+    st.markdown(x("form_title"))
+    st.write(x("form_subtitle"))
     left, right = st.columns(2)
     with left:
-        st.markdown(t("lbl_celestial"))
-        w_name = st.text_input(t("lbl_name"), placeholder="e.g., Sector 7, Neo-Tokyo", max_chars=60)
-        w_genre = st.selectbox(t("lbl_genre"), t("genres"))
-        gravity = st.slider(t("lbl_gravity"), 0.1, 5.0, 1.0, 0.1)
-        atmos_opts = t("atmosphere_options")
-        atmosphere = st.select_slider(t("lbl_atmosphere"), options=atmos_opts, value=atmos_opts[2])
+        st.markdown(x("lbl_celestial"))
+        w_name = st.text_input(x("lbl_name"), placeholder=x("ph_world_name"), max_chars=60)
+        w_genre = st.selectbox(x("lbl_genre"), x("genres"))
+        gravity = st.slider(x("lbl_gravity"), 0.1, 5.0, 1.0, 0.1)
+        atmos_opts = x("atmosphere_options")
+        atmosphere = st.select_slider(x("lbl_atmosphere"), options=atmos_opts, value=atmos_opts[2])
     with right:
-        st.markdown(t("lbl_identity"))
-        c_name = st.text_input(t("lbl_char_name"), max_chars=40)
-        c_backstory = st.text_area(t("lbl_backstory"), max_chars=800)
-    st.markdown(t("lbl_factions"))
-    allies = st.text_input(t("lbl_allies"), placeholder="e.g., Vanguard Coalition", max_chars=60)
-    enemies = st.text_input(t("lbl_enemies"), placeholder="e.g., Sector Insurgency", max_chars=60)
-    lore = st.text_area(t("lbl_directives"), placeholder="Inject universe rules here...", height=80, max_chars=800)
+        st.markdown(x("lbl_identity"))
+        c_name = st.text_input(x("lbl_char_name"), placeholder=x("ph_char_name"), max_chars=40)
+        c_backstory = st.text_area(x("lbl_backstory"), placeholder=x("ph_backstory"), max_chars=800)
+    st.markdown(x("lbl_factions"))
+    allies = st.text_input(x("lbl_allies"), placeholder=x("ph_allies"), max_chars=60)
+    enemies = st.text_input(x("lbl_enemies"), placeholder=x("ph_enemies"), max_chars=60)
+    lore = st.text_area(x("lbl_directives"), placeholder=x("ph_lore"), height=80, max_chars=800)
     st.divider()
-    if st.button(t("btn_deploy"), use_container_width=True):
+    if st.button(x("btn_deploy"), use_container_width=True):
         if not all(v.strip() for v in (w_name, c_name, allies, enemies)):
-            st.warning("⚠️ Fill out all required fields to launch.")
+            st.warning(x("msg_fill_fields"))
             return
         if ss.get("user"):
             try:
@@ -701,27 +690,28 @@ def tab_create():
 
 
 def tab_avatars():
-    st.markdown("### Community Avatars Portal")
-    st.caption("Browse live identities forged across active world timelines.")
+    st.markdown("### " + x("hdr_avatars_portal"))
+    st.caption(x("cap_avatars_portal"))
     st.divider()
-    pick = st.selectbox("Choose your visual identity archetype:", list(AVATARS), key="avatar_pick")
-    st.image(AVATARS[pick], caption=pick, width=200)
-    if st.button("✨ Lock Identity Profile", use_container_width=True, key="avatar_lock"):
+    pick = st.selectbox(x("lbl_avatar_pick"), [a[0] for a in AVATAR_OPTIONS],
+                        format_func=avatar_label, key="avatar_pick")
+    st.image(AVATAR_URLS[pick], caption=avatar_label(pick), width=200)
+    if st.button(x("btn_lock_avatar"), use_container_width=True, key="avatar_lock"):
         if not ss.get("user"):
-            st.error("🔒 Please sign in via the Account Profile tab first.")
+            st.error(x("msg_avatar_signin"))
         elif not ss.is_premium:
-            st.error("🔒 A premium pass is required to change your identity card.")
+            st.error(x("msg_avatar_premium"))
         else:
             try:
-                sb.table("profiles").update({"avatar_url": AVATARS[pick]}).eq("id", ss.user.id).execute()
+                sb.table("profiles").update({"avatar_url": AVATAR_URLS[pick]}).eq("id", ss.user.id).execute()
                 st.rerun()
             except Exception as e:
                 print("avatar error:", e)
                 st.error(x("generic_err"))
     st.divider()
-    st.markdown(t("active_records_title"))
+    st.markdown(x("active_records_title"))
     if not ss.get("user"):
-        st.info(t("signin_prompt"))
+        st.info(x("signin_prompt"))
         return
     try:
         mine = sb.table("profiles").select("username,avatar_url").eq("id", ss.user.id).single().execute().data
@@ -731,7 +721,7 @@ def tab_avatars():
         st.error(x("generic_err"))
         return
     if mine and mine.get("avatar_url"):
-        st.markdown(t("your_identity_title"))
+        st.markdown(x("your_identity_title"))
         a, b = st.columns(2)
         with a:
             st.image(mine["avatar_url"], use_container_width=True)
@@ -740,9 +730,9 @@ def tab_avatars():
         st.divider()
     others = [o for o in others if str(o.get("avatar_url", "")).startswith("https://")]
     if not others:
-        st.info(t("empty_ledger"))
+        st.info(x("empty_ledger"))
         return
-    st.markdown(t("allied_dreamers_title"))
+    st.markdown(x("allied_dreamers_title"))
     cols = st.columns(3)
     for i, o in enumerate(others):
         with cols[i % 3]:
@@ -751,13 +741,13 @@ def tab_avatars():
 
 
 def tab_profile():
-    st.markdown(t("auth_title"))
-    st.write(t("auth_subtitle"))
+    st.markdown(x("auth_title"))
+    st.write(x("auth_subtitle"))
     st.divider()
     if ss.get("user"):
-        st.success(f"{t('profile_sync_lbl')} `{ss.user.email}`")
+        st.success(f"{x('profile_sync_lbl')} `{ss.user.email}`")
         billing_button("profile")
-        if st.button(t("btn_logout_main"), type="primary", key="logout_main", use_container_width=True):
+        if st.button(x("btn_logout_main"), type="primary", key="logout_main", use_container_width=True):
             do_logout()
     else:
         render_auth_form("profile")
@@ -765,9 +755,9 @@ def tab_profile():
 
 
 def render_hub():
-    st.title(t("hub_title"))
-    st.write(t("hub_subtitle"))
-    tabs = st.tabs([t("tab_explore"), t("tab_my_creations"), t("tab_create"), t("tab_avatars"), t("tab_profile")])
+    st.title(x("hub_title"))
+    st.write(x("hub_subtitle"))
+    tabs = st.tabs([x("tab_explore"), x("tab_my_creations"), x("tab_create"), x("tab_avatars"), x("tab_profile")])
     for tab, fn in zip(tabs, (tab_explore, tab_mine, tab_create, tab_avatars, tab_profile)):
         with tab:
             fn()
