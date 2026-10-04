@@ -308,7 +308,7 @@ def create_checkout_url(tier_key):
 
 def go_checkout(tier_key):
     try:
-        st.link_button(x("checkout_open"), create_checkout_url(tier_key))
+        st.link_button(x("btn_open_stripe"), create_checkout_url(tier_key))
     except Exception as e:
         print("checkout error:", e)
         st.error(x("checkout_fail"))
@@ -339,7 +339,7 @@ def render_auth_form(prefix):
     email = st.text_input(t("lbl_email"), key=f"{prefix}_email", max_chars=254).strip()
     password = st.text_input(t("lbl_pass"), type="password", key=f"{prefix}_pw", max_chars=128)
     if mode == t("btn_signup"):
-        agreed = st.checkbox(x("agree"), key=f"{prefix}_agree")
+        agreed = st.checkbox(x("lbl_age_gate"), key=f"{prefix}_agree")
         if st.button(t("btn_register_submit"), key=f"{prefix}_signup", use_container_width=True):
             if not agreed:
                 st.warning(x("agree_warn"))
@@ -524,7 +524,7 @@ with st.sidebar:
     st.title(t("status_control"))
     st.divider()
     if engine["world_name"]:
-        if st.button(x("abandon"), key="abandon_btn", use_container_width=True):
+        if st.button(x("btn_abandon_timeline"), key="abandon_btn", use_container_width=True):
             ss.world_engine = new_engine()
             ss.world_cover_url = None
             st.rerun()
@@ -547,14 +547,14 @@ with st.sidebar:
         st.caption(f"❤️ {char['health']}/100 · 🎒 {len(char['inventory'])}")
     st.divider()
 
-    with st.expander("🎵 AMBIENT AUDIOSCAPE", expanded=True):
+    with st.expander(x("lbl_audio_scape"), expanded=True):
         audio = ss.audio_state
         if not engine["world_name"]:
             st.caption(t("music_prompt"))
         else:
             c1, c2 = st.columns(2)
             with c1:
-                if st.button(x("mute") if audio["playing"] else x("play"), key="audio_toggle", use_container_width=True):
+                if st.button(x("btn_mute") if audio["playing"] else x("btn_play_audio"), key="audio_toggle", use_container_width=True):
                     audio["playing"] = not audio["playing"]
                     st.rerun()
             with c2:
@@ -588,7 +588,7 @@ with st.sidebar:
 
 # ---------------------------------------------------------------- paywall
 if st.query_params.get("checkout") == "success":
-    st.success(x("checkout_done"))
+    st.success(x("msg_payment_success"))
 if not (ss.is_premium or ss.guest_tokens > 0):
     render_paywall()
     st.stop()
