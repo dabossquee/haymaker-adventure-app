@@ -42,9 +42,6 @@ _APP_HOST = APP_URL.split("//", 1)[-1].split("/")[0].lower()
 APP_URL_OK = _APP_HOST not in ("", "onrender.com", "www.onrender.com", "render.com", "www.render.com")
 REPLICATE_TOKEN = os.getenv("REPLICATE_API_TOKEN")
 
-print("supabase host:", SUPABASE_URL.split("//")[-1], "| key role:", key_role(SUPABASE_KEY))
-
-
 ss = st.session_state
 
 FREE_ACTIONS = 5  # free story actions before the paywall
