@@ -42,6 +42,9 @@ _APP_HOST = APP_URL.split("//", 1)[-1].split("/")[0].lower()
 APP_URL_OK = _APP_HOST not in ("", "onrender.com", "www.onrender.com", "render.com", "www.render.com")
 REPLICATE_TOKEN = os.getenv("REPLICATE_API_TOKEN")
 
+print("supabase host:", SUPABASE_URL.split("//")[-1], "| key role:", key_role(SUPABASE_KEY))
+
+
 ss = st.session_state
 
 FREE_ACTIONS = 5  # free story actions before the paywall
@@ -497,8 +500,11 @@ def render_auth_form(prefix):
                                      "options": {"data": {"trial_used": ss.get("guest_tokens", FREE_ACTIONS) <= 0}}})
                     st.success(x("signup_ok"))
                 except Exception as e:
-                    print("signup error:", e)
-                    st.error(x("generic_err"))
+                    import traceback
+                    print("signup error:", type(e).__name__, repr(e), getattr(e, "status", None), getattr(e, "code", None))
+                    traceback.print_exc()
+                    st.error(f"{x('generic_err')} [{type(e).__name__}]")
+
     else:
         if st.button(x("btn_login_submit"), key=f"{prefix}_login", use_container_width=True):
             try:
