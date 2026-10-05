@@ -4,6 +4,7 @@ Needs two sibling files you create by moving your own content into them (see not
   localization.py -> LOCALIZATION_VAULT (your three vault blocks, unchanged)
   styles.py       -> GLOBAL_CSS and CHAT_CSS (your two <style> blocks, rules only)
 """
+import base64
 import html
 import json
 import os
@@ -34,12 +35,17 @@ STRIPE_SECRET = os.getenv("STRIPE_SECRET_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")  # anon key ONLY, never the service-role key
 ADMIN_EMAIL = (os.getenv("ADMIN_EMAIL") or "").strip().lower()
-APP_URL = (os.getenv("APP_URL") or "http://localhost:8501").rstrip("/")
+# Public address of THIS app. Set APP_URL in Render. If it is missing, Render's own RENDER_EXTERNAL_URL is used.
+# Note: https://onrender.com is Render's homepage, not your app. Your app looks like https://<service-name>.onrender.com
+APP_URL = (os.getenv("APP_URL") or os.getenv("RENDER_EXTERNAL_URL") or "http://localhost:8501").strip().rstrip("/")
+_APP_HOST = APP_URL.split("//", 1)[-1].split("/")[0].lower()
+APP_URL_OK = _APP_HOST not in ("", "onrender.com", "www.onrender.com", "render.com", "www.render.com")
 REPLICATE_TOKEN = os.getenv("REPLICATE_API_TOKEN")
 
 ss = st.session_state
 
 FREE_ACTIONS = 5  # free story actions before the paywall
+ENABLE_PASSWORD_RESET = False  # hidden at launch: the reset link has no page to set a new password yet
 LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match localization.py)
     "en": "English", "es": "Español (Spanish)", "zh": "简体中文 (Mandarin)", "ru": "Русский (Russian)",
     "fr": "Français (French)", "ar": "العربية (Arabic)", "hi": "हिन्दी (Hindi)", "ja": "日本語 (Japanese)",
@@ -278,9 +284,30 @@ if lang().startswith("العربية"):
     st.markdown("<style>.stApp{direction:rtl;}</style>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------- clients
+def key_role(key):
+    """Which kind of Supabase key this is: 'anon' (public) or 'service_role' (secret). '' if unknown."""
+    if key.startswith("sb_secret_"):
+        return "service_role"
+    if key.startswith("sb_publishable_"):
+        return "anon"
+    try:
+        payload = key.split(".")[1]
+        payload += "=" * (-len(payload) % 4)
+        return str(json.loads(base64.urlsafe_b64decode(payload)).get("role", ""))
+    except Exception:
+        return ""
+
+
 if not (OPENAI_KEY and SUPABASE_URL and SUPABASE_KEY):
     st.error("Server configuration is incomplete.")
     st.stop()
+if key_role(SUPABASE_KEY) == "service_role":  # the secret key must never run inside the web app
+    print("CONFIG ERROR: SUPABASE_KEY is the service-role (secret) key. Use the anon/public key here.")
+    st.error("Server configuration error.")
+    st.stop()
+if not APP_URL_OK and not ss.get("_url_warned"):
+    ss["_url_warned"] = True
+    print("CONFIG ERROR: APP_URL points at Render's homepage. Set APP_URL to https://<your-service>.onrender.com")
 
 openai_client = OpenAI(api_key=OPENAI_KEY)
 sb = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -371,7 +398,7 @@ def refresh_profile():
             queue_cookie("hm_rt", None)
             st.rerun()
     ss.is_premium = bool(row and row.get("is_premium"))
-    ss.guest_tokens = int(row["tokens_remaining"]) if row else 0
+    ss.guest_tokens = min(int(row["tokens_remaining"]), FREE_ACTIONS) if row else 0
     ss.stripe_customer_id = row.get("stripe_customer_id") if row else None
     ss.tier = row.get("tier") if row else None
     if ADMIN_EMAIL and str(ss.user.email).strip().lower() == ADMIN_EMAIL:
@@ -395,6 +422,8 @@ def do_logout():
 
 
 def create_checkout_url(tier_key):
+    if not APP_URL_OK:
+        raise RuntimeError("APP_URL is not the live app address")
     tier = TIERS[tier_key]
     params = dict(
         mode="subscription",
@@ -433,6 +462,8 @@ def billing_button(key):
         return
     if st.button(x("manage_sub"), key=f"portal_{key}", use_container_width=True):
         try:
+            if not APP_URL_OK:
+                raise RuntimeError("APP_URL is not the live app address")
             portal = stripe.billing_portal.Session.create(customer=cid, return_url=APP_URL)
             st.link_button(x("portal_open"), portal.url)
         except Exception as e:
@@ -462,7 +493,8 @@ def render_auth_form(prefix):
                 st.warning(x("pw_short"))
             else:
                 try:
-                    sb.auth.sign_up({"email": email, "password": password})
+                    sb.auth.sign_up({"email": email, "password": password,
+                                     "options": {"data": {"trial_used": ss.get("guest_tokens", FREE_ACTIONS) <= 0}}})
                     st.success(x("signup_ok"))
                 except Exception as e:
                     print("signup error:", e)
@@ -477,37 +509,46 @@ def render_auth_form(prefix):
                 st.error(x("login_fail"))
                 return
             st.rerun()
-        with st.expander(x("forgot_pass_link")):
-            st.write(x("forgot_pass_desc"))
-            rec = st.text_input(x("lbl_email"), key=f"{prefix}_rec", max_chars=254).strip()
-            if st.button(x("btn_send_recovery"), key=f"{prefix}_recbtn", use_container_width=True) and "@" in rec:
-                try:
-                    sb.auth.reset_password_for_email(rec, {"redirect_to": APP_URL})
-                except Exception as e:
-                    print("reset error:", e)
-                st.success(x("msg_recovery_sent"))  # same message either way (no account probing)
+        if ENABLE_PASSWORD_RESET:
+            with st.expander(x("forgot_pass_link")):
+                st.write(x("forgot_pass_desc"))
+                rec = st.text_input(x("lbl_email"), key=f"{prefix}_rec", max_chars=254).strip()
+                if st.button(x("btn_send_recovery"), key=f"{prefix}_recbtn", use_container_width=True) and "@" in rec:
+                    try:
+                        sb.auth.reset_password_for_email(rec, {"redirect_to": APP_URL})
+                    except Exception as e:
+                        print("reset error:", e)
+                    st.success(x("msg_recovery_sent"))  # same message either way (no account probing)
 
 
 def render_paywall():
     st.title(x("paywall_title"))
-    if not ss.get("user"):
-        st.write(x("paywall_login"))
-        render_auth_form("paywall")
-    else:
-        st.write(x("paywall_subtitle"))
-        for col, (key, prefix, emoji) in zip(st.columns(3), TIER_ORDER):
-            tier = TIERS[key]
-            with col:
-                st.markdown(
-                    f'<div style="background:rgba(16,12,31,.5);padding:20px;border-radius:12px;border:1px solid #2e234e;'
-                    f'text-align:center;min-height:200px;"><h4 style="color:{tier["color"]};margin:0;">'
-                    f'{emoji} {esc(x(prefix + "_name").upper())}</h4>'
-                    f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] / 100:.2f} '
-                    f'<span style="font-size:14px;color:#94a3b8;">{esc(x("per_week"))}</span></h2>'
-                    f'<p style="color:#94a3b8;font-size:12px;">{esc(x(prefix + "_desc"))}</p></div>',
-                    unsafe_allow_html=True)
-                if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
+    st.write(x("paywall_subtitle"))
+    logged_in = bool(ss.get("user"))
+    if logged_in:
+        pending = ss.pop("pending_tier", None)  # a pass they picked before creating the account
+        if pending in TIERS:
+            go_checkout(pending)
+    for col, (key, prefix, emoji) in zip(st.columns(3), TIER_ORDER):
+        tier = TIERS[key]
+        with col:
+            st.markdown(
+                f'<div style="background:rgba(16,12,31,.5);padding:20px;border-radius:12px;border:1px solid #2e234e;'
+                f'text-align:center;min-height:200px;"><h4 style="color:{tier["color"]};margin:0;">'
+                f'{emoji} {esc(x(prefix + "_name").upper())}</h4>'
+                f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] / 100:.2f} '
+                f'<span style="font-size:14px;color:#94a3b8;">{esc(x("per_week"))}</span></h2>'
+                f'<p style="color:#94a3b8;font-size:12px;">{esc(x(prefix + "_desc"))}</p></div>',
+                unsafe_allow_html=True)
+            if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
+                if logged_in:
                     go_checkout(key)
+                else:
+                    ss.pending_tier = key
+                    ss.show_auth = True
+    if not logged_in and ss.get("show_auth"):
+        st.info(x("paywall_login"))
+        render_auth_form("paywall")
     render_legal()
 
 
@@ -739,6 +780,36 @@ if not (ss.is_premium or ss.guest_tokens > 0):
 
 
 # ---------------------------------------------------------------- hub
+def clean_config(cfg):
+    """A creator's saved world settings, made safe before they reach the narrator prompt."""
+    if not isinstance(cfg, dict):
+        return None
+    try:
+        gravity = max(0.1, min(5.0, float(cfg.get("gravity", 1.0))))
+    except (TypeError, ValueError):
+        gravity = 1.0
+
+    def txt(key, limit):
+        return str(cfg.get(key) or "").strip()[:limit]
+
+    return {"gravity": gravity, "atmosphere": txt("atmosphere", 60) or "Breathable Baseline",
+            "allies": txt("allies", 60) or "Unknown", "enemies": txt("enemies", 60) or "Unknown",
+            "lore": txt("lore", 800) or "None"}
+
+
+def fetch_worlds(creator_id=None):
+    """Worlds newest first (only one creator's when creator_id is given). None means the lookup failed."""
+    for cols in ("id,world_name,world_genre,config", "id,world_name,world_genre"):
+        try:
+            q = sb.table("worlds").select(cols).order("created_at", desc=True).limit(50)
+            if creator_id:
+                q = q.eq("creator_id", creator_id)
+            return q.execute().data or []
+        except Exception as e:
+            print("worlds error:", e)
+    return None
+
+
 def tab_explore():
     defaults = ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"]
     got = list(x("sub_genres_lbls") or defaults)
@@ -747,13 +818,10 @@ def tab_explore():
     tabs = st.tabs([x("tab_community")] + labels)
     with tabs[0]:
         st.markdown(f"### {x('community_timeline_title')}")
-        try:
-            rows = (sb.table("worlds").select("id,world_name,world_genre")
-                    .order("created_at", desc=True).limit(50).execute().data or [])
-        except Exception as e:
-            print("worlds error:", e)
-            rows = []
+        rows = fetch_worlds()
+        if rows is None:
             st.error(x("generic_err"))
+            rows = []
         if not rows:
             st.info(x("msg_no_worlds"))
         cols = st.columns(2)
@@ -761,8 +829,10 @@ def tab_explore():
             with cols[i % 2]:
                 card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + str(w["world_genre"]))
                 if st.button(x("btn_join_world"), key=f"pub_{w['id']}", use_container_width=True):
+                    # the creator's world rules (gravity, atmosphere, factions, lore) travel with the world
                     enter_world(w["id"], w["world_name"], w["world_genre"], x("lbl_wanderer"),
-                                "A traveler dropped into an unfamiliar alternate reality.")
+                                "A traveler dropped into an unfamiliar alternate reality.",
+                                clean_config(w.get("config")))
     for idx, (tab, (genre, icon, items)) in enumerate(zip(tabs[1:6], PRESETS)):
         with tab:
             st.markdown(f"### {labels[idx]}")
@@ -782,11 +852,8 @@ def tab_mine():
     if not ss.get("user"):
         st.warning(x("signin_prompt"))
         return
-    try:
-        rows = (sb.table("worlds").select("id,world_name,world_genre").eq("creator_id", ss.user.id)
-                .order("created_at", desc=True).execute().data or [])
-    except Exception as e:
-        print("mine error:", e)
+    rows = fetch_worlds(ss.user.id)
+    if rows is None:
         st.error(x("generic_err"))
         return
     if not rows:
@@ -796,11 +863,14 @@ def tab_mine():
         c1, c2 = st.columns(2)
         with c1:
             if st.button(x("btn_start_timeline"), key=f"resume_{w['id']}", use_container_width=True):
-                enter_world(w["id"], w["world_name"], w["world_genre"], x("lbl_wanderer"),
-                            "A traveler stepping back into their alternate reality.")
+                cfg = w.get("config") if isinstance(w.get("config"), dict) else {}
+                enter_world(w["id"], w["world_name"], w["world_genre"],
+                            str(cfg.get("char_name") or x("lbl_wanderer"))[:40],
+                            str(cfg.get("char_backstory") or "A traveler stepping back into their alternate reality.")[:800],
+                            clean_config(cfg))
         with c2:
             if st.button(x("btn_delete_world"), key=f"purge_{w['id']}", type="primary", use_container_width=True):
-                try:
+                try:  # removes it from "My Universes" and from the community list in one step
                     sb.table("worlds").delete().eq("id", w["id"]).eq("creator_id", ss.user.id).execute()
                 except Exception as e:
                     print("delete error:", e)
@@ -834,16 +904,25 @@ def tab_create():
         if not all(v.strip() for v in (w_name, c_name, allies, enemies)):
             st.warning(x("msg_fill_fields"))
             return
-        if ss.get("user"):
-            try:
-                sb.table("worlds").insert({"creator_id": ss.user.id, "world_name": w_name.strip(),
-                                           "world_genre": str(w_genre).strip()}).execute()
-            except Exception as e:
-                print("create error:", e)
-                st.error(x("generic_err"))
-                return
+        if check_message(" ".join([w_name, c_name, c_backstory, allies, enemies, lore])) != "ok":
+            st.error(x("blocked"))  # worlds are shared with other players, so they are checked first
+            return
         custom = {"gravity": gravity, "atmosphere": atmosphere, "allies": allies.strip(),
                   "enemies": enemies.strip(), "lore": lore.strip()}
+        if ss.get("user"):
+            row = {"creator_id": ss.user.id, "world_name": w_name.strip(), "world_genre": str(w_genre).strip(),
+                   "config": {**custom, "char_name": c_name.strip(), "char_backstory": c_backstory.strip()}}
+            try:
+                sb.table("worlds").insert(row).execute()
+            except Exception as e:
+                print("create error:", e)
+                row.pop("config")  # older table without the config column: still save the world itself
+                try:
+                    sb.table("worlds").insert(row).execute()
+                except Exception as e2:
+                    print("create error (retry):", e2)
+                    st.error(x("generic_err"))
+                    return
         enter_world("user_custom", w_name.strip(), w_genre, c_name.strip(), c_backstory.strip(), custom)
 
 
