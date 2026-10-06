@@ -11,7 +11,7 @@ import os
 import re
 import time
 from datetime import datetime, timezone
-from urllib.parse import quote, unquote, urlencode
+from urllib.parse import quote, unquote
 
 import stripe
 import streamlit as st
@@ -30,7 +30,7 @@ from styles import CHAT_CSS, GLOBAL_CSS
 
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 # Entry point: the mobile viewport rule goes in before anything else on the page.
-st.markdown('<span class="hm-hidden"><meta name="viewport" content="width=device-width, initial-scale=1.0"></span>',
+st.markdown('<span class="hm-hidden"><meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"></span>',
             unsafe_allow_html=True)
 load_dotenv()
 
@@ -39,6 +39,7 @@ STRIPE_SECRET = os.getenv("STRIPE_SECRET_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")  # anon key ONLY, never the service-role key
 ADMIN_EMAIL = (os.getenv("ADMIN_EMAIL") or "").strip().lower()
+ADMIN_USER_ID = (os.getenv("ADMIN_USER_ID") or "").strip()  # the admin's Supabase user id (Authentication > Users)
 # Public address of THIS app. Set APP_URL in Render. If it is missing, Render's own RENDER_EXTERNAL_URL is used.
 # Note: https://onrender.com is Render's homepage, not your app. Your app looks like https://<service-name>.onrender.com
 APP_URL = (os.getenv("APP_URL") or os.getenv("RENDER_EXTERNAL_URL") or "http://localhost:8501").strip().rstrip("/")
@@ -75,19 +76,24 @@ VIEWPORT_JS = """<script>
 const d = window.parent.document;
 let m = d.querySelector('meta[name="viewport"]');
 if (!m) { m = d.createElement('meta'); m.name = 'viewport'; d.head.appendChild(m); }
-m.setAttribute('content', 'width=device-width, initial-scale=1.0');
+m.setAttribute('content', 'width=device-width, initial-scale=1.0, interactive-widget=resizes-content');
 </script>"""
 
 MOBILE_CSS = """
 [data-testid="stElementContainer"]:has(.hm-hidden), .element-container:has(.hm-hidden) { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
 html, body, .stApp { max-width: 100vw; overflow-x: hidden; }
 img, video, iframe, canvas { max-width: 100%; }
+/* 16px text in every field: phones only auto-zoom into fields that are smaller than that */
+input, textarea, select,
+[data-baseweb="input"] input, [data-baseweb="textarea"] textarea, [data-baseweb="select"] input,
+[data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea, [data-testid="stNumberInput"] input,
+[data-testid="stChatInput"] textarea, [data-testid="stChatInputTextArea"] { font-size: 16px !important; }
 @media (max-width: 768px) {
   .block-container { padding: 1rem 0.8rem 4rem 0.8rem !important; }
   h1 { font-size: 1.6rem !important; line-height: 1.25 !important; }
   h2 { font-size: 1.35rem !important; }
   h3 { font-size: 1.15rem !important; }
-  input, textarea, select { font-size: 16px !important; }
   .stButton > button { min-height: 46px; }
   .glass-bubble-user, .glass-bubble-ai { max-width: 90% !important; font-size: 14px !important; }
   .premium-discovery-card { margin-bottom: 14px !important; }
@@ -97,6 +103,40 @@ img, video, iframe, canvas { max-width: 100%; }
   .stTabs [data-baseweb="tab"] { padding: 8px 14px !important; font-size: 12px !important; }
 }
 """
+
+# Runs inside the page itself (not inside a hidden frame), so it keeps working after the frame is replaced.
+HELPERS_CODE = """(function () {
+  var doc = document;
+  var touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  function field() {
+    var a = doc.activeElement;
+    return a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT") ? a : null;
+  }
+  window.hmBlur = function () {  /* close the phone keyboard (phones and tablets only) */
+    if (!touch) { return; }
+    var a = field();
+    if (a) { a.blur(); }
+  };
+  doc.addEventListener("pointerdown", function (e) {  /* tapping the story, not a field or button, closes the keyboard */
+    if (!touch) { return; }
+    var a = field();
+    if (!a) { return; }
+    var t = e.target;
+    if (t && t.closest && t.closest('textarea, input, select, button, [role="option"], [role="listbox"], [data-baseweb="popover"], [data-testid="stChatInput"]')) { return; }
+    a.blur();
+  }, true);
+  window.hmScrollTo = function (selector, delay) {  /* slide the screen to an element once it exists */
+    setTimeout(function () {
+      var tries = 0;
+      var timer = setInterval(function () {
+        var el = doc.querySelector(selector);
+        tries += 1;
+        if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); clearInterval(timer); }
+        else if (tries > 40) { clearInterval(timer); }
+      }, 100);
+    }, delay || 0);
+  };
+})();"""
 
 # ---------------------------------------------------------------- constants
 TIERS = {  # keys must match the "tier" values the Stripe webhook stores
@@ -167,8 +207,6 @@ DEFAULT_TEXT = {
     "lbl_audio_scape": "🎵 AMBIENT AUDIOSCAPE",
     "agree_warn": "Please confirm you are 18+ and accept the terms.",
     "pw_short": "Use a valid email and a password of at least 8 characters.",
-    "signup_ok": "✅ Check your email to confirm your account, then sign in.",
-    "login_fail": "Sign-in failed. Check your email and password (and confirm your email first).",
     "generic_err": "Something went wrong. Please try again.",
     "checkout_fail": "Couldn't start checkout. Please try again.",
     "manage_sub": "💳 Manage / cancel subscription",
@@ -229,8 +267,8 @@ DEFAULT_TEXT = {
     "preset_r2_bio": "Find love and connection at the absolute edge of an expanding galaxy.",
     "msg_redirecting": "Taking you to secure checkout…",
     "msg_activating": "Activating your pass… this takes a few seconds.",
-    "msg_email_confirmed": "✅ Email confirmed — you're signed in!",
-    "msg_signin_failed": "Sign-in failed. Check your email and password (and confirm your email first).",
+    "msg_account_ready": "✅ Account created — you're signed in and ready to play!",
+    "msg_signin_failed": "Sign-in failed. Check your email and password.",
 }
 
 
@@ -248,6 +286,15 @@ def x(key):
     return (LOCALIZATION_VAULT.get(lang(), {}).get(key)
             or LOCALIZATION_VAULT["English"].get(key)
             or DEFAULT_TEXT.get(key, ""))
+
+
+def run_in_page(call_js=""):
+    """Run a short script in the page itself, after making sure the page helpers (HELPERS_CODE) are installed."""
+    body = ("const d = window.parent.document;"
+            "if (!d.getElementById('hm-helpers')) { const s = d.createElement('script'); s.id = 'hm-helpers'; s.textContent = "
+            + json.dumps(HELPERS_CODE) + "; d.head.appendChild(s); }" + call_js)
+    with _scripts:
+        components.html("<script>" + body + "</script>", height=0)
 
 
 def avatar_label(avatar_id):
@@ -399,59 +446,17 @@ def try_refresh(refresh_token):
         return False
 
 
-AUTH_CALLBACK_KEYS = ("token_hash", "type", "access_token", "refresh_token", "expires_in", "expires_at", "token_type")
-
-
-def verify_email_token(token_hash):
-    """Turn the one-time token in the confirmation email link into a login."""
+def try_sign_in(email, password):
+    """Email + password sign-in. True when the person is now logged in."""
     try:
-        res = sb.auth.verify_otp({"token_hash": token_hash, "type": "email"})
-        if res and res.session:
-            adopt_session(res)
-            sb.postgrest.auth(ss.access_token)
-            return True
+        res = sb.auth.sign_in_with_password({"email": email, "password": password})
     except Exception as e:
-        print("verify_otp failed:", repr(e))
-    return False
-
-
-def handle_auth_callback():
-    """The moment someone arrives from the email confirmation link, log them in and clean the address bar."""
-    qp = st.query_params
-    token_hash = qp.get("token_hash")
-    refresh_token = qp.get("refresh_token")
-    if not (token_hash or refresh_token):
-        return
-    ok = False
-    if not ss.get("user") and str(qp.get("type") or "email").lower() in ("email", "signup", "magiclink"):
-        # (password-recovery links are deliberately never turned into a login)
-        ok = verify_email_token(token_hash) if token_hash else try_refresh(refresh_token)
-        ss["_just_confirmed" if ok else "_confirm_failed"] = True
-    for key in AUTH_CALLBACK_KEYS:  # take the one-time tokens out of the address bar
-        if key in qp:
-            del qp[key]
-
-
-def bridge_hash_tokens():
-    """Supabase's default confirmation link returns the login after a '#', which a server never receives.
-    This tiny script copies the refresh token into the normal address so handle_auth_callback can read it."""
-    with _scripts:
-        components.html("""<script>
-    const p = window.parent;
-    const h = p.location.hash || "";
-    if (h.indexOf("refresh_token=") > -1) {
-        const hp = new URLSearchParams(h.substring(1));
-        const q = new URLSearchParams(p.location.search);
-        q.set("refresh_token", hp.get("refresh_token"));
-        q.set("type", hp.get("type") || "signup");
-        p.history.replaceState(null, "", p.location.pathname + p.location.search);
-        const a = p.document.createElement("a");
-        a.href = p.location.pathname + "?" + q.toString();
-        a.target = "_self";
-        p.document.body.appendChild(a);
-        a.click();
-    }
-    </script>""", height=0)
+        print("login error:", repr(e))
+        if "not confirmed" in str(e).lower():
+            print("CONFIG ERROR: Supabase 'Confirm email' is still ON. Turn it off in Authentication > Sign In / Providers > Email.")
+        return False
+    adopt_session(res)
+    return True
 
 
 def save_game():
@@ -522,8 +527,13 @@ def refresh_profile():
     ss.stripe_customer_id = row.get("stripe_customer_id") if row else None
     ss.tier = row.get("tier") if row else None
     if ADMIN_EMAIL and str(ss.user.email).strip().lower() == ADMIN_EMAIL:
-        ss.is_premium = True
-        ss.tier = "titan"
+        if ADMIN_USER_ID and str(ss.user.id) == ADMIN_USER_ID:
+            ss.is_premium = True
+            ss.tier = "titan"
+        elif not ss.get("_admin_warned"):
+            ss["_admin_warned"] = True
+            print("SECURITY: this email matches ADMIN_EMAIL but ADMIN_USER_ID is missing or different, so admin access is OFF. "
+                  "Set ADMIN_USER_ID to the admin's user id (Supabase > Authentication > Users).")
     if ss.get("stripe_verified") and not ss.is_premium:  # Stripe confirmed the payment; the database just hasn't caught up yet
         ss.is_premium = True
         ss.tier = ss.get("verified_tier") or ss.tier
@@ -705,32 +715,28 @@ def render_auth_form(prefix):
             elif "@" not in email or len(password) < 8:
                 st.warning(x("pw_short"))
             else:
+                res = None
                 try:
-                    code = LANG_BY_NAME.get(lang(), "en")
                     res = sb.auth.sign_up({
                         "email": email, "password": password,
-                        "options": {
-                            "email_redirect_to": f"{APP_URL}/?" + urlencode({"lang": code, **ss.get("utm", {})}),
-                            "data": {"trial_used": ss.get("guest_tokens", FREE_ACTIONS) <= 0,
-                                     "pending_tier": ss.get("pending_tier"), "lang": code},
-                        }})
-                    if getattr(res, "session", None):  # email confirmation is off: they are signed in already
-                        adopt_session(res)
-                        st.rerun()
-                    st.success(x("signup_ok"))
+                        "options": {"data": {"trial_used": ss.get("guest_tokens", FREE_ACTIONS) <= 0,
+                                             "pending_tier": ss.get("pending_tier"),
+                                             "lang": LANG_BY_NAME.get(lang(), "en")}}})
                 except Exception as e:
-                    print("signup error:", e)
-                    st.error(x("generic_err"))
+                    print("signup error:", repr(e))
+                if res is not None and getattr(res, "session", None):  # no email step: they are signed in already
+                    adopt_session(res)
+                    ss["_just_signed_up"] = True
+                    st.rerun()
+                if try_sign_in(email, password):  # also covers an email address that already has an account
+                    ss["_just_signed_up"] = True
+                    st.rerun()
+                st.error(x("msg_signin_failed"))
     else:
         if st.button(x("btn_login_submit"), key=f"{prefix}_login", use_container_width=True):
-            try:
-                res = sb.auth.sign_in_with_password({"email": email, "password": password})
-                adopt_session(res)
-            except Exception as e:
-                print("login error:", e)
-                st.error(x("msg_signin_failed"))
-                return
-            st.rerun()
+            if try_sign_in(email, password):
+                st.rerun()
+            st.error(x("msg_signin_failed"))
         if ENABLE_PASSWORD_RESET:
             with st.expander(x("forgot_pass_link")):
                 st.write(x("forgot_pass_desc"))
@@ -744,31 +750,37 @@ def render_auth_form(prefix):
 
 
 def render_paywall():
-    st.title(x("paywall_title"))
-    st.write(x("paywall_subtitle"))
-    logged_in = bool(ss.get("user"))
-    for col, (key, prefix, emoji) in zip(st.columns(3), TIER_ORDER):
-        tier = TIERS[key]
-        with col:
-            st.markdown(
-                f'<div style="background:rgba(16,12,31,.5);padding:20px;border-radius:12px;border:1px solid #2e234e;'
-                f'text-align:center;min-height:200px;"><h4 style="color:{tier["color"]};margin:0;">'
-                f'{emoji} {esc(x(prefix + "_name").upper())}</h4>'
-                f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] / 100:.2f} '
-                f'<span style="font-size:14px;color:#94a3b8;">{esc(x("per_week"))}</span></h2>'
-                f'<p style="color:#94a3b8;font-size:12px;">{esc(x(prefix + "_desc"))}</p></div>',
-                unsafe_allow_html=True)
-            if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
-                if logged_in:
-                    go_checkout(key)
-                else:
-                    ss.pending_tier = key  # remembered through sign-up, email confirmation and login
-                    ss.show_auth = True
-                    queue_cookie("hm_tier", key)
-    if not logged_in and ss.get("show_auth"):
-        st.info(x("paywall_login"))
-        render_auth_form("paywall")
-    render_legal()
+    try:
+        area = st.container(key="hm_paywall")  # becomes the CSS class st-key-hm_paywall (used by the scroll helper)
+    except TypeError:  # older Streamlit has no container keys: the anchor below is used instead
+        area = st.container()
+    with area:
+        st.markdown('<div id="hm-paywall"></div>', unsafe_allow_html=True)
+        st.title(x("paywall_title"))
+        st.write(x("paywall_subtitle"))
+        logged_in = bool(ss.get("user"))
+        for col, (key, prefix, emoji) in zip(st.columns(3), TIER_ORDER):
+            tier = TIERS[key]
+            with col:
+                st.markdown(
+                    f'<div style="background:rgba(16,12,31,.5);padding:20px;border-radius:12px;border:1px solid #2e234e;'
+                    f'text-align:center;min-height:200px;"><h4 style="color:{tier["color"]};margin:0;">'
+                    f'{emoji} {esc(x(prefix + "_name").upper())}</h4>'
+                    f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] / 100:.2f} '
+                    f'<span style="font-size:14px;color:#94a3b8;">{esc(x("per_week"))}</span></h2>'
+                    f'<p style="color:#94a3b8;font-size:12px;">{esc(x(prefix + "_desc"))}</p></div>',
+                    unsafe_allow_html=True)
+                if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
+                    if logged_in:
+                        go_checkout(key)
+                    else:
+                        ss.pending_tier = key  # kept in this session, so signing up carries straight on to checkout
+                        ss.show_auth = True
+                        queue_cookie("hm_tier", key)
+        if not logged_in and ss.get("show_auth"):
+            st.info(x("paywall_login"))
+            render_auth_form("paywall")
+        render_legal()
 
 
 # ---------------------------------------------------------------- game helpers
@@ -887,16 +899,12 @@ def make_cover():
 
 
 # ---------------------------------------------------------------- page state
-handle_auth_callback()  # arriving from the confirmation email: log in right away
 if not ss.get("user") and not ss.get("_restore_tried"):  # refresh / locked phone: log back in from the cookie
     ss["_restore_tried"] = True
     saved_rt = cookie_get("hm_rt")
     if saved_rt:
         if not try_refresh(saved_rt):
             queue_cookie("hm_rt", None)
-if not ss.get("user") and not ss.get("_hash_bridge"):
-    ss["_hash_bridge"] = True
-    bridge_hash_tokens()
 flush_cookies()
 if ss.get("user"):
     refresh_profile()
@@ -1018,12 +1026,9 @@ if ss.get("user") and ss.get("auto_checkout") and not ss.is_premium:
     launch_checkout(ss.pop("auto_checkout"))
     st.stop()
 
-if ss.pop("_just_confirmed", False):
+if ss.pop("_just_signed_up", False):
     with _notices:
-        st.success(x("msg_email_confirmed"))
-if ss.pop("_confirm_failed", False):
-    with _notices:
-        st.warning(x("msg_signin_failed"))
+        st.success(x("msg_account_ready"))
 
 if st.query_params.get("checkout") == "success":
     if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
@@ -1042,7 +1047,11 @@ if not (ss.is_premium or ss.guest_tokens > 0):
         st.divider()
     watch_for_pass()
     render_paywall()
+    if not ss.get("_paywall_scrolled"):  # once per appearance, not on every click inside the paywall
+        ss["_paywall_scrolled"] = True
+        run_in_page("window.parent.hmScrollTo('.st-key-hm_paywall, #hm-paywall', 1200);")
     st.stop()
+ss["_paywall_scrolled"] = False
 
 
 # ---------------------------------------------------------------- hub
@@ -1297,6 +1306,8 @@ def render_hub():
 # ---------------------------------------------------------------- game
 def render_game():
     st.title(f"🎬 {engine['world_name'].upper()}")
+    if ss.pop("_blur_after", False):  # the page was just redrawn after a reply: make sure the keyboard stays closed
+        run_in_page("setTimeout(function () { window.parent.hmBlur(); }, 150);")
     if ss.get("world_cover_url"):
         st.markdown(
             "<style>.stApp{background-image:linear-gradient(rgba(5,3,10,.82),rgba(5,3,10,.82)),"
@@ -1329,6 +1340,7 @@ def render_game():
     text = action.strip()[:500]
     if not text:
         return
+    run_in_page("window.parent.hmBlur();")  # phones: close the keyboard right away
 
     verdict = check_message(text)
     if verdict != "ok":
@@ -1366,6 +1378,7 @@ def render_game():
     apply_tags(reply)
     engine["story_log"].append({"role": "assistant", "content": reply})
     save_game()
+    ss["_blur_after"] = True
     st.rerun()
 
 

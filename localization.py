@@ -1410,3 +1410,83 @@ LOCALIZATION_VAULT["العربية (Arabic)"].update({"msg_email_confirmed": "�
 LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({"msg_email_confirmed": "✅ ईमेल कन्फ़र्म हो गया — आप लॉग इन हैं!"})
 LOCALIZATION_VAULT["日本語 (Japanese)"].update({"msg_email_confirmed": "✅ メールを確認しました。ログインしました！"})
 LOCALIZATION_VAULT["한국어 (Korean)"].update({"msg_email_confirmed": "✅ 이메일이 확인되었습니다. 로그인되었습니다!"})
+LOCALIZATION_VAULT["English"].update({"msg_signin_failed": "Sign-in failed. Check your email and password (and confirm your email first)."})
+LOCALIZATION_VAULT["Español (Spanish)"].update({
+    "msg_signin_failed": "No se pudo iniciar sesión. Revisa tu correo y contraseña (y confirma tu correo primero).",
+    "agree_warn": "Confirma que tienes 18+ y que aceptas los términos.",
+    "pw_short": "Usa un correo válido y una contraseña de al menos 8 caracteres.",
+    "signup_ok": "✅ Revisa tu correo para confirmar tu cuenta y luego inicia sesión.",
+    "login_fail": "No se pudo iniciar sesión. Revisa tu correo y contraseña (y confirma tu correo primero).",
+    "generic_err": "Algo salió mal. Inténtalo de nuevo.",
+    "checkout_fail": "No se pudo iniciar el pago. Inténtalo de nuevo.",
+    "manage_sub": "💳 Gestionar / cancelar suscripción",
+    "portal_open": "Abrir portal de facturación",
+    "narrator_down": "El narrador no está disponible ahora. Inténtalo de nuevo.",
+    "blocked": "Eso no se puede jugar aquí. Prueba otra dirección para tu historia.",
+    "crisis": "Parece que estás pasando por algo difícil. Importas. Si estás en peligro o piensas en hacerte daño, contacta ahora a los servicios de emergencia de tu país o a una línea de crisis.",
+    "chat_placeholder": "✍️ Describe tu acción o habla...",
+    "go_profile": "Abre la sección 'Perfil de Cuenta' para iniciar sesión o registrarte.",
+})
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({
+    "msg_signin_failed": "登录失败。请检查邮箱和密码（并先确认邮箱）。",
+    "agree_warn": "请确认您已年满18岁并接受条款。",
+    "pw_short": "请使用有效邮箱和至少8位字符的密码。",
+    "signup_ok": "✅ 请查收邮件确认账户，然后登录。",
+    "login_fail": "登录失败。请检查邮箱和密码（并先确认邮箱）。",
+    "generic_err": "出错了，请重试。",
+    "checkout_fail": "无法开始结账，请重试。",
+    "manage_sub": "💳 管理 / 取消订阅",
+    "portal_open": "打开账单门户",
+    "narrator_down": "叙述者暂时不可用，请重试。",
+    "blocked": "这里无法进行该内容。请换一个故事方向。",
+    "crisis": "听起来您可能正经历困难时刻。您很重要。如果您处于危险中或想伤害自己，请立即联系当地紧急电话或心理危机热线。",
+    "chat_placeholder": "✍️ 描述你的行动或说话...",
+    "go_profile": "请打开“账户个人资料”部分登录或注册。",
+})
+LOCALIZATION_VAULT["Português (Portuguese)"].update({"msg_signin_failed": "Falha ao entrar. Verifique seu e-mail e senha (e confirme seu e-mail primeiro)."})
+LOCALIZATION_VAULT["Русский (Russian)"].update({"msg_signin_failed": "Не удалось войти. Проверьте почту и пароль (и сначала подтвердите почту)."})
+LOCALIZATION_VAULT["Français (French)"].update({"msg_signin_failed": "Échec de la connexion. Vérifiez votre e-mail et votre mot de passe (et confirmez d'abord votre e-mail)."})
+LOCALIZATION_VAULT["العربية (Arabic)"].update({"msg_signin_failed": "فشل تسجيل الدخول. تحقق من بريدك الإلكتروني وكلمة المرور (وأكّد بريدك أولًا)."})
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({"msg_signin_failed": "लॉग इन नहीं हो सका। अपना ईमेल और पासवर्ड जाँचें (और पहले अपना ईमेल कन्फ़र्म करें)।"})
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({"msg_signin_failed": "ログインに失敗しました。メールアドレスとパスワードをご確認ください（先にメール認証も必要です）。"})
+LOCALIZATION_VAULT["한국어 (Korean)"].update({"msg_signin_failed": "로그인하지 못했습니다. 이메일과 비밀번호를 확인하세요(이메일 인증을 먼저 완료해야 합니다)."})
+LOCALIZATION_VAULT["English"].update({
+    "msg_signin_failed": "Sign-in failed. Check your email and password.",
+    "msg_account_ready": "✅ Account created — you're signed in and ready to play!",
+})
+LOCALIZATION_VAULT["Español (Spanish)"].update({
+    "msg_signin_failed": "No se pudo iniciar sesión. Revisa tu correo y contraseña.",
+    "msg_account_ready": "✅ ¡Cuenta creada! Ya iniciaste sesión y puedes jugar.",
+})
+LOCALIZATION_VAULT["Português (Portuguese)"].update({
+    "msg_signin_failed": "Falha ao entrar. Verifique seu e-mail e senha.",
+    "msg_account_ready": "✅ Conta criada! Você já está conectado e pode jogar.",
+})
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({
+    "msg_signin_failed": "登录失败。请检查邮箱和密码。",
+    "msg_account_ready": "✅ 账户已创建，您已登录，可以开始游戏！",
+})
+LOCALIZATION_VAULT["Русский (Russian)"].update({
+    "msg_signin_failed": "Не удалось войти. Проверьте почту и пароль.",
+    "msg_account_ready": "✅ Аккаунт создан — вы вошли и можете играть!",
+})
+LOCALIZATION_VAULT["Français (French)"].update({
+    "msg_signin_failed": "Échec de la connexion. Vérifiez votre e-mail et votre mot de passe.",
+    "msg_account_ready": "✅ Compte créé — vous êtes connecté et prêt à jouer !",
+})
+LOCALIZATION_VAULT["العربية (Arabic)"].update({
+    "msg_signin_failed": "فشل تسجيل الدخول. تحقق من بريدك الإلكتروني وكلمة المرور.",
+    "msg_account_ready": "✅ تم إنشاء الحساب — لقد سجّلت الدخول وأنت جاهز للعب!",
+})
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({
+    "msg_signin_failed": "लॉग इन नहीं हो सका। अपना ईमेल और पासवर्ड जाँचें।",
+    "msg_account_ready": "✅ खाता बन गया — आप लॉग इन हैं और खेलने के लिए तैयार हैं!",
+})
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({
+    "msg_signin_failed": "ログインに失敗しました。メールアドレスとパスワードをご確認ください。",
+    "msg_account_ready": "✅ アカウントを作成しました。ログイン済みで、すぐに遊べます！",
+})
+LOCALIZATION_VAULT["한국어 (Korean)"].update({
+    "msg_signin_failed": "로그인하지 못했습니다. 이메일과 비밀번호를 확인하세요.",
+    "msg_account_ready": "✅ 계정이 만들어졌고 로그인되었습니다. 바로 플레이하세요!",
+})
