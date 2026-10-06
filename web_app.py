@@ -29,6 +29,9 @@ from localization import LOCALIZATION_VAULT
 from styles import CHAT_CSS, GLOBAL_CSS
 
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
+# Entry point: the mobile viewport rule goes in before anything else on the page.
+st.markdown('<span class="hm-hidden"><meta name="viewport" content="width=device-width, initial-scale=1.0"></span>',
+            unsafe_allow_html=True)
 load_dotenv()
 
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
@@ -47,6 +50,13 @@ PAYMENT_METHOD_CONFIG = os.getenv("STRIPE_PAYMENT_METHOD_CONFIG", "").strip()
 
 ss = st.session_state
 
+# Fixed homes for hidden scripts (top of the sidebar) and notices (top of the page). They exist on every run, empty or
+# not, so the position of everything below them is identical on every run. That is what stops the page from jumping.
+_script_slot = st.sidebar.empty()
+_scripts = _script_slot.container()
+_notice_slot = st.empty()
+_notices = _notice_slot.container()
+
 FREE_ACTIONS = 5  # free story actions before the paywall
 ENABLE_PASSWORD_RESET = False  # hidden at launch: the reset link has no page to set a new password yet
 LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match localization.py)
@@ -56,6 +66,37 @@ LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match
 }
 LANG_BY_NAME = {v: k for k, v in LANG_CODES.items()}
 CHECKOUT_LOCALES = {"en": "en", "es": "es", "pt": "pt", "zh": "zh", "ru": "ru", "fr": "fr", "ja": "ja", "ko": "ko"}
+
+HUB_TAB_KEYS = ["explore", "mine", "create", "avatars", "profile"]  # ?tab=profile opens a section directly
+HUB_PROFILE_IDX = HUB_TAB_KEYS.index("profile")
+CREATE_FORM_KEYS = ("cr_name", "cr_char", "cr_story", "cr_allies", "cr_enemies", "cr_lore")
+
+VIEWPORT_JS = """<script>
+const d = window.parent.document;
+let m = d.querySelector('meta[name="viewport"]');
+if (!m) { m = d.createElement('meta'); m.name = 'viewport'; d.head.appendChild(m); }
+m.setAttribute('content', 'width=device-width, initial-scale=1.0');
+</script>"""
+
+MOBILE_CSS = """
+[data-testid="stElementContainer"]:has(.hm-hidden), .element-container:has(.hm-hidden) { display: none !important; }
+html, body, .stApp { max-width: 100vw; overflow-x: hidden; }
+img, video, iframe, canvas { max-width: 100%; }
+@media (max-width: 768px) {
+  .block-container { padding: 1rem 0.8rem 4rem 0.8rem !important; }
+  h1 { font-size: 1.6rem !important; line-height: 1.25 !important; }
+  h2 { font-size: 1.35rem !important; }
+  h3 { font-size: 1.15rem !important; }
+  input, textarea, select { font-size: 16px !important; }
+  .stButton > button { min-height: 46px; }
+  .glass-bubble-user, .glass-bubble-ai { max-width: 90% !important; font-size: 14px !important; }
+  .premium-discovery-card { margin-bottom: 14px !important; }
+  [data-testid="stHorizontalBlock"] { flex-wrap: wrap !important; gap: 0.6rem !important; }
+  [data-testid="stColumn"], [data-testid="column"] { min-width: 100% !important; flex: 1 1 100% !important; }
+  .stTabs [data-baseweb="tab-list"] { overflow-x: auto; gap: 6px !important; }
+  .stTabs [data-baseweb="tab"] { padding: 8px 14px !important; font-size: 12px !important; }
+}
+"""
 
 # ---------------------------------------------------------------- constants
 TIERS = {  # keys must match the "tier" values the Stripe webhook stores
@@ -189,6 +230,7 @@ DEFAULT_TEXT = {
     "msg_redirecting": "Taking you to secure checkout…",
     "msg_activating": "Activating your pass… this takes a few seconds.",
     "msg_email_confirmed": "✅ Email confirmed — you're signed in!",
+    "msg_signin_failed": "Sign-in failed. Check your email and password (and confirm your email first).",
 }
 
 
@@ -226,8 +268,10 @@ ss.setdefault("is_premium", False)
 ss.setdefault("world_cover_url", None)
 ss.setdefault("world_engine", new_engine())
 ss.setdefault("audio_state", {"playing": True, "track_url": "assets/menu_theme.mp3"})
-
-st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}</style>", unsafe_allow_html=True)
+ss.setdefault("active_tab_idx", 0)  # which hub section is open: set once, never recomputed on later runs
+if "hub_nav" not in ss:  # first run of a visit only: honour links such as ?tab=profile
+    _wanted_tab = str(st.query_params.get("tab", "")).lower()
+    ss["hub_nav"] = HUB_TAB_KEYS.index(_wanted_tab) if _wanted_tab in HUB_TAB_KEYS else ss.active_tab_idx
 
 # ---------------------------------------------------------------- cookies + language
 def cookie_get(name):
@@ -255,7 +299,8 @@ def flush_cookies():
             js += f"d.cookie = {json.dumps(name + '=; Max-Age=0; path=/; SameSite=Lax' + secure)};"
         else:
             js += f"d.cookie = {json.dumps(name + '=' + quote(value, safe='') + '; Max-Age=2592000; path=/; SameSite=Lax' + secure)};"
-    components.html(f"<script>{js}</script>", height=0)
+    with _scripts:
+        components.html(f"<script>{js}</script>", height=0)
 
 
 def detect_language():
@@ -288,8 +333,12 @@ if ss.app_language not in LOCALIZATION_VAULT:  # first load of this visit: no pi
     queue_cookie("hm_lang", ss.app_language)
     ss.setdefault("utm", {k: str(v)[:100] for k, v in st.query_params.items() if k.startswith("utm_")})
 
-if lang().startswith("العربية"):
-    st.markdown("<style>.stApp{direction:rtl;}</style>", unsafe_allow_html=True)
+_rtl_css = ".stApp{direction:rtl;}" if lang().startswith("العربية") else ""
+st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}\n{MOBILE_CSS}\n{_rtl_css}</style>", unsafe_allow_html=True)
+if not ss.get("_viewport_set"):
+    ss["_viewport_set"] = True
+    with _scripts:
+        components.html(VIEWPORT_JS, height=0)
 
 # ---------------------------------------------------------------- clients
 def key_role(key):
@@ -386,7 +435,8 @@ def handle_auth_callback():
 def bridge_hash_tokens():
     """Supabase's default confirmation link returns the login after a '#', which a server never receives.
     This tiny script copies the refresh token into the normal address so handle_auth_callback can read it."""
-    components.html("""<script>
+    with _scripts:
+        components.html("""<script>
     const p = window.parent;
     const h = p.location.hash || "";
     if (h.indexOf("refresh_token=") > -1) {
@@ -459,6 +509,14 @@ def refresh_profile():
                 ss.pop(k, None)
             queue_cookie("hm_rt", None)
             st.rerun()
+    if row is None and ss.get("user"):  # the signup trigger skipped this user: create the missing profile row once
+        try:
+            sb.rpc("ensure_profile").execute()
+            row = (sb.table("profiles")
+                   .select("is_premium,tokens_remaining,stripe_customer_id,tier,interface_language")
+                   .eq("id", ss.user.id).single().execute().data)
+        except Exception as e:
+            print("ensure_profile error:", e)
     ss.is_premium = bool(row and row.get("is_premium"))
     ss.guest_tokens = min(int(row["tokens_remaining"]), FREE_ACTIONS) if row else 0
     ss.stripe_customer_id = row.get("stripe_customer_id") if row else None
@@ -570,10 +628,11 @@ def launch_checkout(tier_key):
         return
     st.title("⏳ " + x("msg_redirecting"))
     st.link_button(x("btn_open_stripe"), url, type="primary")
-    components.html(
-        "<script>const d = window.parent.document; const a = d.createElement('a');"
-        f"a.href = {json.dumps(url)}; a.target = '_self'; d.body.appendChild(a); a.click();</script>",
-        height=0)
+    with _scripts:
+        components.html(
+            "<script>const d = window.parent.document; const a = d.createElement('a');"
+            f"a.href = {json.dumps(url)}; a.target = '_self'; d.body.appendChild(a); a.click();</script>",
+            height=0)
 
 
 def wait_for_premium(max_seconds=20):
@@ -648,13 +707,16 @@ def render_auth_form(prefix):
             else:
                 try:
                     code = LANG_BY_NAME.get(lang(), "en")
-                    sb.auth.sign_up({
+                    res = sb.auth.sign_up({
                         "email": email, "password": password,
                         "options": {
                             "email_redirect_to": f"{APP_URL}/?" + urlencode({"lang": code, **ss.get("utm", {})}),
                             "data": {"trial_used": ss.get("guest_tokens", FREE_ACTIONS) <= 0,
                                      "pending_tier": ss.get("pending_tier"), "lang": code},
                         }})
+                    if getattr(res, "session", None):  # email confirmation is off: they are signed in already
+                        adopt_session(res)
+                        st.rerun()
                     st.success(x("signup_ok"))
                 except Exception as e:
                     print("signup error:", e)
@@ -666,7 +728,7 @@ def render_auth_form(prefix):
                 adopt_session(res)
             except Exception as e:
                 print("login error:", e)
-                st.error(x("login_fail"))
+                st.error(x("msg_signin_failed"))
                 return
             st.rerun()
         if ENABLE_PASSWORD_RESET:
@@ -911,7 +973,12 @@ with st.sidebar:
             do_logout()
     else:
         st.info(x("unlimited_actions"))
-        st.caption(x("go_profile"))
+        if not engine["world_name"]:
+            if st.button(f"🔑 {x('btn_signin')} / {x('btn_signup')}", key="sidebar_go_account", use_container_width=True):
+                ss["hub_nav"] = HUB_PROFILE_IDX  # set before the hub navigation is drawn in this same run
+                ss.active_tab_idx = HUB_PROFILE_IDX
+        else:
+            st.caption(x("go_profile"))
     st.divider()
 
     with st.expander(x("settings_control").upper()):
@@ -952,18 +1019,22 @@ if ss.get("user") and ss.get("auto_checkout") and not ss.is_premium:
     st.stop()
 
 if ss.pop("_just_confirmed", False):
-    st.success(x("msg_email_confirmed"))
+    with _notices:
+        st.success(x("msg_email_confirmed"))
 if ss.pop("_confirm_failed", False):
-    st.warning(x("login_fail"))
+    with _notices:
+        st.warning(x("msg_signin_failed"))
 
 if st.query_params.get("checkout") == "success":
     if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
         ss["_payment_waited"] = True  # wait once per visit, not on every click
-        with st.spinner(x("msg_activating")):
-            paid = wait_for_premium(20) or verify_checkout_session(st.query_params.get("session_id"))
+        with _notices:
+            with st.spinner(x("msg_activating")):
+                paid = wait_for_premium(20) or verify_checkout_session(st.query_params.get("session_id"))
         if paid:
             st.rerun()
-    st.success(x("msg_payment_success"))
+    with _notices:
+        st.success(x("msg_payment_success"))
 if not (ss.is_premium or ss.guest_tokens > 0):
     if engine["world_name"] and engine["story_log"]:  # show the cliffhanger, then the paywall under it
         st.title(f"🎬 {engine['world_name'].upper()}")
@@ -1081,19 +1152,19 @@ def tab_create():
     left, right = st.columns(2)
     with left:
         st.markdown(x("lbl_celestial"))
-        w_name = st.text_input(x("lbl_name"), placeholder=x("ph_world_name"), max_chars=60)
+        w_name = st.text_input(x("lbl_name"), placeholder=x("ph_world_name"), max_chars=60, key="cr_name")
         w_genre = st.selectbox(x("lbl_genre"), x("genres"))
         gravity = st.slider(x("lbl_gravity"), 0.1, 5.0, 1.0, 0.1)
         atmos_opts = x("atmosphere_options")
         atmosphere = st.select_slider(x("lbl_atmosphere"), options=atmos_opts, value=atmos_opts[2])
     with right:
         st.markdown(x("lbl_identity"))
-        c_name = st.text_input(x("lbl_char_name"), placeholder=x("ph_char_name"), max_chars=40)
-        c_backstory = st.text_area(x("lbl_backstory"), placeholder=x("ph_backstory"), max_chars=800)
+        c_name = st.text_input(x("lbl_char_name"), placeholder=x("ph_char_name"), max_chars=40, key="cr_char")
+        c_backstory = st.text_area(x("lbl_backstory"), placeholder=x("ph_backstory"), max_chars=800, key="cr_story")
     st.markdown(x("lbl_factions"))
-    allies = st.text_input(x("lbl_allies"), placeholder=x("ph_allies"), max_chars=60)
-    enemies = st.text_input(x("lbl_enemies"), placeholder=x("ph_enemies"), max_chars=60)
-    lore = st.text_area(x("lbl_directives"), placeholder=x("ph_lore"), height=80, max_chars=800)
+    allies = st.text_input(x("lbl_allies"), placeholder=x("ph_allies"), max_chars=60, key="cr_allies")
+    enemies = st.text_input(x("lbl_enemies"), placeholder=x("ph_enemies"), max_chars=60, key="cr_enemies")
+    lore = st.text_area(x("lbl_directives"), placeholder=x("ph_lore"), height=80, max_chars=800, key="cr_lore")
     st.divider()
     if st.button(x("btn_deploy"), use_container_width=True):
         if not all(v.strip() for v in (w_name, c_name, allies, enemies)):
@@ -1189,13 +1260,38 @@ def tab_profile():
         render_legal()
 
 
+def _on_nav_change():
+    chosen = ss.get("hub_nav")
+    if chosen is None:  # tapping the selected pill again would clear it: put it back
+        ss["hub_nav"] = ss.active_tab_idx
+    else:
+        ss.active_tab_idx = chosen
+
+
+def render_nav(labels):
+    """Section picker. Its choice lives in session state on the server, so a rerun can never reset it."""
+    options = list(range(len(labels)))
+    if hasattr(st, "pills"):
+        choice = st.pills("nav", options, selection_mode="single", format_func=lambda i: labels[i],
+                          key="hub_nav", on_change=_on_nav_change, label_visibility="collapsed")
+    else:
+        choice = st.radio("nav", options, format_func=lambda i: labels[i], horizontal=True,
+                          key="hub_nav", on_change=_on_nav_change, label_visibility="collapsed")
+    if choice is None:
+        choice = ss.active_tab_idx
+    ss.active_tab_idx = choice
+    return choice
+
+
 def render_hub():
     st.title(x("hub_title"))
     st.write(x("hub_subtitle"))
-    tabs = st.tabs([x("tab_explore"), x("tab_my_creations"), x("tab_create"), x("tab_avatars"), x("tab_profile")])
-    for tab, fn in zip(tabs, (tab_explore, tab_mine, tab_create, tab_avatars, tab_profile)):
-        with tab:
-            fn()
+    for key in CREATE_FORM_KEYS:  # keep half-typed world details while another section is open
+        if key in ss:
+            ss[key] = ss[key]
+    labels = [x("tab_explore"), x("tab_my_creations"), x("tab_create"), x("tab_avatars"), x("tab_profile")]
+    panels = (tab_explore, tab_mine, tab_create, tab_avatars, tab_profile)
+    panels[render_nav(labels)]()
 
 
 # ---------------------------------------------------------------- game
