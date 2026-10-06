@@ -42,6 +42,8 @@ APP_URL = (os.getenv("APP_URL") or os.getenv("RENDER_EXTERNAL_URL") or "http://l
 _APP_HOST = APP_URL.split("//", 1)[-1].split("/")[0].lower()
 APP_URL_OK = _APP_HOST not in ("", "onrender.com", "www.onrender.com", "render.com", "www.render.com")
 REPLICATE_TOKEN = os.getenv("REPLICATE_API_TOKEN")
+# Optional: a Stripe "payment method configuration" id (pmc_...) with Link switched off. See the notes in create_checkout_url.
+PAYMENT_METHOD_CONFIG = os.getenv("STRIPE_PAYMENT_METHOD_CONFIG", "").strip()
 
 ss = st.session_state
 
@@ -53,6 +55,7 @@ LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match
     "ko": "한국어 (Korean)", "pt": "Português (Portuguese)",
 }
 LANG_BY_NAME = {v: k for k, v in LANG_CODES.items()}
+CHECKOUT_LOCALES = {"en": "en", "es": "es", "pt": "pt", "zh": "zh", "ru": "ru", "fr": "fr", "ja": "ja", "ko": "ko"}
 
 # ---------------------------------------------------------------- constants
 TIERS = {  # keys must match the "tier" values the Stripe webhook stores
@@ -185,6 +188,7 @@ DEFAULT_TEXT = {
     "preset_r2_bio": "Find love and connection at the absolute edge of an expanding galaxy.",
     "msg_redirecting": "Taking you to secure checkout…",
     "msg_activating": "Activating your pass… this takes a few seconds.",
+    "msg_email_confirmed": "✅ Email confirmed — you're signed in!",
 }
 
 
@@ -346,6 +350,60 @@ def try_refresh(refresh_token):
         return False
 
 
+AUTH_CALLBACK_KEYS = ("token_hash", "type", "access_token", "refresh_token", "expires_in", "expires_at", "token_type")
+
+
+def verify_email_token(token_hash):
+    """Turn the one-time token in the confirmation email link into a login."""
+    try:
+        res = sb.auth.verify_otp({"token_hash": token_hash, "type": "email"})
+        if res and res.session:
+            adopt_session(res)
+            sb.postgrest.auth(ss.access_token)
+            return True
+    except Exception as e:
+        print("verify_otp failed:", repr(e))
+    return False
+
+
+def handle_auth_callback():
+    """The moment someone arrives from the email confirmation link, log them in and clean the address bar."""
+    qp = st.query_params
+    token_hash = qp.get("token_hash")
+    refresh_token = qp.get("refresh_token")
+    if not (token_hash or refresh_token):
+        return
+    ok = False
+    if not ss.get("user") and str(qp.get("type") or "email").lower() in ("email", "signup", "magiclink"):
+        # (password-recovery links are deliberately never turned into a login)
+        ok = verify_email_token(token_hash) if token_hash else try_refresh(refresh_token)
+        ss["_just_confirmed" if ok else "_confirm_failed"] = True
+    for key in AUTH_CALLBACK_KEYS:  # take the one-time tokens out of the address bar
+        if key in qp:
+            del qp[key]
+
+
+def bridge_hash_tokens():
+    """Supabase's default confirmation link returns the login after a '#', which a server never receives.
+    This tiny script copies the refresh token into the normal address so handle_auth_callback can read it."""
+    components.html("""<script>
+    const p = window.parent;
+    const h = p.location.hash || "";
+    if (h.indexOf("refresh_token=") > -1) {
+        const hp = new URLSearchParams(h.substring(1));
+        const q = new URLSearchParams(p.location.search);
+        q.set("refresh_token", hp.get("refresh_token"));
+        q.set("type", hp.get("type") || "signup");
+        p.history.replaceState(null, "", p.location.pathname + p.location.search);
+        const a = p.document.createElement("a");
+        a.href = p.location.pathname + "?" + q.toString();
+        a.target = "_self";
+        p.document.body.appendChild(a);
+        a.click();
+    }
+    </script>""", height=0)
+
+
 def save_game():
     """Keep the current adventure so a refresh or a new visit can pick it up again."""
     if not (ss.get("user") and engine["world_name"]):
@@ -428,14 +486,38 @@ def do_logout():
     st.rerun()
 
 
+def _create_checkout_session(params):
+    """Create the Checkout Session with Stripe Link switched off (plain card entry).
+
+    Stripe describes "card only" differently depending on the account's API version, so the options are tried in order:
+    your payment method configuration (if STRIPE_PAYMENT_METHOD_CONFIG is set), then card-only in the two spellings,
+    and finally the Dashboard's own Link setting. The guaranteed switch is the Dashboard:
+    Settings > Payment methods > Link > off."""
+    attempts = []
+    if PAYMENT_METHOD_CONFIG:
+        attempts.append({"payment_method_configuration": PAYMENT_METHOD_CONFIG})
+    attempts += [{"payment_method_types": ["card"]}, {"allowed_payment_method_types": ["card"]}, {}]
+    last_error = None
+    for extra in attempts:
+        try:
+            return stripe.checkout.Session.create(**params, **extra)
+        except Exception as e:
+            last_error = e
+            print("checkout attempt failed", list(extra), "->", repr(e)[:300])
+    raise last_error
+
+
 def create_checkout_url(tier_key):
     if not APP_URL_OK:
         raise RuntimeError("APP_URL is not the live app address")
     tier = TIERS[tier_key]
+    code = LANG_BY_NAME.get(lang(), "en")  # the language they chose, carried into Stripe and back
     params = dict(
         mode="subscription",
         client_reference_id=ss.user.id,  # lets the webhook find the account
-        metadata={"tier": tier_key, **ss.get("utm", {})},
+        locale=CHECKOUT_LOCALES.get(code, "auto"),  # Stripe's checkout page in their language ("auto" = browser language)
+        metadata={"tier": tier_key, "lang": code, **ss.get("utm", {})},
+        subscription_data={"metadata": {"tier": tier_key, "lang": code}},
         line_items=[{
             "price_data": {
                 "currency": "usd",
@@ -445,14 +527,14 @@ def create_checkout_url(tier_key):
             },
             "quantity": 1,
         }],
-        success_url=f"{APP_URL}/?checkout=success&session_id={{CHECKOUT_SESSION_ID}}",
-        cancel_url=f"{APP_URL}/?checkout=cancel",
-    )  # no payment_method_types: Stripe offers local methods per country
+        success_url=f"{APP_URL}/?checkout=success&lang={code}&session_id={{CHECKOUT_SESSION_ID}}",
+        cancel_url=f"{APP_URL}/?checkout=cancel&lang={code}",
+    )
     if ss.get("stripe_customer_id"):
         params["customer"] = ss.stripe_customer_id
     else:
         params["customer_email"] = ss.user.email
-    return stripe.checkout.Session.create(**params).url
+    return _create_checkout_session(params).url
 
 
 def go_checkout(tier_key):
@@ -743,12 +825,16 @@ def make_cover():
 
 
 # ---------------------------------------------------------------- page state
+handle_auth_callback()  # arriving from the confirmation email: log in right away
 if not ss.get("user") and not ss.get("_restore_tried"):  # refresh / locked phone: log back in from the cookie
     ss["_restore_tried"] = True
     saved_rt = cookie_get("hm_rt")
     if saved_rt:
         if not try_refresh(saved_rt):
             queue_cookie("hm_rt", None)
+if not ss.get("user") and not ss.get("_hash_bridge"):
+    ss["_hash_bridge"] = True
+    bridge_hash_tokens()
 flush_cookies()
 if ss.get("user"):
     refresh_profile()
@@ -864,6 +950,11 @@ def watch_for_pass():
 if ss.get("user") and ss.get("auto_checkout") and not ss.is_premium:
     launch_checkout(ss.pop("auto_checkout"))
     st.stop()
+
+if ss.pop("_just_confirmed", False):
+    st.success(x("msg_email_confirmed"))
+if ss.pop("_confirm_failed", False):
+    st.warning(x("login_fail"))
 
 if st.query_params.get("checkout") == "success":
     if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
@@ -1056,8 +1147,10 @@ def tab_avatars():
         return
     try:
         mine = sb.table("profiles").select("username,avatar_url").eq("id", ss.user.id).single().execute().data
-        others = sb.rpc("get_public_avatars").execute().data or []
-
+        try:
+            others = sb.rpc("get_public_avatars").execute().data or []
+        except Exception:
+            others = sb.table("public_avatars").select("username,avatar_url").limit(60).execute().data or []
     except Exception as e:
         print("avatar list error:", e)
         st.error(x("generic_err"))

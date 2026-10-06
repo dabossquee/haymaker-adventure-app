@@ -1401,3 +1401,12 @@ LOCALIZATION_VAULT["Português (Portuguese)"].update({
     "auth_title": "### 🔑 Portal de Identificação Seguro",
     "settings_status_free": "⏳ STATUS: Modo de Teste Gratuito (12 Ações)",
 })
+LOCALIZATION_VAULT["Español (Spanish)"].update({"msg_email_confirmed": "✅ ¡Correo confirmado! Ya iniciaste sesión."})
+LOCALIZATION_VAULT["Português (Portuguese)"].update({"msg_email_confirmed": "✅ E-mail confirmado! Você já está conectado."})
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({"msg_email_confirmed": "✅ 邮箱已确认，您已登录！"})
+LOCALIZATION_VAULT["Русский (Russian)"].update({"msg_email_confirmed": "✅ Почта подтверждена — вы вошли в аккаунт!"})
+LOCALIZATION_VAULT["Français (French)"].update({"msg_email_confirmed": "✅ E-mail confirmé — vous êtes connecté !"})
+LOCALIZATION_VAULT["العربية (Arabic)"].update({"msg_email_confirmed": "✅ تم تأكيد البريد الإلكتروني — لقد سجّلت الدخول!"})
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({"msg_email_confirmed": "✅ ईमेल कन्फ़र्म हो गया — आप लॉग इन हैं!"})
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({"msg_email_confirmed": "✅ メールを確認しました。ログインしました！"})
+LOCALIZATION_VAULT["한국어 (Korean)"].update({"msg_email_confirmed": "✅ 이메일이 확인되었습니다. 로그인되었습니다!"})
