@@ -1056,7 +1056,8 @@ def tab_avatars():
         return
     try:
         mine = sb.table("profiles").select("username,avatar_url").eq("id", ss.user.id).single().execute().data
-        others = sb.table("public_avatars").select("username,avatar_url").limit(60).execute().data or []
+        others = sb.rpc("get_public_avatars").execute().data or []
+
     except Exception as e:
         print("avatar list error:", e)
         st.error(x("generic_err"))
