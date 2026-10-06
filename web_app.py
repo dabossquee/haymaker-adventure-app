@@ -9,8 +9,9 @@ import html
 import json
 import os
 import re
+import time
 from datetime import datetime, timezone
-from urllib.parse import quote, unquote
+from urllib.parse import quote, unquote, urlencode
 
 import stripe
 import streamlit as st
@@ -51,6 +52,7 @@ LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match
     "fr": "Français (French)", "ar": "العربية (Arabic)", "hi": "हिन्दी (Hindi)", "ja": "日本語 (Japanese)",
     "ko": "한국어 (Korean)", "pt": "Português (Portuguese)",
 }
+LANG_BY_NAME = {v: k for k, v in LANG_CODES.items()}
 
 # ---------------------------------------------------------------- constants
 TIERS = {  # keys must match the "tier" values the Stripe webhook stores
@@ -181,6 +183,8 @@ DEFAULT_TEXT = {
     "preset_r1_bio": "A high-stakes corporate romance tangled inside a Tokyo cyber espionage ring.",
     "preset_r2_name": "Starlight Station",
     "preset_r2_bio": "Find love and connection at the absolute edge of an expanding galaxy.",
+    "msg_redirecting": "Taking you to secure checkout…",
+    "msg_activating": "Activating your pass… this takes a few seconds.",
 }
 
 
@@ -404,6 +408,9 @@ def refresh_profile():
     if ADMIN_EMAIL and str(ss.user.email).strip().lower() == ADMIN_EMAIL:
         ss.is_premium = True
         ss.tier = "titan"
+    if ss.get("stripe_verified") and not ss.is_premium:  # Stripe confirmed the payment; the database just hasn't caught up yet
+        ss.is_premium = True
+        ss.tier = ss.get("verified_tier") or ss.tier
     if ss.is_premium:
         ss.guest_tokens = 999999
 
@@ -438,7 +445,7 @@ def create_checkout_url(tier_key):
             },
             "quantity": 1,
         }],
-        success_url=f"{APP_URL}/?checkout=success",
+        success_url=f"{APP_URL}/?checkout=success&session_id={{CHECKOUT_SESSION_ID}}",
         cancel_url=f"{APP_URL}/?checkout=cancel",
     )  # no payment_method_types: Stripe offers local methods per country
     if ss.get("stripe_customer_id"):
@@ -454,6 +461,71 @@ def go_checkout(tier_key):
     except Exception as e:
         print("checkout error:", e)
         st.error(x("checkout_fail"))
+
+
+def claim_pending_tier():
+    """The pass a guest picked before signing up: this session, then their saved choice, then this browser's cookie."""
+    picked = ss.pop("pending_tier", None)
+    cookie_tier = cookie_get("hm_tier")
+    if cookie_tier:
+        queue_cookie("hm_tier", None)
+    try:
+        saved = sb.rpc("claim_pending_tier").execute().data  # also clears it in the database
+    except Exception as e:
+        print("claim_pending_tier error:", e)
+        saved = None
+    tier = picked or saved or cookie_tier
+    return tier if tier in TIERS else None
+
+
+def launch_checkout(tier_key):
+    """Send the browser straight to Stripe Checkout. A visible button stays on screen as the fallback."""
+    try:
+        url = create_checkout_url(tier_key)
+    except Exception as e:
+        print("checkout error:", e)
+        st.error(x("checkout_fail"))
+        return
+    st.title("⏳ " + x("msg_redirecting"))
+    st.link_button(x("btn_open_stripe"), url, type="primary")
+    components.html(
+        "<script>const d = window.parent.document; const a = d.createElement('a');"
+        f"a.href = {json.dumps(url)}; a.target = '_self'; d.body.appendChild(a); a.click();</script>",
+        height=0)
+
+
+def wait_for_premium(max_seconds=20):
+    """Stripe's webhook can take a few seconds to reach the database: check until the pass shows up."""
+    deadline = time.time() + max_seconds
+    while time.time() < deadline:
+        try:
+            row = sb.table("profiles").select("is_premium").eq("id", ss.user.id).single().execute().data
+            if row and row.get("is_premium"):
+                return True
+        except Exception as e:
+            print("wait_for_premium error:", e)
+        time.sleep(2)
+    return False
+
+
+def verify_checkout_session(session_id):
+    """Ask Stripe itself whether this checkout was paid by this user (the webhook may be late or misconfigured)."""
+    if not (session_id and STRIPE_SECRET and ss.get("user")):
+        return False
+    try:
+        cs = stripe.checkout.Session.retrieve(session_id)
+        if (getattr(cs, "client_reference_id", None) == ss.user.id
+                and getattr(cs, "status", None) == "complete"
+                and getattr(cs, "payment_status", None) in ("paid", "no_payment_required")):
+            ss.stripe_verified = True
+            try:
+                ss.verified_tier = cs["metadata"]["tier"]
+            except Exception:
+                ss.verified_tier = None
+            return True
+    except Exception as e:
+        print("verify checkout error:", e)
+    return False
 
 
 def billing_button(key):
@@ -493,15 +565,18 @@ def render_auth_form(prefix):
                 st.warning(x("pw_short"))
             else:
                 try:
-                    sb.auth.sign_up({"email": email, "password": password,
-                                     "options": {"data": {"trial_used": ss.get("guest_tokens", FREE_ACTIONS) <= 0}}})
+                    code = LANG_BY_NAME.get(lang(), "en")
+                    sb.auth.sign_up({
+                        "email": email, "password": password,
+                        "options": {
+                            "email_redirect_to": f"{APP_URL}/?" + urlencode({"lang": code, **ss.get("utm", {})}),
+                            "data": {"trial_used": ss.get("guest_tokens", FREE_ACTIONS) <= 0,
+                                     "pending_tier": ss.get("pending_tier"), "lang": code},
+                        }})
                     st.success(x("signup_ok"))
                 except Exception as e:
-                    import traceback
-                    print("signup error:", type(e).__name__, repr(e), getattr(e, "status", None), getattr(e, "code", None))
-                    traceback.print_exc()
-                    st.error(f"{x('generic_err')} [{type(e).__name__}]")
-
+                    print("signup error:", e)
+                    st.error(x("generic_err"))
     else:
         if st.button(x("btn_login_submit"), key=f"{prefix}_login", use_container_width=True):
             try:
@@ -528,10 +603,6 @@ def render_paywall():
     st.title(x("paywall_title"))
     st.write(x("paywall_subtitle"))
     logged_in = bool(ss.get("user"))
-    if logged_in:
-        pending = ss.pop("pending_tier", None)  # a pass they picked before creating the account
-        if pending in TIERS:
-            go_checkout(pending)
     for col, (key, prefix, emoji) in zip(st.columns(3), TIER_ORDER):
         tier = TIERS[key]
         with col:
@@ -547,8 +618,9 @@ def render_paywall():
                 if logged_in:
                     go_checkout(key)
                 else:
-                    ss.pending_tier = key
+                    ss.pending_tier = key  # remembered through sign-up, email confirmation and login
                     ss.show_auth = True
+                    queue_cookie("hm_tier", key)
     if not logged_in and ss.get("show_auth"):
         st.info(x("paywall_login"))
         render_auth_form("paywall")
@@ -686,6 +758,11 @@ if ss.get("user") and not ss.get("_save_checked"):
     ss["_save_checked"] = True
     if not ss.world_engine["world_name"]:
         load_game()
+if ss.get("user") and not ss.is_premium and not ss.get("_tier_claimed"):
+    ss["_tier_claimed"] = True
+    picked_tier = claim_pending_tier()
+    if picked_tier:
+        ss.auto_checkout = picked_tier  # go straight to Stripe: no second click on the pricing page
 engine = ss.world_engine
 char = engine["player_character"]
 
@@ -771,13 +848,37 @@ def render_story_history():
             st.markdown(bubble("ai", fmt_ai(m["content"])), unsafe_allow_html=True)
 
 
+@st.fragment(run_every=5)
+def watch_for_pass():
+    """While the paywall is open, notice the moment the account turns premium and unlock it without a click."""
+    if not ss.get("user") or ss.is_premium:
+        return
+    try:
+        row = sb.table("profiles").select("is_premium").eq("id", ss.user.id).single().execute().data
+    except Exception:
+        return
+    if row and row.get("is_premium"):
+        st.rerun()
+
+
+if ss.get("user") and ss.get("auto_checkout") and not ss.is_premium:
+    launch_checkout(ss.pop("auto_checkout"))
+    st.stop()
+
 if st.query_params.get("checkout") == "success":
+    if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
+        ss["_payment_waited"] = True  # wait once per visit, not on every click
+        with st.spinner(x("msg_activating")):
+            paid = wait_for_premium(20) or verify_checkout_session(st.query_params.get("session_id"))
+        if paid:
+            st.rerun()
     st.success(x("msg_payment_success"))
 if not (ss.is_premium or ss.guest_tokens > 0):
     if engine["world_name"] and engine["story_log"]:  # show the cliffhanger, then the paywall under it
         st.title(f"🎬 {engine['world_name'].upper()}")
         render_story_history()
         st.divider()
+    watch_for_pass()
     render_paywall()
     st.stop()
 

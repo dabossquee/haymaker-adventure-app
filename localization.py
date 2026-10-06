@@ -1288,3 +1288,116 @@ LOCALIZATION_VAULT["Português (Portuguese)"].update({
     "preset_r2_name": "Estação Luz Estelar",
     "preset_r2_bio": "Encontre amor e conexão no limite de uma galáxia em expansão.",
 })
+LOCALIZATION_VAULT["Español (Spanish)"].update({
+    "msg_redirecting": "Llevándote al pago seguro…",
+    "msg_activating": "Activando tu pase… tarda unos segundos.",
+})
+LOCALIZATION_VAULT["Português (Portuguese)"].update({
+    "msg_redirecting": "Levando você ao pagamento seguro…",
+    "msg_activating": "Ativando seu passe… leva alguns segundos.",
+})
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({
+    "msg_redirecting": "正在带您前往安全结账…",
+    "msg_activating": "正在激活您的通行证…需要几秒钟。",
+})
+LOCALIZATION_VAULT["Русский (Russian)"].update({
+    "msg_redirecting": "Переходим к безопасной оплате…",
+    "msg_activating": "Активируем ваш пропуск… это займёт несколько секунд.",
+})
+LOCALIZATION_VAULT["Français (French)"].update({
+    "msg_redirecting": "Redirection vers le paiement sécurisé…",
+    "msg_activating": "Activation de votre pass… cela prend quelques secondes.",
+})
+LOCALIZATION_VAULT["العربية (Arabic)"].update({
+    "msg_redirecting": "جارٍ نقلك إلى الدفع الآمن…",
+    "msg_activating": "جارٍ تفعيل باقتك… يستغرق ذلك بضع ثوانٍ.",
+})
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({
+    "msg_redirecting": "आपको सुरक्षित चेकआउट पर ले जा रहे हैं…",
+    "msg_activating": "आपका पास सक्रिय हो रहा है… इसमें कुछ सेकंड लगते हैं।",
+})
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({
+    "msg_redirecting": "安全な決済ページへ移動しています…",
+    "msg_activating": "パスを有効化しています…数秒かかります。",
+})
+LOCALIZATION_VAULT["한국어 (Korean)"].update({
+    "msg_redirecting": "안전한 결제 페이지로 이동 중…",
+    "msg_activating": "패스를 활성화하는 중… 몇 초 걸립니다.",
+})
+# ---- FIXES: replaces wrong-language and corrupted lines above ----
+LOCALIZATION_VAULT["Español (Spanish)"].update({
+    "lbl_factions": "##### 🦅 Arquitectura de Facciones y Elementos de Fricción",
+    "lbl_enemies": "💀 Nombre de la Facción Rebelde / Enemiga",
+    "lbl_directives": "✍️ Directivas / Restricciones Ambientales Personalizadas",
+    "btn_deploy": "🚀 Desplegar y Encender el Motor Central",
+    "msg_success": "🎉 ¡Semilla de la línea de tiempo del universo compilada con éxito!",
+    "genres": ["Ciencia Ficción", "Fantasía Oscura", "Cyberpunk", "Terror", "Romance", "Otro"],
+    "atmosphere_options": ["Vacío (Espacio)", "Tenue / Tóxica", "Base Respirable", "Hiperdensa / Corrosiva"],
+    "trial_active": "⏳ PRUEBA ACTIVA: {} Acciones Restantes",
+    "pool_depleted": "🔒 ¡Acciones Agotadas!",
+    "premium_pilot": "👑 PILOTO PREMIUM AUTENTICADO: {}",
+    "active_records_title": "#### 👥 Registros Activos de la Comunidad",
+    "your_identity_title": "##### 👑 TU IDENTIDAD ACTIVA FORJADA",
+    "allied_dreamers_title": "##### 👥 SOÑADORES DE LÍNEAS DE TIEMPO ALIADAS",
+    "empty_ledger": "✨ El registro público está vacío por ahora. ¡Sé el primero en forjar una identidad arriba!",
+    "signin_prompt": "🔑 Inicia sesión en la pestaña 'Perfil de Cuenta' para ver los registros de personajes en vivo.",
+    "dreamer_lbl": "Soñador... {}",
+    "music_prompt": "🎵 Para escuchar música, únete o forja una línea de tiempo",
+    "unlimited_actions": "¿Quieres acciones ilimitadas?",
+    "btn_signin": "Iniciar sesión",
+    "btn_signup": "Registrarse",
+    "settings_control": "⚙️ Configuración",
+    "sub_genre_title": "🌌 Selecciona la Variante de tu Línea de Tiempo",
+    "community_timeline_title": "📜 Línea de Tiempo Pública de la Comunidad",
+    "btn_join_world": "⚡ Entrar a Este Universo de la Comunidad",
+    "auth_title": "### 🔑 Portal de Identificación Seguro",
+    "auth_subtitle": "Autoriza tu perfil para guardar líneas de tiempo personalizadas.",
+    "lbl_email": "Correo electrónico de la cuenta:",
+    "lbl_pass": "Contraseña segura:",
+    "btn_login_submit": "🔐 Autorizar Sesión",
+    "btn_register_submit": "🚀 Forjar Nueva Identidad de Perfil",
+    "sub_genres_lbls": ["Ciencia Ficción", "Fantasía Oscura", "Cyberpunk", "Terror", "Romance", "Otro"],
+    "btn_launch_scenario": "🎮 Iniciar Escenario",
+    "settings_sub_status_title": "💳 Estado de la Suscripción",
+    "settings_status_free": "⏳ ESTADO: Modo de Prueba Gratuita (12 Acciones)",
+    "settings_footer": "Arquitectura de Seguridad de Haymaker Industry v1.02 • Marco de Privacidad Protegido.",
+    "hub_title": "🪐 Centro Principal de Haymaker Industry",
+    "hub_subtitle": "Explora realidades alternas o forja tu propia línea de tiempo",
+    "profile_sync_lbl": "👑 Perfil Seguro Sincronizado",
+    "btn_logout_sidebar": "🚪 Cerrar Sesión",
+    "btn_logout_main": "🚪 Cerrar Sesión de la Cuenta",
+    "tier1_desc": "Acciones ilimitadas en todos los mundos, con una buena memoria de historia.",
+})
+
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({
+    "tier3_desc": "包含斯巴达通行证的全部权益，拥有最长的故事记忆，并可抢先体验新功能。",
+    "sub_genres_lbls": ["科幻小说", "黑暗幻想", "赛博朋克", "恐怖", "浪漫", "其他"],
+    "music_prompt": "🎵 要听音乐，请加入或打造世界时间线",
+    "settings_status_free": "⏳ 状态：免费试用模式 (12 次操作)",
+    "profile_sync_lbl": "👑 安全个人资料已同步",
+    "legal_sec3_title": "3. 数据加密与个人资料保留",
+})
+
+LOCALIZATION_VAULT["العربية (Arabic)"].update({
+    "active_records_title": "#### 👥 سجلات المجتمع النشطة",
+    "music_prompt": "🎵 للاستماع للموسيقى، انضم لعالم",
+})
+
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({
+    "form_subtitle": "物語のシードを初期化する前に、カスタムタイムラインの根本的なメカニズムを調整します。",
+    "profile_sync_lbl": "👑 セキュアなプロファイルが同期されました",
+    "tier3_desc": "スパルタンパスの全機能に加え、最長のストーリーメモリーと新機能の先行アクセス。",
+})
+
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({
+    "paywall_login": "जारी रखने और पास अनलॉक करने के लिए मुफ़्त खाता बनाएँ या लॉग इन करें।",
+})
+
+LOCALIZATION_VAULT["Français (French)"].update({
+    "tab_avatars": "🎭 Avatars de la Communauté",
+})
+
+LOCALIZATION_VAULT["Português (Portuguese)"].update({
+    "auth_title": "### 🔑 Portal de Identificação Seguro",
+    "settings_status_free": "⏳ STATUS: Modo de Teste Gratuito (12 Ações)",
+})
