@@ -30,7 +30,7 @@ from styles import CHAT_CSS, GLOBAL_CSS
 
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 # Entry point: the mobile viewport rule goes in before anything else on the page.
-st.markdown('<span class="hm-hidden"><meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"></span>',
+st.markdown('<span class="hm-hidden"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"></span>',
             unsafe_allow_html=True)
 load_dotenv()
 
@@ -59,6 +59,8 @@ _notice_slot = st.empty()
 _notices = _notice_slot.container()
 
 FREE_ACTIONS = 5  # free story actions before the paywall
+TYPEWRITER_DELAY = 0.02  # seconds per character: the story types out at about 50 characters a second
+TYPEWRITER_FRAME_CHARS = 2  # characters drawn per screen update (keeps the page smooth)
 ENABLE_PASSWORD_RESET = False  # hidden at launch: the reset link has no page to set a new password yet
 LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match localization.py)
     "en": "English", "es": "Español (Spanish)", "zh": "简体中文 (Mandarin)", "ru": "Русский (Russian)",
@@ -72,25 +74,25 @@ HUB_TAB_KEYS = ["explore", "mine", "create", "avatars", "profile"]  # ?tab=profi
 HUB_PROFILE_IDX = HUB_TAB_KEYS.index("profile")
 CREATE_FORM_KEYS = ("cr_name", "cr_char", "cr_story", "cr_allies", "cr_enemies", "cr_lore")
 
-VIEWPORT_JS = """<script>
-const d = window.parent.document;
-let m = d.querySelector('meta[name="viewport"]');
-if (!m) { m = d.createElement('meta'); m.name = 'viewport'; d.head.appendChild(m); }
-m.setAttribute('content', 'width=device-width, initial-scale=1.0, interactive-widget=resizes-content');
-</script>"""
+# The viewport rule. interactive-widget=resizes-content (Android Chrome) makes the page resize cleanly when the keyboard opens.
+VIEWPORT_CONTENT = ("width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, "
+                    "interactive-widget=resizes-content")
 
 MOBILE_CSS = """
 [data-testid="stElementContainer"]:has(.hm-hidden), .element-container:has(.hm-hidden) { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
-html, body, .stApp { max-width: 100vw; overflow-x: hidden; }
+html, body, .stApp { max-width: 100vw; overflow-x: hidden; touch-action: pan-x pan-y; }
 img, video, iframe, canvas { max-width: 100%; }
 /* 16px text in every field: phones only auto-zoom into fields that are smaller than that */
 input, textarea, select,
 [data-baseweb="input"] input, [data-baseweb="textarea"] textarea, [data-baseweb="select"] input,
 [data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea, [data-testid="stNumberInput"] input,
 [data-testid="stChatInput"] textarea, [data-testid="stChatInputTextArea"] { font-size: 16px !important; }
+/* viewport-fit=cover lets the page reach the screen edges: keep content clear of the notch and the home bar */
+.stApp { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+[data-testid="stBottom"] > div { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)) !important; }
 @media (max-width: 768px) {
-  .block-container { padding: 1rem 0.8rem 4rem 0.8rem !important; }
+  .block-container { padding: max(1rem, env(safe-area-inset-top)) 0.8rem 4rem 0.8rem !important; }
   h1 { font-size: 1.6rem !important; line-height: 1.25 !important; }
   h2 { font-size: 1.35rem !important; }
   h3 { font-size: 1.15rem !important; }
@@ -107,6 +109,17 @@ input, textarea, select,
 # Runs inside the page itself (not inside a hidden frame), so it keeps working after the frame is replaced.
 HELPERS_CODE = """(function () {
   var doc = document;
+  var VIEWPORT = "__VIEWPORT__";
+  function lockViewport() {  /* the viewport tag always reads exactly as configured */
+    var m = doc.querySelector('meta[name="viewport"]');
+    if (!m) { m = doc.createElement("meta"); m.name = "viewport"; doc.head.appendChild(m); }
+    if (m.getAttribute("content") !== VIEWPORT) { m.setAttribute("content", VIEWPORT); }
+    return m;
+  }
+  new MutationObserver(function () { lockViewport(); }).observe(lockViewport(), { attributes: true, attributeFilter: ["content"] });
+  ["gesturestart", "gesturechange", "gestureend"].forEach(function (name) {  /* iPhone Safari ignores user-scalable=no: stop its pinch gestures here */
+    doc.addEventListener(name, function (e) { e.preventDefault(); }, { passive: false });
+  });
   var touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
   function field() {
     var a = doc.activeElement;
@@ -136,7 +149,7 @@ HELPERS_CODE = """(function () {
       }, 100);
     }, delay || 0);
   };
-})();"""
+})();""".replace("__VIEWPORT__", VIEWPORT_CONTENT)
 
 # ---------------------------------------------------------------- constants
 TIERS = {  # keys must match the "tier" values the Stripe webhook stores
@@ -384,8 +397,7 @@ _rtl_css = ".stApp{direction:rtl;}" if lang().startswith("العربية") else 
 st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}\n{MOBILE_CSS}\n{_rtl_css}</style>", unsafe_allow_html=True)
 if not ss.get("_viewport_set"):
     ss["_viewport_set"] = True
-    with _scripts:
-        components.html(VIEWPORT_JS, height=0)
+    run_in_page()  # installs the viewport lock, the pinch/double-tap blockers and the keyboard/scroll helpers
 
 # ---------------------------------------------------------------- clients
 def key_role(key):
@@ -428,6 +440,8 @@ def adopt_session(res):
     ss.user = getattr(res, "user", None) or (session.user if session else None)
     ss.access_token = session.access_token if session else None
     ss.refresh_token = session.refresh_token if session else None
+    if ss.access_token:
+        sb.postgrest.auth(ss.access_token)  # the very next database call already runs as this person
     if ss.refresh_token:
         queue_cookie("hm_rt", ss.refresh_token)
 
@@ -522,6 +536,10 @@ def refresh_profile():
                    .eq("id", ss.user.id).single().execute().data)
         except Exception as e:
             print("ensure_profile error:", e)
+    cache = ss.get("profile_cache")
+    if row is None and cache and cache.get("uid") == ss.user.id:  # database unreachable: keep the last known state
+        row = {"is_premium": cache["is_premium"], "tokens_remaining": cache["tokens"],
+               "stripe_customer_id": cache["customer"], "tier": cache["tier"]}
     ss.is_premium = bool(row and row.get("is_premium"))
     ss.guest_tokens = min(int(row["tokens_remaining"]), FREE_ACTIONS) if row else 0
     ss.stripe_customer_id = row.get("stripe_customer_id") if row else None
@@ -539,6 +557,8 @@ def refresh_profile():
         ss.tier = ss.get("verified_tier") or ss.tier
     if ss.is_premium:
         ss.guest_tokens = 999999
+    ss["profile_cache"] = {"uid": ss.user.id, "is_premium": ss.is_premium, "tokens": ss.guest_tokens,
+                           "tier": ss.tier, "customer": ss.get("stripe_customer_id")}
 
 
 def do_logout():
@@ -613,34 +633,57 @@ def go_checkout(tier_key):
         st.error(x("checkout_fail"))
 
 
+def checkout_recently_launched():
+    """True if this browser was sent to Stripe in the last 30 minutes: no second automatic trip."""
+    raw = cookie_get("hm_checkout")
+    try:
+        return bool(raw) and (time.time() * 1000 - float(raw)) < 30 * 60 * 1000
+    except ValueError:
+        return False
+
+
 def claim_pending_tier():
-    """The pass a guest picked before signing up: this session, then their saved choice, then this browser's cookie."""
+    """The pass picked during THIS visit. Older leftovers (a cookie, a saved choice) are cleared and never obeyed."""
     picked = ss.pop("pending_tier", None)
-    cookie_tier = cookie_get("hm_tier")
-    if cookie_tier:
+    if cookie_get("hm_tier"):
         queue_cookie("hm_tier", None)
     try:
-        saved = sb.rpc("claim_pending_tier").execute().data  # also clears it in the database
+        sb.rpc("claim_pending_tier").execute()  # wipes any old saved choice; its answer is deliberately ignored
     except Exception as e:
         print("claim_pending_tier error:", e)
-        saved = None
-    tier = picked or saved or cookie_tier
-    return tier if tier in TIERS else None
+    if ss.get("_checkout_inflight") or checkout_recently_launched():
+        return None
+    return picked if picked in TIERS else None
+
+
+def finish_signup(banner=True):
+    """Right after someone is signed in: read their profile once, drop stale leftovers, then continue into the app."""
+    refresh_profile()  # caches their plan and free actions in this session
+    queue_cookie("hm_tier", None)  # a pass picked in an earlier visit must never fire again
+    ss.pop("_checkout_inflight", None)
+    ss.pop("auto_checkout", None)
+    ss["_tier_claimed"] = False  # the pass picked in this visit (if any) is claimed exactly once, on the next run
+    if banner:
+        ss["_just_signed_up"] = True
 
 
 def launch_checkout(tier_key):
-    """Send the browser straight to Stripe Checkout. A visible button stays on screen as the fallback."""
+    """Send the browser straight to Stripe Checkout, once. A visible button stays on screen as the fallback."""
     try:
         url = create_checkout_url(tier_key)
     except Exception as e:
         print("checkout error:", e)
         st.error(x("checkout_fail"))
         return
+    ss["_checkout_inflight"] = True  # until they come back, nothing may start another automatic trip
     st.title("⏳ " + x("msg_redirecting"))
     st.link_button(x("btn_open_stripe"), url, type="primary")
     with _scripts:
         components.html(
-            "<script>const d = window.parent.document; const a = d.createElement('a');"
+            "<script>const d = window.parent.document;"
+            "d.cookie = 'hm_tier=; Max-Age=0; path=/; SameSite=Lax';"  # cleared in the same breath as the redirect
+            "d.cookie = 'hm_checkout=' + Date.now() + '; Max-Age=1800; path=/; SameSite=Lax';"
+            "const a = d.createElement('a');"
             f"a.href = {json.dumps(url)}; a.target = '_self'; d.body.appendChild(a); a.click();</script>",
             height=0)
 
@@ -720,21 +763,21 @@ def render_auth_form(prefix):
                     res = sb.auth.sign_up({
                         "email": email, "password": password,
                         "options": {"data": {"trial_used": ss.get("guest_tokens", FREE_ACTIONS) <= 0,
-                                             "pending_tier": ss.get("pending_tier"),
                                              "lang": LANG_BY_NAME.get(lang(), "en")}}})
                 except Exception as e:
                     print("signup error:", repr(e))
                 if res is not None and getattr(res, "session", None):  # no email step: they are signed in already
                     adopt_session(res)
-                    ss["_just_signed_up"] = True
+                    finish_signup()
                     st.rerun()
                 if try_sign_in(email, password):  # also covers an email address that already has an account
-                    ss["_just_signed_up"] = True
+                    finish_signup(banner=res is not None)
                     st.rerun()
                 st.error(x("msg_signin_failed"))
     else:
         if st.button(x("btn_login_submit"), key=f"{prefix}_login", use_container_width=True):
             if try_sign_in(email, password):
+                finish_signup(banner=False)
                 st.rerun()
             st.error(x("msg_signin_failed"))
         if ENABLE_PASSWORD_RESET:
@@ -774,9 +817,8 @@ def render_paywall():
                     if logged_in:
                         go_checkout(key)
                     else:
-                        ss.pending_tier = key  # kept in this session, so signing up carries straight on to checkout
+                        ss.pending_tier = key  # kept in this session only, so signing up carries straight on to checkout
                         ss.show_auth = True
-                        queue_cookie("hm_tier", key)
         if not logged_in and ss.get("show_auth"):
             st.info(x("paywall_login"))
             render_auth_form("paywall")
@@ -807,7 +849,7 @@ def bubble(role, body):
 
 def fmt_ai(text):
     """Escape everything the model wrote, then restyle NPC dialogue lines safely."""
-    safe = html.escape(re.sub(r"\[[^\]]*\]", "", text).strip())
+    safe = html.escape(re.sub(r"\[[^\]]*\]?", "", text).strip())  # also hides a tag that is still being typed
     safe = re.sub(r'(?m)^([^:\n]{1,40}): (&quot;.*&quot;)\s*$',
                   r"\1: <span style='color:#FF4B4B;font-weight:bold;'>\2</span>", safe)
     return safe.replace("\n", "<br>")
@@ -847,17 +889,29 @@ def build_system_prompt():
 
 
 def narrate(log, holder=None):
+    """Ask the narrator. With a holder, the reply is typed out like a typewriter instead of appearing in bursts."""
     window = MEMORY_TURNS.get(ss.get("tier"), 10)
     history = [{"role": m["role"], "content": m["content"]} for m in log[-window:]]
     stream = openai_client.chat.completions.create(
         model="gpt-4o-mini", temperature=0.7, max_tokens=220, stream=True,
         messages=[{"role": "system", "content": build_system_prompt()}] + history)
-    text = ""
+    text = ""    # everything the model has sent (kept for the story log)
+    shown = ""   # what has been typed on screen so far
+    if holder is not None:
+        holder.markdown(bubble("ai", "▌"), unsafe_allow_html=True)
     for chunk in stream:
-        if chunk.choices and chunk.choices[0].delta.content:
-            text += chunk.choices[0].delta.content
-            if holder is not None:
-                holder.markdown(bubble("ai", fmt_ai(text)), unsafe_allow_html=True)
+        piece = chunk.choices[0].delta.content if chunk.choices and chunk.choices[0].delta.content else ""
+        if not piece:
+            continue
+        text += piece
+        if holder is None:
+            continue
+        for i in range(0, len(piece), TYPEWRITER_FRAME_CHARS):  # the pause below is what makes it feel like typing
+            shown += piece[i:i + TYPEWRITER_FRAME_CHARS]
+            holder.markdown(bubble("ai", fmt_ai(shown) + "▌"), unsafe_allow_html=True)
+            time.sleep(TYPEWRITER_DELAY * TYPEWRITER_FRAME_CHARS)
+    if holder is not None:
+        holder.markdown(bubble("ai", fmt_ai(text)), unsafe_allow_html=True)  # final text, no cursor
     return text
 
 
@@ -1022,15 +1076,22 @@ def watch_for_pass():
         st.rerun()
 
 
-if ss.get("user") and ss.get("auto_checkout") and not ss.is_premium:
-    launch_checkout(ss.pop("auto_checkout"))
-    st.stop()
+_checkout_param = st.query_params.get("checkout")
+if _checkout_param:  # back from Stripe: that trip is over, nothing may send them there again automatically
+    ss.pop("_checkout_inflight", None)
+    ss.pop("auto_checkout", None)
+
+if ss.get("auto_checkout"):
+    _auto_tier = ss.pop("auto_checkout")  # taken out of the session first, so a rerun can never repeat it
+    if ss.get("user") and not ss.is_premium and not ss.get("_checkout_inflight"):
+        launch_checkout(_auto_tier)
+        st.stop()
 
 if ss.pop("_just_signed_up", False):
     with _notices:
         st.success(x("msg_account_ready"))
 
-if st.query_params.get("checkout") == "success":
+if _checkout_param == "success":
     if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
         ss["_payment_waited"] = True  # wait once per visit, not on every click
         with _notices:
@@ -1040,6 +1101,10 @@ if st.query_params.get("checkout") == "success":
             st.rerun()
     with _notices:
         st.success(x("msg_payment_success"))
+if _checkout_param:  # drop the leftover address parameters so a refresh cannot replay them
+    for _k in ("checkout", "session_id"):
+        if _k in st.query_params:
+            del st.query_params[_k]
 if not (ss.is_premium or ss.guest_tokens > 0):
     if engine["world_name"] and engine["story_log"]:  # show the cliffhanger, then the paywall under it
         st.title(f"🎬 {engine['world_name'].upper()}")
@@ -1315,15 +1380,16 @@ def render_game():
             "background-attachment:fixed !important;}</style>", unsafe_allow_html=True)
 
     if not engine["story_log"]:  # opening scene
-        with st.spinner("⏳"):
-            if not ss.get("world_cover_url"):
+        if not ss.get("world_cover_url"):
+            with st.spinner("⏳"):
                 ss.world_cover_url = make_cover()
-            try:
-                opening = narrate([{"role": "user", "content": "Wake up and look around."}])
-            except Exception as e:
-                print("opening error:", e)
-                st.error(x("narrator_down"))
-                st.stop()
+        holder = st.empty()
+        try:
+            opening = narrate([{"role": "user", "content": "Wake up and look around."}], holder)
+        except Exception as e:
+            print("opening error:", e)
+            holder.error(x("narrator_down"))
+            st.stop()
         apply_tags(opening)
         engine["story_log"] += [{"role": "user", "content": "Wake up and look around.", "hidden": True},
                                 {"role": "assistant", "content": opening}]
