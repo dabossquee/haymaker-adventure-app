@@ -10,7 +10,7 @@ import json
 import os
 import re
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from urllib.parse import quote, unquote
 
 import stripe
@@ -58,7 +58,9 @@ _scripts = _script_slot.container()
 _notice_slot = st.empty()
 _notices = _notice_slot.container()
 
-FREE_ACTIONS = 5  # free story actions before the paywall
+FREE_ACTIONS = 12  # free story actions before the hard paywall
+PREMIUM_GRACE_DAYS = 3  # a paid period that ran out this long ago no longer counts, even if a webhook was missed
+STORY_MEMORY_TURNS = 20  # how many past messages the narrator sees: the same for everyone
 TYPEWRITER_DELAY = 0.02  # seconds per character: the story types out at about 50 characters a second
 TYPEWRITER_FRAME_CHARS = 2  # characters drawn per screen update (keeps the page smooth)
 ENABLE_PASSWORD_RESET = False  # hidden at launch: the reset link has no page to set a new password yet
@@ -138,6 +140,11 @@ HELPERS_CODE = """(function () {
     if (t && t.closest && t.closest('textarea, input, select, button, [role="option"], [role="listbox"], [data-baseweb="popover"], [data-testid="stChatInput"]')) { return; }
     a.blur();
   }, true);
+  window.hmLockChat = function () {  /* grey out the chat box and its send button at once */
+    var box = doc.querySelector('[data-testid="stChatInput"]');
+    if (!box) { return; }
+    box.querySelectorAll("textarea, button").forEach(function (el) { el.disabled = true; });
+  };
   window.hmScrollTo = function (selector, delay) {  /* slide the screen to an element once it exists */
     setTimeout(function () {
       var tries = 0;
@@ -152,13 +159,17 @@ HELPERS_CODE = """(function () {
 })();""".replace("__VIEWPORT__", VIEWPORT_CONTENT)
 
 # ---------------------------------------------------------------- constants
-TIERS = {  # keys must match the "tier" values the Stripe webhook stores
-    "avatar": {"name": "Avatar Pass", "cents": 499, "color": "#a78bfa"},
-    "spartan": {"name": "Spartan Pass", "cents": 1099, "color": "#c084fc"},
-    "titan": {"name": "Titan Pass", "cents": 1999, "color": "#f472b6"},
+# The three plans. All give exactly the same access; only the billing period differs.
+# The keys are what the Stripe webhook stores in profiles.tier.
+TIERS = {
+    "weekly": {"product": "Haymaker Weekly Premium Pass", "cents": 1000, "interval": "week", "interval_count": 1,
+               "name_key": "tier1_name", "desc_key": "tier1_desc", "per_key": "per_week", "emoji": "👑", "color": "#a78bfa"},
+    "explorer": {"product": "Haymaker 6-Month Explorer Pass", "cents": 5000, "interval": "month", "interval_count": 6,
+                 "name_key": "tier2_name", "desc_key": "tier2_desc", "per_key": "per_6months", "emoji": "🧭", "color": "#c084fc"},
+    "legend": {"product": "Haymaker 1-Year Ultimate Legend Pass", "cents": 10000, "interval": "year", "interval_count": 1,
+               "name_key": "tier3_name", "desc_key": "tier3_desc", "per_key": "per_year", "emoji": "🪐", "color": "#f472b6"},
 }
-TIER_ORDER = [("avatar", "tier1", "👑"), ("spartan", "tier2", "⚔️"), ("titan", "tier3", "🪐")]
-MEMORY_TURNS = {"avatar": 12, "spartan": 24, "titan": 40}  # how many past messages the narrator sees
+TIER_ORDER = ("weekly", "explorer", "legend")
 
 PLAYLIST = ["assets/menu_theme.mp3", "assets/adventure_loop.mp3"] + [f"assets/track_{i}.mp3" for i in range(1, 9)]
 
@@ -202,12 +213,15 @@ DEFAULT_TEXT = {
     "paywall_title": "🔒 Your free actions are used up",
     "paywall_subtitle": "Choose a pass to keep exploring.",
     "paywall_login": "Create a free account or log in to continue and unlock a pass.",
-    "tier1_name": "Avatar Pass",
-    "tier1_desc": "Unlimited actions across every world, with a solid story memory.",
-    "tier2_name": "Spartan Pass",
-    "tier2_desc": "Everything in Avatar, plus a longer story memory for multi-hour adventures.",
-    "tier3_name": "Titan Pass",
-    "tier3_desc": "Everything in Spartan, with the longest story memory and early access to new features.",
+    "tier1_name": "Weekly Premium Pass",
+    "tier1_desc": "Full access to the story engine for one week. Renews automatically every week until you cancel.",
+    "tier2_name": "6-Month Explorer Pass",
+    "tier2_desc": "Full access to the story engine for six months. Renews automatically every 6 months until you cancel.",
+    "tier3_name": "1-Year Ultimate Legend Pass",
+    "tier3_desc": "Full access to the story engine for one year. Renews automatically every year until you cancel.",
+    "paywall_note": "All passes include exactly the same full access. You are only choosing your billing period. Cancel anytime in your account.",
+    "per_6months": "/ 6 months",
+    "per_year": "/ year",
     "btn_activate": "Activate Pass",
     "legal_compliance_link": "⚖️ Terms of Service & Privacy Policy",
     "per_week": "/ wk",
@@ -507,6 +521,34 @@ def delete_game():
             print("delete save error:", e)
 
 
+PROFILE_COLUMNS = ("is_premium,tokens_remaining,stripe_customer_id,tier,premium_until",
+                   "is_premium,tokens_remaining,stripe_customer_id,tier")  # the second works before premium_until exists
+
+
+def fetch_profile_row(uid):
+    last_error = None
+    for cols in PROFILE_COLUMNS:
+        try:
+            return sb.table("profiles").select(cols).eq("id", uid).single().execute().data
+        except Exception as e:
+            last_error = e
+    raise last_error
+
+
+def premium_still_valid(row):
+    """Premium needs the flag AND a paid period that has not run out (a few days of grace for late renewals)."""
+    if not (row and row.get("is_premium")):
+        return False
+    until = row.get("premium_until")
+    if not until:
+        return True  # no end date stored (older accounts): trust the flag
+    try:
+        end = datetime.strptime(str(until)[:19].replace("T", " "), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return True
+    return end + timedelta(days=PREMIUM_GRACE_DAYS) > datetime.now(timezone.utc)
+
+
 def refresh_profile():
     """Premium status and trial tokens always come from the database."""
     if ss.pop("guest_exhausted", False):  # they already used the free actions as a guest: no second trial
@@ -516,9 +558,7 @@ def refresh_profile():
             print("burn_trial error:", e)
     row = None
     try:
-        row = (sb.table("profiles")
-               .select("is_premium,tokens_remaining,stripe_customer_id,tier,interface_language")
-               .eq("id", ss.user.id).single().execute().data)
+        row = fetch_profile_row(ss.user.id)
     except Exception as e:
         print("profile error:", e)
         if "jwt" in str(e).lower():  # access token expired: try the refresh token first
@@ -531,23 +571,21 @@ def refresh_profile():
     if row is None and ss.get("user"):  # the signup trigger skipped this user: create the missing profile row once
         try:
             sb.rpc("ensure_profile").execute()
-            row = (sb.table("profiles")
-                   .select("is_premium,tokens_remaining,stripe_customer_id,tier,interface_language")
-                   .eq("id", ss.user.id).single().execute().data)
+            row = fetch_profile_row(ss.user.id)
         except Exception as e:
             print("ensure_profile error:", e)
     cache = ss.get("profile_cache")
     if row is None and cache and cache.get("uid") == ss.user.id:  # database unreachable: keep the last known state
         row = {"is_premium": cache["is_premium"], "tokens_remaining": cache["tokens"],
                "stripe_customer_id": cache["customer"], "tier": cache["tier"]}
-    ss.is_premium = bool(row and row.get("is_premium"))
+    ss.is_premium = premium_still_valid(row)
     ss.guest_tokens = min(int(row["tokens_remaining"]), FREE_ACTIONS) if row else 0
     ss.stripe_customer_id = row.get("stripe_customer_id") if row else None
     ss.tier = row.get("tier") if row else None
     if ADMIN_EMAIL and str(ss.user.email).strip().lower() == ADMIN_EMAIL:
         if ADMIN_USER_ID and str(ss.user.id) == ADMIN_USER_ID:
             ss.is_premium = True
-            ss.tier = "titan"
+            ss.tier = "legend"
         elif not ss.get("_admin_warned"):
             ss["_admin_warned"] = True
             print("SECURITY: this email matches ADMIN_EMAIL but ADMIN_USER_ID is missing or different, so admin access is OFF. "
@@ -605,13 +643,14 @@ def create_checkout_url(tier_key):
         client_reference_id=ss.user.id,  # lets the webhook find the account
         locale=CHECKOUT_LOCALES.get(code, "auto"),  # Stripe's checkout page in their language ("auto" = browser language)
         metadata={"tier": tier_key, "lang": code, **ss.get("utm", {})},
-        subscription_data={"metadata": {"tier": tier_key, "lang": code}},
+        # these tags are copied onto every invoice, so the webhook can find the account even if events arrive out of order
+        subscription_data={"metadata": {"tier": tier_key, "lang": code, "user_id": ss.user.id}},
         line_items=[{
             "price_data": {
                 "currency": "usd",
-                "product_data": {"name": "Haymaker " + tier["name"]},
+                "product_data": {"name": tier["product"]},
                 "unit_amount": tier["cents"],
-                "recurring": {"interval": "week"},
+                "recurring": {"interval": tier["interval"], "interval_count": tier["interval_count"]},
             },
             "quantity": 1,
         }],
@@ -693,8 +732,7 @@ def wait_for_premium(max_seconds=20):
     deadline = time.time() + max_seconds
     while time.time() < deadline:
         try:
-            row = sb.table("profiles").select("is_premium").eq("id", ss.user.id).single().execute().data
-            if row and row.get("is_premium"):
+            if premium_still_valid(fetch_profile_row(ss.user.id)):
                 return True
         except Exception as e:
             print("wait_for_premium error:", e)
@@ -802,16 +840,16 @@ def render_paywall():
         st.title(x("paywall_title"))
         st.write(x("paywall_subtitle"))
         logged_in = bool(ss.get("user"))
-        for col, (key, prefix, emoji) in zip(st.columns(3), TIER_ORDER):
+        for col, key in zip(st.columns(3), TIER_ORDER):
             tier = TIERS[key]
             with col:
                 st.markdown(
                     f'<div style="background:rgba(16,12,31,.5);padding:20px;border-radius:12px;border:1px solid #2e234e;'
-                    f'text-align:center;min-height:200px;"><h4 style="color:{tier["color"]};margin:0;">'
-                    f'{emoji} {esc(x(prefix + "_name").upper())}</h4>'
-                    f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] / 100:.2f} '
-                    f'<span style="font-size:14px;color:#94a3b8;">{esc(x("per_week"))}</span></h2>'
-                    f'<p style="color:#94a3b8;font-size:12px;">{esc(x(prefix + "_desc"))}</p></div>',
+                    f'text-align:center;min-height:250px;"><h4 style="color:{tier["color"]};margin:0;">'
+                    f'{tier["emoji"]} {esc(x(tier["name_key"]).upper())}</h4>'
+                    f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] // 100} '
+                    f'<span style="font-size:14px;color:#94a3b8;">{esc(x(tier["per_key"]))}</span></h2>'
+                    f'<p style="color:#94a3b8;font-size:12px;">{esc(x(tier["desc_key"]))}</p></div>',
                     unsafe_allow_html=True)
                 if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
                     if logged_in:
@@ -819,6 +857,7 @@ def render_paywall():
                     else:
                         ss.pending_tier = key  # kept in this session only, so signing up carries straight on to checkout
                         ss.show_auth = True
+        st.caption(x("paywall_note"))
         if not logged_in and ss.get("show_auth"):
             st.info(x("paywall_login"))
             render_auth_form("paywall")
@@ -890,7 +929,7 @@ def build_system_prompt():
 
 def narrate(log, holder=None):
     """Ask the narrator. With a holder, the reply is typed out like a typewriter instead of appearing in bursts."""
-    window = MEMORY_TURNS.get(ss.get("tier"), 10)
+    window = STORY_MEMORY_TURNS
     history = [{"role": m["role"], "content": m["content"]} for m in log[-window:]]
     stream = openai_client.chat.completions.create(
         model="gpt-4o-mini", temperature=0.7, max_tokens=220, stream=True,
@@ -1069,10 +1108,10 @@ def watch_for_pass():
     if not ss.get("user") or ss.is_premium:
         return
     try:
-        row = sb.table("profiles").select("is_premium").eq("id", ss.user.id).single().execute().data
+        row = fetch_profile_row(ss.user.id)
     except Exception:
         return
-    if row and row.get("is_premium"):
+    if premium_still_valid(row):
         st.rerun()
 
 
@@ -1110,6 +1149,10 @@ if not (ss.is_premium or ss.guest_tokens > 0):
         st.title(f"🎬 {engine['world_name'].upper()}")
         render_story_history()
         st.divider()
+        try:
+            st.chat_input(x("paywall_title"), disabled=True)  # locked: the box stays visible but cannot be used
+        except TypeError:
+            pass
     watch_for_pass()
     render_paywall()
     if not ss.get("_paywall_scrolled"):  # once per appearance, not on every click inside the paywall
@@ -1429,6 +1472,8 @@ def render_game():
             ss.guest_tokens -= 1
             if ss.guest_tokens <= 0:
                 ss.guest_exhausted = True  # signing up later must not hand out a second free trial
+        if ss.guest_tokens <= 0:  # that was the last free action: lock the chat box right now
+            run_in_page("window.parent.hmLockChat();")
 
     engine["story_log"].append({"role": "user", "content": text})
     with box:
