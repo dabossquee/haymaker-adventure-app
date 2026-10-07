@@ -13,6 +13,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote, unquote
 
+import requests
 import stripe
 import streamlit as st
 import streamlit.components.v1 as components
@@ -46,6 +47,8 @@ APP_URL = (os.getenv("APP_URL") or os.getenv("RENDER_EXTERNAL_URL") or "http://l
 _APP_HOST = APP_URL.split("//", 1)[-1].split("/")[0].lower()
 APP_URL_OK = _APP_HOST not in ("", "onrender.com", "www.onrender.com", "render.com", "www.render.com")
 REPLICATE_TOKEN = os.getenv("REPLICATE_API_TOKEN")
+# Public address of the haymaker-webhook service, e.g. https://haymaker-webhook.onrender.com (used by Cancel Subscription).
+WEBHOOK_URL = (os.getenv("WEBHOOK_URL") or "").strip().rstrip("/")
 # Optional: a Stripe "payment method configuration" id (pmc_...) with Link switched off. See the notes in create_checkout_url.
 PAYMENT_METHOD_CONFIG = os.getenv("STRIPE_PAYMENT_METHOD_CONFIG", "").strip()
 
@@ -105,6 +108,29 @@ input, textarea, select,
   [data-testid="stColumn"], [data-testid="column"] { min-width: 100% !important; flex: 1 1 100% !important; }
   .stTabs [data-baseweb="tab-list"] { overflow-x: auto; gap: 6px !important; }
   .stTabs [data-baseweb="tab"] { padding: 8px 14px !important; font-size: 12px !important; }
+}
+"""
+
+# Arabic (right-to-left). Streamlit closes its sidebar by sliding it to the LEFT, which in a right-to-left page drags it
+# across the middle of the screen. Here the sidebar always sits on the right edge and slides fully off to the RIGHT.
+RTL_CSS = """
+.stApp { direction: rtl; }
+section[data-testid="stSidebar"] { direction: rtl; }
+@media (max-width: 768px) {
+  section[data-testid="stSidebar"] { left: auto !important; right: 0 !important; }
+}
+section[data-testid="stSidebar"][aria-expanded="false"] {
+  transform: translateX(100%) !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  visibility: hidden;
+  box-shadow: none !important;
+  transition: transform 300ms ease, visibility 0s linear 300ms;
+}
+section[data-testid="stSidebar"][aria-expanded="true"] {
+  transform: translateX(0) !important;
+  visibility: visible;
+  transition: transform 300ms ease, visibility 0s;
 }
 """
 
@@ -296,6 +322,16 @@ DEFAULT_TEXT = {
     "msg_activating": "Activating your pass… this takes a few seconds.",
     "msg_account_ready": "✅ Account created — you're signed in and ready to play!",
     "msg_signin_failed": "Sign-in failed. Check your email and password.",
+    "btn_save_timeline": "🪐 Save Current Timeline Universe Layout Node",
+    "msg_timeline_saved": "Timeline Matrix State Synchronized Successfully!",
+    "sub_mgmt_title": "Subscription Management",
+    "btn_cancel_sub": "Cancel Subscription",
+    "cancel_sub_confirm": "Yes, stop my subscription from renewing. I keep full access until the end of the period I already paid for.",
+    "msg_cancel_ok": "✅ Your subscription is cancelled and will not renew. You keep full access until the end of your paid period.",
+    "msg_cancel_fail": "We couldn't cancel right now. Please try again in a moment, or use the billing portal button below.",
+    "msg_no_subscription": "You don't have an active subscription.",
+    "msg_already_cancelled": "Your subscription is cancelled and will not renew.",
+    "sub_access_line": "Plan: {plan} · Access until {date}",
 }
 
 
@@ -343,6 +379,7 @@ ss.setdefault("world_cover_url", None)
 ss.setdefault("world_engine", new_engine())
 ss.setdefault("audio_state", {"playing": True, "track_url": "assets/menu_theme.mp3"})
 ss.setdefault("active_tab_idx", 0)  # which hub section is open: set once, never recomputed on later runs
+ss.setdefault("settings_view", 0)  # which settings sub-tab is open (0 = status, 1 = subscription management)
 if "hub_nav" not in ss:  # first run of a visit only: honour links such as ?tab=profile
     _wanted_tab = str(st.query_params.get("tab", "")).lower()
     ss["hub_nav"] = HUB_TAB_KEYS.index(_wanted_tab) if _wanted_tab in HUB_TAB_KEYS else ss.active_tab_idx
@@ -407,7 +444,7 @@ if ss.app_language not in LOCALIZATION_VAULT:  # first load of this visit: no pi
     queue_cookie("hm_lang", ss.app_language)
     ss.setdefault("utm", {k: str(v)[:100] for k, v in st.query_params.items() if k.startswith("utm_")})
 
-_rtl_css = ".stApp{direction:rtl;}" if lang().startswith("العربية") else ""
+_rtl_css = RTL_CSS if lang().startswith("العربية") else ""
 st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}\n{MOBILE_CSS}\n{_rtl_css}</style>", unsafe_allow_html=True)
 if not ss.get("_viewport_set"):
     ss["_viewport_set"] = True
@@ -488,16 +525,18 @@ def try_sign_in(email, password):
 
 
 def save_game():
-    """Keep the current adventure so a refresh or a new visit can pick it up again."""
+    """Keep the current adventure so a refresh or a new visit can pick it up again. True when it was saved."""
     if not (ss.get("user") and engine["world_name"]):
-        return
+        return False
     snapshot = {**engine, "story_log": engine["story_log"][-60:]}
     try:
         sb.table("game_saves").upsert({
             "user_id": ss.user.id, "engine": snapshot,
             "updated_at": datetime.now(timezone.utc).isoformat()}).execute()
+        return True
     except Exception as e:
         print("save error:", e)
+        return False
 
 
 def load_game():
@@ -521,8 +560,9 @@ def delete_game():
             print("delete save error:", e)
 
 
-PROFILE_COLUMNS = ("is_premium,tokens_remaining,stripe_customer_id,tier,premium_until",
-                   "is_premium,tokens_remaining,stripe_customer_id,tier")  # the second works before premium_until exists
+PROFILE_COLUMNS = ("is_premium,tokens_remaining,stripe_customer_id,tier,premium_until,subscription_status",
+                   "is_premium,tokens_remaining,stripe_customer_id,tier,subscription_status",
+                   "is_premium,tokens_remaining,stripe_customer_id,tier")  # the shorter ones work before premium_until exists
 
 
 def fetch_profile_row(uid):
@@ -582,6 +622,8 @@ def refresh_profile():
     ss.guest_tokens = min(int(row["tokens_remaining"]), FREE_ACTIONS) if row else 0
     ss.stripe_customer_id = row.get("stripe_customer_id") if row else None
     ss.tier = row.get("tier") if row else None
+    ss.sub_status = row.get("subscription_status") if row else None
+    ss.premium_until = row.get("premium_until") if row else None
     if ADMIN_EMAIL and str(ss.user.email).strip().lower() == ADMIN_EMAIL:
         if ADMIN_USER_ID and str(ss.user.id) == ADMIN_USER_ID:
             ss.is_premium = True
@@ -773,6 +815,74 @@ def billing_button(key):
         except Exception as e:
             print("portal error:", e)
             st.error(x("generic_err"))
+
+
+def cancel_subscription_via_webhook():
+    """Ask the haymaker-webhook service to stop the renewal. It checks who is asking, tells Stripe to cancel at the end of
+    the paid period and marks the profile cancelled. True when it worked."""
+    if not WEBHOOK_URL:
+        print("CONFIG ERROR: WEBHOOK_URL is not set. Set it to the haymaker-webhook address, e.g. https://haymaker-webhook.onrender.com")
+        return False
+    if ss.get("refresh_token"):
+        try_refresh(ss.refresh_token)  # a fresh access token, in case the old one has expired
+    try:
+        reply = requests.post(f"{WEBHOOK_URL}/subscription/cancel",
+                              headers={"Authorization": f"Bearer {ss.get('access_token')}"}, timeout=45)
+    except Exception as e:
+        print("cancel request failed:", repr(e))
+        return False
+    if reply.status_code != 200:
+        print("cancel failed:", reply.status_code, reply.text[:300])
+        return False
+    return True
+
+
+def render_subscription_management():
+    st.subheader(x("sub_mgmt_title"))
+    if not ss.get("user"):
+        st.info(x("signin_prompt"))
+        return
+    if not (ss.is_premium and ss.get("stripe_customer_id")):
+        st.info(x("msg_no_subscription"))
+        return
+    plan = TIERS.get(ss.get("tier") or "")
+    st.caption(x("sub_access_line").format(plan=x(plan["name_key"]) if plan else "-",
+                                           date=str(ss.get("premium_until") or "")[:10] or "-"))
+    if ss.get("sub_status") == "cancelled":
+        st.info(x("msg_already_cancelled"))
+    else:
+        agreed = st.checkbox(x("cancel_sub_confirm"), key="cancel_confirm")
+        if st.button(x("btn_cancel_sub"), key="cancel_sub_btn", type="primary", use_container_width=True,
+                     disabled=not agreed):
+            with st.spinner("⏳"):
+                done = cancel_subscription_via_webhook()
+            if done:
+                ss["_cancel_ok"] = True
+                st.rerun()
+            st.error(x("msg_cancel_fail"))
+    billing_button("subscription")
+
+
+def _on_settings_nav():
+    if ss.get("settings_view") is None:  # tapping the selected pill again would clear it: put it back
+        ss["settings_view"] = ss.get("_settings_last", 0)
+    else:
+        ss["_settings_last"] = ss["settings_view"]
+
+
+def settings_nav(labels):
+    """The settings sub-tabs. The choice is held in session state, so a rerun never switches it back."""
+    options = list(range(len(labels)))
+    if hasattr(st, "pills"):
+        choice = st.pills("settings", options, selection_mode="single", format_func=lambda i: labels[i],
+                          key="settings_view", on_change=_on_settings_nav, label_visibility="collapsed")
+    else:
+        choice = st.radio("settings", options, format_func=lambda i: labels[i], horizontal=True,
+                          key="settings_view", on_change=_on_settings_nav, label_visibility="collapsed")
+    if choice is None:
+        choice = ss.get("_settings_last", 0)
+    ss["_settings_last"] = choice
+    return choice
 
 
 def render_legal():
@@ -1028,6 +1138,13 @@ with st.sidebar:
             ss.world_engine = new_engine()
             ss.world_cover_url = None
             st.rerun()
+        if st.button(x("btn_save_timeline"), key="save_timeline_btn", use_container_width=True):
+            if not ss.get("user"):
+                st.warning(x("signin_prompt"))
+            elif save_game():  # upserts the whole story (text, character state, history) into game_saves
+                st.success(x("msg_timeline_saved"))
+            else:
+                st.error(x("generic_err"))
         st.divider()
 
     if ss.is_premium:
@@ -1083,13 +1200,16 @@ with st.sidebar:
     st.divider()
 
     with st.expander(x("settings_control").upper()):
-        st.subheader(x("settings_sub_status_title"))
-        if ss.is_premium:
-            st.success(x("lbl_premium_active"))
+        if settings_nav([x("settings_sub_status_title"), x("sub_mgmt_title")]) == 0:
+            st.subheader(x("settings_sub_status_title"))
+            if ss.is_premium:
+                st.success(x("lbl_premium_active"))
+            else:
+                st.warning(x("settings_status_free").replace("12", str(FREE_ACTIONS)))
+            billing_button("sidebar")
+            st.caption(x("settings_footer"))
         else:
-            st.warning(x("settings_status_free").replace("12", str(FREE_ACTIONS)))
-        billing_button("sidebar")
-        st.caption(x("settings_footer"))
+            render_subscription_management()
 
 # ---------------------------------------------------------------- paywall
 def render_story_history():
@@ -1129,6 +1249,9 @@ if ss.get("auto_checkout"):
 if ss.pop("_just_signed_up", False):
     with _notices:
         st.success(x("msg_account_ready"))
+if ss.pop("_cancel_ok", False):
+    with _notices:
+        st.success(x("msg_cancel_ok"))
 
 if _checkout_param == "success":
     if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
