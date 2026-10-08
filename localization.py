@@ -1611,3 +1611,196 @@ LOCALIZATION_VAULT["한국어 (Korean)"].update({
     "msg_already_cancelled": "구독이 해지되었으며 더 이상 갱신되지 않습니다.",
     "sub_access_line": "플랜: {plan} · {date}까지 이용 가능",
 })
+# Append to the bottom of localization.py. Adds: Post to Community, delete notice, locked avatar section, and genre names.
+# The six genre_* names are what every viewer sees for a world's genre, in their own language.
+LOCALIZATION_VAULT["English"].update({
+    "btn_post_community": "🚀 Post to Public Community Hub Node",
+    "msg_post_premium_required": "Premium validation required: activate a pass to post your world to the public community.",
+    "msg_world_posted": "✅ Your world is now live in the public community.",
+    "msg_world_public": "🌐 Live in the public community.",
+    "msg_world_deleted": "🗑️ World deleted from your list and from the public community.",
+    "msg_avatar_locked": "🔒 DATA EXPANSION ARCHETYPE MATRIX LINK LOCKED — RE-INDEXING COGNITIVE MODULES FOR FUTURE UPDATE NODE.",
+    "genre_sci_fi": "Sci-Fi",
+    "genre_dark_fantasy": "Dark Fantasy",
+    "genre_cyberpunk": "Cyberpunk",
+    "genre_horror": "Horror",
+    "genre_romance": "Romance",
+    "genre_other": "Other",
+})
+LOCALIZATION_VAULT["Español (Spanish)"].update({
+    "btn_post_community": "🚀 Publicar en el nodo público de la comunidad",
+    "msg_post_premium_required": "Se requiere validación premium: activa un pase para publicar tu mundo en la comunidad pública.",
+    "msg_world_posted": "✅ Tu mundo ya está activo en la comunidad pública.",
+    "msg_world_public": "🌐 Activo en la comunidad pública.",
+    "msg_world_deleted": "🗑️ Mundo eliminado de tu lista y de la comunidad pública.",
+    "msg_avatar_locked": "🔒 ENLACE DE LA MATRIZ DE ARQUETIPOS DE EXPANSIÓN DE DATOS BLOQUEADO — REINDEXANDO MÓDULOS COGNITIVOS PARA UN FUTURO NODO DE ACTUALIZACIÓN.",
+    "genre_sci_fi": "Ciencia ficción",
+    "genre_dark_fantasy": "Fantasía oscura",
+    "genre_cyberpunk": "Cyberpunk",
+    "genre_horror": "Terror",
+    "genre_romance": "Romance",
+    "genre_other": "Otro",
+})
+LOCALIZATION_VAULT["Português (Portuguese)"].update({
+    "btn_post_community": "🚀 Publicar no nó público da comunidade",
+    "msg_post_premium_required": "Validação premium necessária: ative um passe para publicar seu mundo na comunidade pública.",
+    "msg_world_posted": "✅ Seu mundo já está no ar na comunidade pública.",
+    "msg_world_public": "🌐 No ar na comunidade pública.",
+    "msg_world_deleted": "🗑️ Mundo excluído da sua lista e da comunidade pública.",
+    "msg_avatar_locked": "🔒 LINK DA MATRIZ DE ARQUÉTIPOS DE EXPANSÃO DE DADOS BLOQUEADO — REINDEXANDO MÓDULOS COGNITIVOS PARA UM FUTURO NÓ DE ATUALIZAÇÃO.",
+    "genre_sci_fi": "Ficção científica",
+    "genre_dark_fantasy": "Fantasia sombria",
+    "genre_cyberpunk": "Cyberpunk",
+    "genre_horror": "Terror",
+    "genre_romance": "Romance",
+    "genre_other": "Outro",
+})
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({
+    "btn_post_community": "🚀 发布到公共社区枢纽节点",
+    "msg_post_premium_required": "需要高级会员验证：激活通行证后才能将您的世界发布到公共社区。",
+    "msg_world_posted": "✅ 您的世界已在公共社区上线。",
+    "msg_world_public": "🌐 已在公共社区上线。",
+    "msg_world_deleted": "🗑️ 世界已从您的列表和公共社区中删除。",
+    "msg_avatar_locked": "🔒 数据扩展原型矩阵链接已锁定 — 正在为未来更新节点重新索引认知模块。",
+    "genre_sci_fi": "科幻",
+    "genre_dark_fantasy": "黑暗奇幻",
+    "genre_cyberpunk": "赛博朋克",
+    "genre_horror": "恐怖",
+    "genre_romance": "爱情",
+    "genre_other": "其他",
+})
+LOCALIZATION_VAULT["Русский (Russian)"].update({
+    "btn_post_community": "🚀 Опубликовать в общем узле сообщества",
+    "msg_post_premium_required": "Требуется премиум-подтверждение: активируйте пропуск, чтобы опубликовать свой мир в общем сообществе.",
+    "msg_world_posted": "✅ Ваш мир теперь доступен в общем сообществе.",
+    "msg_world_public": "🌐 Доступен в общем сообществе.",
+    "msg_world_deleted": "🗑️ Мир удалён из вашего списка и из общего сообщества.",
+    "msg_avatar_locked": "🔒 КАНАЛ МАТРИЦЫ АРХЕТИПОВ РАСШИРЕНИЯ ДАННЫХ ЗАБЛОКИРОВАН — ИДЁТ ПЕРЕИНДЕКСАЦИЯ КОГНИТИВНЫХ МОДУЛЕЙ ДЛЯ БУДУЩЕГО УЗЛА ОБНОВЛЕНИЯ.",
+    "genre_sci_fi": "Научная фантастика",
+    "genre_dark_fantasy": "Тёмное фэнтези",
+    "genre_cyberpunk": "Киберпанк",
+    "genre_horror": "Хоррор",
+    "genre_romance": "Романтика",
+    "genre_other": "Другое",
+})
+LOCALIZATION_VAULT["Français (French)"].update({
+    "btn_post_community": "🚀 Publier sur le nœud public de la communauté",
+    "msg_post_premium_required": "Validation premium requise : activez un pass pour publier votre monde dans la communauté publique.",
+    "msg_world_posted": "✅ Votre monde est maintenant en ligne dans la communauté publique.",
+    "msg_world_public": "🌐 En ligne dans la communauté publique.",
+    "msg_world_deleted": "🗑️ Monde supprimé de votre liste et de la communauté publique.",
+    "msg_avatar_locked": "🔒 LIEN DE LA MATRICE D'ARCHÉTYPES D'EXTENSION DE DONNÉES VERROUILLÉ — RÉINDEXATION DES MODULES COGNITIFS POUR UN FUTUR NŒUD DE MISE À JOUR.",
+    "genre_sci_fi": "Science-fiction",
+    "genre_dark_fantasy": "Dark fantasy",
+    "genre_cyberpunk": "Cyberpunk",
+    "genre_horror": "Horreur",
+    "genre_romance": "Romance",
+    "genre_other": "Autre",
+})
+LOCALIZATION_VAULT["العربية (Arabic)"].update({
+    "btn_post_community": "🚀 النشر في عقدة المجتمع العامة",
+    "msg_post_premium_required": "مطلوب التحقق من العضوية المميزة: فعّل باقة لنشر عالمك في المجتمع العام.",
+    "msg_world_posted": "✅ أصبح عالمك الآن متاحًا في المجتمع العام.",
+    "msg_world_public": "🌐 متاح في المجتمع العام.",
+    "msg_world_deleted": "🗑️ تم حذف العالم من قائمتك ومن المجتمع العام.",
+    "msg_avatar_locked": "🔒 رابط مصفوفة أنماط توسعة البيانات مقفل — إعادة فهرسة الوحدات المعرفية لعقدة التحديث المستقبلية.",
+    "genre_sci_fi": "خيال علمي",
+    "genre_dark_fantasy": "فانتازيا مظلمة",
+    "genre_cyberpunk": "سايبربانك",
+    "genre_horror": "رعب",
+    "genre_romance": "رومانسية",
+    "genre_other": "أخرى",
+})
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({
+    "btn_post_community": "🚀 सार्वजनिक कम्युनिटी हब नोड पर पोस्ट करें",
+    "msg_post_premium_required": "प्रीमियम सत्यापन आवश्यक है: अपनी दुनिया को सार्वजनिक कम्युनिटी में पोस्ट करने के लिए पास सक्रिय करें।",
+    "msg_world_posted": "✅ आपकी दुनिया अब सार्वजनिक कम्युनिटी में लाइव है।",
+    "msg_world_public": "🌐 सार्वजनिक कम्युनिटी में लाइव।",
+    "msg_world_deleted": "🗑️ दुनिया आपकी सूची और सार्वजनिक कम्युनिटी दोनों से हटा दी गई।",
+    "msg_avatar_locked": "🔒 डेटा विस्तार आर्किटाइप मैट्रिक्स लिंक लॉक है — भविष्य के अपडेट नोड के लिए संज्ञानात्मक मॉड्यूल पुनः अनुक्रमित किए जा रहे हैं।",
+    "genre_sci_fi": "साइ-फ़ाई",
+    "genre_dark_fantasy": "डार्क फ़ैंटेसी",
+    "genre_cyberpunk": "साइबरपंक",
+    "genre_horror": "हॉरर",
+    "genre_romance": "रोमांस",
+    "genre_other": "अन्य",
+})
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({
+    "btn_post_community": "🚀 公開コミュニティハブノードに投稿",
+    "msg_post_premium_required": "プレミアム認証が必要です：パスを有効にすると、あなたのワールドを公開コミュニティに投稿できます。",
+    "msg_world_posted": "✅ あなたのワールドが公開コミュニティで公開されました。",
+    "msg_world_public": "🌐 公開コミュニティで公開中。",
+    "msg_world_deleted": "🗑️ ワールドをあなたのリストと公開コミュニティから削除しました。",
+    "msg_avatar_locked": "🔒 データ拡張アーキタイプ・マトリクス接続はロック中 — 将来のアップデートノードに向けて認知モジュールを再インデックス中。",
+    "genre_sci_fi": "SF",
+    "genre_dark_fantasy": "ダークファンタジー",
+    "genre_cyberpunk": "サイバーパンク",
+    "genre_horror": "ホラー",
+    "genre_romance": "ロマンス",
+    "genre_other": "その他",
+})
+LOCALIZATION_VAULT["한국어 (Korean)"].update({
+    "btn_post_community": "🚀 공개 커뮤니티 허브 노드에 게시",
+    "msg_post_premium_required": "프리미엄 인증이 필요합니다: 패스를 활성화하면 내 월드를 공개 커뮤니티에 게시할 수 있습니다.",
+    "msg_world_posted": "✅ 내 월드가 공개 커뮤니티에 게시되었습니다.",
+    "msg_world_public": "🌐 공개 커뮤니티에 게시 중.",
+    "msg_world_deleted": "🗑️ 월드가 내 목록과 공개 커뮤니티에서 삭제되었습니다.",
+    "msg_avatar_locked": "🔒 데이터 확장 아키타입 매트릭스 링크 잠김 — 향후 업데이트 노드를 위해 인지 모듈을 재색인하는 중입니다.",
+    "genre_sci_fi": "SF",
+    "genre_dark_fantasy": "다크 판타지",
+    "genre_cyberpunk": "사이버펑크",
+    "genre_horror": "호러",
+    "genre_romance": "로맨스",
+    "genre_other": "기타",
+})
+# Append to the bottom of localization.py. Adds the "could not verify your account" notice and its Retry button.
+LOCALIZATION_VAULT["English"].update({
+    "msg_profile_unverified": "We couldn't verify your account just now. Your pass is safe: tap Retry in a moment.",
+    "btn_retry": "🔄 Retry",
+})
+LOCALIZATION_VAULT["Español (Spanish)"].update({
+    "msg_profile_unverified": "No pudimos verificar tu cuenta en este momento. Tu pase está a salvo: toca Reintentar en un momento.",
+    "btn_retry": "🔄 Reintentar",
+})
+LOCALIZATION_VAULT["Português (Portuguese)"].update({
+    "msg_profile_unverified": "Não foi possível verificar sua conta agora. Seu passe está seguro: toque em Tentar novamente em instantes.",
+    "btn_retry": "🔄 Tentar novamente",
+})
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({
+    "msg_profile_unverified": "暂时无法验证您的账户。您的通行证安全无虞，请稍后点击“重试”。",
+    "btn_retry": "🔄 重试",
+})
+LOCALIZATION_VAULT["Русский (Russian)"].update({
+    "msg_profile_unverified": "Сейчас не удалось проверить ваш аккаунт. Ваш пропуск в безопасности: через мгновение нажмите «Повторить».",
+    "btn_retry": "🔄 Повторить",
+})
+LOCALIZATION_VAULT["Français (French)"].update({
+    "msg_profile_unverified": "Impossible de vérifier votre compte pour le moment. Votre pass est en sécurité : appuyez sur Réessayer dans un instant.",
+    "btn_retry": "🔄 Réessayer",
+})
+LOCALIZATION_VAULT["العربية (Arabic)"].update({
+    "msg_profile_unverified": "تعذّر التحقق من حسابك الآن. باقتك بأمان: اضغط «إعادة المحاولة» بعد قليل.",
+    "btn_retry": "🔄 إعادة المحاولة",
+})
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({
+    "msg_profile_unverified": "अभी आपके खाते की जाँच नहीं हो सकी। आपका पास सुरक्षित है: थोड़ी देर में “दोबारा कोशिश करें” दबाएँ।",
+    "btn_retry": "🔄 दोबारा कोशिश करें",
+})
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({
+    "msg_profile_unverified": "現在アカウントを確認できませんでした。パスは安全です。しばらくしてから「再試行」を押してください。",
+    "btn_retry": "🔄 再試行",
+})
+LOCALIZATION_VAULT["한국어 (Korean)"].update({
+    "msg_profile_unverified": "지금은 계정을 확인할 수 없습니다. 패스는 안전합니다. 잠시 후 '다시 시도'를 눌러 주세요.",
+    "btn_retry": "🔄 다시 시도",
+})
+LOCALIZATION_VAULT["English"].update({"msg_policy_block": "⚠️ SYSTEM PROTECTIONS TERMINATED TRANSACTION. ACTIONS CONFLICT WITH SERVICE POLICIES."})
+LOCALIZATION_VAULT["Español (Spanish)"].update({"msg_policy_block": "⚠️ LAS PROTECCIONES DEL SISTEMA TERMINARON LA TRANSACCIÓN. LAS ACCIONES CONTRADICEN LAS POLÍTICAS DEL SERVICIO."})
+LOCALIZATION_VAULT["Português (Portuguese)"].update({"msg_policy_block": "⚠️ AS PROTEÇÕES DO SISTEMA ENCERRARAM A TRANSAÇÃO. AS AÇÕES CONFLITAM COM AS POLÍTICAS DO SERVIÇO."})
+LOCALIZATION_VAULT["简体中文 (Mandarin)"].update({"msg_policy_block": "⚠️ 系统保护机制已终止本次交易。相关行为违反服务政策。"})
+LOCALIZATION_VAULT["Русский (Russian)"].update({"msg_policy_block": "⚠️ СИСТЕМА ЗАЩИТЫ ПРЕРВАЛА ТРАНЗАКЦИЮ. ДЕЙСТВИЯ ПРОТИВОРЕЧАТ ПРАВИЛАМ СЕРВИСА."})
+LOCALIZATION_VAULT["Français (French)"].update({"msg_policy_block": "⚠️ LES PROTECTIONS DU SYSTÈME ONT INTERROMPU LA TRANSACTION. LES ACTIONS ENTRENT EN CONFLIT AVEC LES RÈGLES DU SERVICE."})
+LOCALIZATION_VAULT["العربية (Arabic)"].update({"msg_policy_block": "⚠️ أنهت حمايات النظام العملية. الإجراءات تتعارض مع سياسات الخدمة."})
+LOCALIZATION_VAULT["हिन्दी (Hindi)"].update({"msg_policy_block": "⚠️ सिस्टम सुरक्षा ने लेन-देन समाप्त कर दिया। ये क्रियाएँ सेवा नीतियों के विरुद्ध हैं।"})
+LOCALIZATION_VAULT["日本語 (Japanese)"].update({"msg_policy_block": "⚠️ システム保護により処理が終了されました。この内容はサービスポリシーに反しています。"})
+LOCALIZATION_VAULT["한국어 (Korean)"].update({"msg_policy_block": "⚠️ 시스템 보호 기능이 거래를 종료했습니다. 해당 행동은 서비스 정책에 위배됩니다."})

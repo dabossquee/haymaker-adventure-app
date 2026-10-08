@@ -10,6 +10,7 @@ import json
 import os
 import re
 import time
+import unicodedata
 import uuid
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote, unquote
@@ -348,6 +349,7 @@ DEFAULT_TEXT = {
     "genre_other": "Other",
     "msg_profile_unverified": "We couldn't verify your account just now. Your pass is safe: tap Retry in a moment.",
     "btn_retry": "🔄 Retry",
+    "msg_policy_block": "⚠️ SYSTEM PROTECTIONS TERMINATED TRANSACTION. ACTIONS CONFLICT WITH SERVICE POLICIES.",
 }
 
 
@@ -1189,17 +1191,113 @@ def apply_tags(text):
         char["health"] = max(0, min(100, char["health"] + int(mod)))
 
 
-def check_message(text):
-    """'ok', 'block' (sexual content involving minors) or 'crisis' (self-harm intent)."""
-    try:
-        c = openai_client.moderations.create(model="omni-moderation-latest", input=text).results[0].categories
-        if getattr(c, "sexual_minors", False):
-            return "block"
-        if getattr(c, "self_harm_intent", False) or getattr(c, "self_harm_instructions", False):
-            return "crisis"
-    except Exception as e:
-        print("moderation error:", e)
+# ---------------------------------------------------------------- input safety gate
+# Hard-blocked: explicit pornography, real-world instructions for illegal acts, terrorism, threats and abuse, and anything
+# involving a child. Deliberately NOT checked: "violence" and "violence/graphic", so combat, blood, guns, explosions and
+# warfare pass straight through. Moderation scores run from 0 to 1 and are not exact probabilities, so watch the
+# "moderation near-miss" lines in the Render log and tune these numbers with real player text.
+BLOCK_SCORES = {
+    "sexual_minors": 0.25,           # anything sexual that involves a minor: a very low bar on purpose
+    "sexual": 0.92,                  # explicit, descriptive pornography only. Romance, kissing and soft scenes score lower
+    "illicit": 0.85,                 # real-world instructions for illegal acts (drugs, fraud, hacking, weapon-making)
+    "illicit_violent": 0.80,         # real-world instructions for violent wrongdoing (bombs, attacks, terrorism)
+    "harassment_threatening": 0.80,  # real threats aimed at a person
+    "hate_threatening": 0.80,        # threats against a group
+    "harassment": 0.95,              # outright abuse (in-character insults stay below this)
+    "hate": 0.95,
+}
+CRISIS_FLAGS = ("self_harm_intent", "self_harm_instructions")  # a real person may be in danger: answer with care, not a block
+LOG_FROM = 0.5                    # a gated category scoring at least this is written to the log (never the text itself)
+CHILD_WORDS_BLOCK_ALWAYS = True   # True: any child / minor word is a hard stop. False: only when the text is also sexual
+CHILD_WORD_SEXUAL_FLOOR = 0.10    # (used when the line above is False)
+MODERATE_REPLIES = True           # also check what the narrator writes before it is kept in the story
+
+_CHILD_WORDS = (
+    r"child(?:ren)?|kids?|teens?|teen-?agers?|teenage|toddlers?|infants?|newborns?|juveniles?|adolescent\w*|"
+    r"under-?age\w*|pre-?teens?|school-?(?:boy|girl)s?|"
+    r"minors\b|"
+    r"(?:(?<=\ba\s)|(?<=\ban\s)|(?<=\bthe\s)|(?<=\bthis\s)|(?<=\bone\s))minor(?=\s*(?:[.,;:!?)\]\x22\x27]|$)|\s+(?:and|or|who|in|at|to|with|is|was|are|were|has|had|can|could|will|would|walks|runs|enters|stands|sits|looks|says|appears|comes|goes|waits|hides|follows|asks|stares|steps)\b)|"
+    r"minor(?=\s+(?:girl|boy|female|male|person|woman|man|kid|child)\b)|"
+    r"under\s*(?:18|eighteen)|"
+    r"(?:[0-9]|1[0-7])[ -]?(?:years?|yrs?)[ -]?old|"
+    r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)[ -]?(?:years?|yrs?)[ -]?old|"
+    r"niñ[oa]s?|ninos|colegial\w*|menor(?:es)? de (?:edad|idade)|crian[cç]as?|enfants?|"
+    r"ребён\w*|ребен\w*|дет(?:и|ей|ям|ьми|ях)|несовершеннолетн\w*|малолетн\w*|подрост\w*|школьн(?:ик|иц)\w*"
+)
+_WORD_RE = re.compile(r"(?<!\w)(?:" + _CHILD_WORDS + r")(?!\w)", re.IGNORECASE)
+# Scripts without spaces between words (and Arabic / Hindi, where words take prefixes) are matched as plain fragments
+_FRAGMENT_RE = re.compile("|".join(re.escape(w) for w in (
+    "儿童", "兒童", "孩子", "小孩", "未成年", "幼儿", "幼兒", "子供", "子ども", "こども", "児童", "幼児", "少年", "少女",
+    "아동", "어린이", "미성년", "유아", "청소년", "소년", "소녀",
+    "طفل", "أطفال", "اطفال", "قاصر", "مراهق", "बच्च", "नाबालिग")))
+_ZERO_WIDTH = dict.fromkeys(map(ord, "\u200b\u200c\u200d\u2060\ufeff"), None)
+_LEET = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s"})
+
+
+def mentions_child(text):
+    """The hard keyword layer: True when the text speaks of a child or a minor (several languages).
+    "minor" counts only as a person ("a minor."), never as in "a minor wound"."""
+    clean = unicodedata.normalize("NFKC", str(text or "")).translate(_ZERO_WIDTH)
+    for candidate in (clean, clean.translate(_LEET)):  # the second pass catches spellings like "ch1ld"
+        if _WORD_RE.search(candidate) or _FRAGMENT_RE.search(candidate):
+            return True
+    return False
+
+
+def moderate(text, keywords=True):
+    """The safety gate. Returns "ok", "block" (hard stop), "crisis" (a real person may be in danger) or "unavailable"
+    (the moderation service could not be reached, so nothing is sent on)."""
+    child_words = keywords and mentions_child(text)
+    if child_words and CHILD_WORDS_BLOCK_ALWAYS:
+        print("moderation BLOCK: child keyword")
+        return "block"
+    result = None
+    for attempt in (1, 2):
+        try:
+            result = openai_client.moderations.create(model="omni-moderation-latest", input=str(text)).results[0]
+            break
+        except Exception as e:
+            print(f"moderation error (try {attempt}):", repr(e)[:200])
+            time.sleep(0.4)
+    if result is None:
+        return "unavailable"
+    scores = {name: float(value or 0.0) for name, value in dict(result.category_scores).items()}
+    if child_words and scores.get("sexual", 0.0) >= CHILD_WORD_SEXUAL_FLOOR:
+        print("moderation BLOCK: child keyword together with sexual content")
+        return "block"
+    if getattr(result.categories, "sexual_minors", False):
+        print("moderation BLOCK: sexual/minors flagged")
+        return "block"
+    blocked = False
+    for name, limit in BLOCK_SCORES.items():  # note: no "violence" and no "violence_graphic" in here, on purpose
+        score = scores.get(name, 0.0)
+        if score >= limit:
+            print(f"moderation BLOCK: {name}={score:.2f} (limit {limit})")
+            blocked = True
+        elif score >= LOG_FROM:
+            print(f"moderation near-miss: {name}={score:.2f} (limit {limit})")
+    if blocked:
+        return "block"
+    if any(getattr(result.categories, name, False) for name in CRISIS_FLAGS):
+        return "crisis"
     return "ok"
+
+
+def guard_input(text, where=None):
+    """The gate in front of the narrator: text that must not reach OpenAI stops the whole run right here."""
+    verdict = moderate(text)
+    if verdict == "ok":
+        return
+    if where is None:
+        where = st.container()
+    with where:
+        if verdict == "crisis":
+            st.markdown(bubble("ai", esc(x("crisis"))), unsafe_allow_html=True)
+        elif verdict == "unavailable":
+            st.error(x("narrator_down"))
+        else:
+            st.error(x("msg_policy_block"))
+    st.stop()
 
 
 def make_cover():
@@ -1585,9 +1683,7 @@ def tab_create():
         if not all(v.strip() for v in (w_name, c_name, allies, enemies)):
             st.warning(x("msg_fill_fields"))
             return
-        if check_message(" ".join([w_name, c_name, c_backstory, allies, enemies, lore])) != "ok":
-            st.error(x("blocked"))  # worlds are shared with other players, so they are checked first
-            return
+        guard_input(" ".join([w_name, c_name, c_backstory, allies, enemies, lore]))  # worlds are shared with other players
         custom = {"gravity": gravity, "atmosphere": atmosphere, "allies": allies.strip(),
                   "enemies": enemies.strip(), "lore": lore.strip()}
         if ss.get("user"):
@@ -1700,11 +1796,7 @@ def render_game():
         return
     run_in_page("window.parent.hmBlur();")  # phones: close the keyboard right away
 
-    verdict = check_message(text)
-    if verdict != "ok":
-        with box:
-            st.markdown(bubble("ai", esc(x("crisis" if verdict == "crisis" else "blocked"))), unsafe_allow_html=True)
-        st.stop()
+    guard_input(text, box)  # nothing below runs, and nothing is sent to OpenAI, unless this passes
 
     if not ss.is_premium:  # spend one free action (counted server-side for accounts)
         if ss.get("user"):
@@ -1733,6 +1825,10 @@ def render_game():
             engine["story_log"].pop()
             holder.error(x("narrator_down"))
             st.stop()
+    if MODERATE_REPLIES and moderate(reply, keywords=False) == "block":  # the narrator's own text is checked as well
+        engine["story_log"].pop()  # forget the player's message that led here
+        holder.error(x("msg_policy_block"))
+        st.stop()
     apply_tags(reply)
     engine["story_log"].append({"role": "assistant", "content": reply})
     save_game()
