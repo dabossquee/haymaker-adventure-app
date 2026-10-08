@@ -9,6 +9,7 @@ Environment variables (this service only; the service key must never be put in t
   STRIPE_WEBHOOK_SECRET   the signing secret (whsec_...) of THIS endpoint in Stripe, test or live to match
   SUPABASE_URL            your project URL
   SUPABASE_SERVICE_KEY    the service_role / secret key
+  STRIPE_SECRET_KEY       sk_test_... / sk_live_... (needed by the Cancel Subscription button; webhooks work without it)
 
 Plans (all three give the same access; only the billing period differs)
   weekly    Weekly Premium Pass            $10 / week
@@ -16,8 +17,13 @@ Plans (all three give the same access; only the billing period differs)
   legend    1-Year Ultimate Legend Pass    $100 / year
 
 What it writes (table public.profiles)
-  is_premium, tier (weekly / explorer / legend), subscription_status, stripe_customer_id,
-  stripe_subscription_id and premium_until (the end of the period that has been paid for).
+  is_premium, tier (weekly / explorer / legend), subscription_status ("active", "past_due", "cancelled", ...),
+  stripe_customer_id, stripe_subscription_id and premium_until (the end of the period that has been paid for).
+
+Endpoints
+  POST /stripe/webhook        called by Stripe
+  POST /subscription/cancel   called by the app: "Authorization: Bearer <the person's Supabase access token>".
+                              Cancels at the END of the paid period, marks the profile "cancelled", keeps access until then.
 """
 import json
 import logging
@@ -25,7 +31,7 @@ import os
 from datetime import datetime, timezone
 
 import stripe
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Header, HTTPException, Request
 from supabase import create_client
 
 logging.basicConfig(level=logging.INFO)
@@ -41,6 +47,7 @@ def _require(name):
 
 WEBHOOK_SECRET = _require("STRIPE_WEBHOOK_SECRET")
 db = create_client(_require("SUPABASE_URL"), _require("SUPABASE_SERVICE_KEY"))
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "").strip() or None
 app = FastAPI()
 
 PLANS = ("weekly", "explorer", "legend")
@@ -175,13 +182,16 @@ def process_event(etype, obj):
 
     if etype in ("customer.subscription.updated", "customer.subscription.deleted"):
         status = "canceled" if etype.endswith("deleted") else obj.get("status")
+        access = status in ACCESS_STATUSES
+        # Cancelled at period end: Stripe still says "active" until the period runs out, so the flag decides what we store
+        shown = "cancelled" if (status == "canceled" or (access and obj.get("cancel_at_period_end"))) else status
         save({
-            "is_premium": status in ACCESS_STATUSES,
-            "subscription_status": status,
+            "is_premium": access,
+            "subscription_status": shown,
             "tier": plan_of(obj),
-            "premium_until": paid_until(obj) if status in ACCESS_STATUSES else None,
+            "premium_until": paid_until(obj) if access else None,
         }, user_id=metadata_value(obj, "user_id"), customer_id=obj.get("customer"), label=etype)
-        return "subscription " + str(status)
+        return "subscription " + str(shown)
 
     if etype == "invoice.payment_failed":
         # Status only; subscription.updated decides when access is actually revoked
@@ -190,6 +200,59 @@ def process_event(etype, obj):
         return "marked past_due"
 
     return "ignored"
+
+
+# ---------------------------------------------------------------- cancel subscription (called by the app)
+def user_id_from_token(token):
+    """Ask Supabase who this access token belongs to. The caller never tells us who they are."""
+    try:
+        user = getattr(db.auth.get_user(token), "user", None)
+        return getattr(user, "id", None)
+    except Exception as e:
+        log.warning("token check failed: %r", e)
+        return None
+
+
+def cancel_for_user(user_id):
+    """Stop this person's subscription from renewing; they keep access until the end of the period they paid for.
+    Returns (http status, payload)."""
+    if not stripe.api_key:
+        log.error("STRIPE_SECRET_KEY is not set on this service: cancelling is unavailable")
+        return 503, {"detail": "Cancelling is not configured"}
+    rows = (db.table("profiles").select("stripe_subscription_id,stripe_customer_id")
+            .eq("id", user_id).limit(1).execute().data or [])
+    if not rows:
+        return 404, {"detail": "No profile for this account"}
+    sub_id = rows[0].get("stripe_subscription_id")
+    customer_id = rows[0].get("stripe_customer_id")
+    try:
+        if not sub_id and customer_id:  # older rows: find the subscription through the customer
+            found = stripe.Subscription.list(customer=customer_id, status="active", limit=1)
+            if found["data"]:
+                sub_id = found["data"][0]["id"]
+        if not sub_id:
+            return 404, {"detail": "No active subscription"}
+        sub = as_dict(stripe.Subscription.modify(sub_id, cancel_at_period_end=True))
+    except Exception as e:
+        log.error("Stripe could not cancel %s for user %s: %r", sub_id, user_id, e)
+        return 502, {"detail": "Stripe could not cancel the subscription"}
+    until = paid_until(sub)
+    fields = {"subscription_status": "cancelled", "stripe_subscription_id": sub_id, "premium_until": until}
+    db.table("profiles").update({k: v for k, v in fields.items() if v is not None}).eq("id", user_id).execute()
+    log.info("user %s cancelled %s at period end (access until %s)", user_id, sub_id, until)
+    return 200, {"ok": True, "status": "cancelled", "access_until": until}
+
+
+@app.post("/subscription/cancel")
+def cancel_subscription(authorization: str = Header(default="")):
+    token = authorization[7:].strip() if authorization.lower().startswith("bearer ") else ""
+    user_id = user_id_from_token(token) if token else None
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Please sign in again")
+    status, payload = cancel_for_user(user_id)
+    if status != 200:
+        raise HTTPException(status_code=status, detail=payload["detail"])
+    return payload
 
 
 # ---------------------------------------------------------------- web service

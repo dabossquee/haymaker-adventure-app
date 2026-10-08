@@ -79,6 +79,11 @@ HUB_TAB_KEYS = ["explore", "mine", "create", "avatars", "profile"]  # ?tab=profi
 HUB_PROFILE_IDX = HUB_TAB_KEYS.index("profile")
 CREATE_FORM_KEYS = ("cr_name", "cr_char", "cr_story", "cr_allies", "cr_enemies", "cr_lore")
 
+# Genres. Worlds store the English name below; what people SEE comes from the vault keys genre_<code> in their own language.
+GENRE_ENGLISH = {"sci_fi": "Sci-Fi", "dark_fantasy": "Dark Fantasy", "cyberpunk": "Cyberpunk",
+                 "horror": "Horror", "romance": "Romance", "other": "Other"}
+GENRE_KEYS = list(GENRE_ENGLISH)  # the order of the six genre tabs in the Explore section
+
 # The viewport rule. interactive-widget=resizes-content (Android Chrome) makes the page resize cleanly when the keyboard opens.
 VIEWPORT_CONTENT = ("width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, "
                     "interactive-widget=resizes-content")
@@ -111,6 +116,20 @@ input, textarea, select,
 }
 """
 
+LOCKED_CSS = """
+.hm-locked { max-width: 760px; margin: 8vh auto; padding: 38px 30px; text-align: center; color: #c4b5fd;
+  border: 1px solid rgba(167,139,250,.55); border-radius: 18px;
+  background: linear-gradient(145deg, rgba(16,12,31,.88), rgba(46,35,78,.55));
+  box-shadow: 0 0 28px rgba(167,139,250,.25), inset 0 0 22px rgba(167,139,250,.08);
+  font-family: "Courier New", monospace; font-size: 1.05rem; font-weight: 700; letter-spacing: .14em;
+  line-height: 1.9; text-transform: uppercase; animation: hm-pulse 3.2s ease-in-out infinite; }
+@keyframes hm-pulse {
+  0%, 100% { box-shadow: 0 0 22px rgba(167,139,250,.20), inset 0 0 18px rgba(167,139,250,.06); }
+  50% { box-shadow: 0 0 38px rgba(167,139,250,.45), inset 0 0 26px rgba(167,139,250,.14); }
+}
+@media (max-width: 768px) { .hm-locked { margin: 4vh auto; padding: 26px 18px; font-size: .9rem; letter-spacing: .08em; } }
+"""
+
 # Arabic (right-to-left). Streamlit closes its sidebar by sliding it to the LEFT, which in a right-to-left page drags it
 # across the middle of the screen. Here the sidebar always sits on the right edge and slides fully off to the RIGHT.
 RTL_CSS = """
@@ -132,6 +151,7 @@ section[data-testid="stSidebar"][aria-expanded="true"] {
   visibility: visible;
   transition: transform 300ms ease, visibility 0s;
 }
+.hm-locked { letter-spacing: 0 !important; font-family: inherit !important; }  /* spaced-out letters break Arabic joining */
 """
 
 # Runs inside the page itself (not inside a hidden frame), so it keeps working after the frame is replaced.
@@ -198,16 +218,6 @@ TIERS = {
 TIER_ORDER = ("weekly", "explorer", "legend")
 
 PLAYLIST = ["assets/menu_theme.mp3", "assets/adventure_loop.mp3"] + [f"assets/track_{i}.mp3" for i in range(1, 9)]
-
-# (id, emoji, image URL). The visible names come from localization keys avatar_1 ... avatar_4.
-AVATAR_OPTIONS = [
-    ("avatar_1", "🥷", "https://picsum.photos/seed/shinobi/400/400"),
-    ("avatar_2", "🧙‍♂️", "https://picsum.photos/seed/runemaster/400/400"),
-    ("avatar_3", "🚀", "https://picsum.photos/seed/dreadnought/400/400"),
-    ("avatar_4", "💀", "https://picsum.photos/seed/scavenger/400/400"),
-]
-AVATAR_EMOJI = {a[0]: a[1] for a in AVATAR_OPTIONS}
-AVATAR_URLS = {a[0]: a[2] for a in AVATAR_OPTIONS}
 
 # genre, icon, [(preset id, character name, backstory sent to the narrator)].
 # Scenario names and plot descriptions come from localization keys preset_<id>_name / preset_<id>_bio.
@@ -278,17 +288,7 @@ DEFAULT_TEXT = {
     "btn_start_timeline": "🎮 Start Timeline",
     "btn_delete_world": "🗑️ Delete World",
     "msg_fill_fields": "⚠️ Fill out all required fields to launch.",
-    "hdr_avatars_portal": "Community Avatars Portal",
-    "cap_avatars_portal": "Browse live identities forged across active world timelines.",
-    "lbl_avatar_pick": "Choose your visual identity archetype:",
-    "btn_lock_avatar": "✨ Lock Identity Profile",
-    "msg_avatar_signin": "🔒 Please sign in via the Account Profile tab first.",
-    "msg_avatar_premium": "🔒 A premium pass is required to change your identity card.",
     "lbl_premium_active": "👑 Premium Pass Active",
-    "avatar_1": "Cybernetic Shinobi / Tactical Operator",
-    "avatar_2": "Arcane Runemaster / Dark Sorcerer",
-    "avatar_3": "Dreadnought Pilot / Space Marine",
-    "avatar_4": "Wasteland Scavenger / Nomad Raider",
     "ph_world_name": "e.g., Sector 7, Neo-Tokyo",
     "ph_char_name": "e.g., Kira Voss",
     "ph_backstory": "e.g., A rogue corporate spy hiding a stolen data core",
@@ -332,6 +332,18 @@ DEFAULT_TEXT = {
     "msg_no_subscription": "You don't have an active subscription.",
     "msg_already_cancelled": "Your subscription is cancelled and will not renew.",
     "sub_access_line": "Plan: {plan} · Access until {date}",
+    "btn_post_community": "🚀 Post to Public Community Hub Node",
+    "msg_post_premium_required": "Premium validation required: activate a pass to post your world to the public community.",
+    "msg_world_posted": "✅ Your world is now live in the public community.",
+    "msg_world_public": "🌐 Live in the public community.",
+    "msg_world_deleted": "🗑️ World deleted from your list and from the public community.",
+    "msg_avatar_locked": "🔒 DATA EXPANSION ARCHETYPE MATRIX LINK LOCKED — RE-INDEXING COGNITIVE MODULES FOR FUTURE UPDATE NODE.",
+    "genre_sci_fi": "Sci-Fi",
+    "genre_dark_fantasy": "Dark Fantasy",
+    "genre_cyberpunk": "Cyberpunk",
+    "genre_horror": "Horror",
+    "genre_romance": "Romance",
+    "genre_other": "Other",
 }
 
 
@@ -360,8 +372,38 @@ def run_in_page(call_js=""):
         components.html("<script>" + body + "</script>", height=0)
 
 
-def avatar_label(avatar_id):
-    return f"{AVATAR_EMOJI[avatar_id]} {x(avatar_id)}"
+def _norm(value):
+    return str(value or "").strip().casefold()
+
+
+def build_genre_lookup():
+    """Every spelling of every genre that can sit in the database -> its language-neutral code.
+    New worlds store the English name. Older worlds may hold the creator's own language, so the vault's lists are read too."""
+    lookup = {}
+    for code, english in GENRE_ENGLISH.items():
+        lookup[_norm(code)] = code
+        lookup[_norm(english)] = code
+    for vault in LOCALIZATION_VAULT.values():
+        for code in GENRE_KEYS:
+            label = vault.get(f"genre_{code}")
+            if label:
+                lookup[_norm(label)] = code
+        tabs = list(vault.get("sub_genres_lbls") or [])  # the Explore tabs are in GENRE_KEYS order
+        for i, label in enumerate(tabs[:len(GENRE_KEYS)]):
+            lookup.setdefault(_norm(label), GENRE_KEYS[i])
+        for label in vault.get("genres") or []:  # the Create form's list: placed by where the same word sits in the tabs list
+            if label in tabs and tabs.index(label) < len(GENRE_KEYS):
+                lookup.setdefault(_norm(label), GENRE_KEYS[tabs.index(label)])
+    return lookup
+
+
+GENRE_LOOKUP = build_genre_lookup()
+
+
+def genre_label(raw):
+    """A world's genre in the language of whoever is looking at it right now. Unknown text is shown as it is."""
+    code = GENRE_LOOKUP.get(_norm(raw))
+    return x(f"genre_{code}") if code else str(raw or "")
 
 
 def new_engine():
@@ -445,7 +487,7 @@ if ss.app_language not in LOCALIZATION_VAULT:  # first load of this visit: no pi
     ss.setdefault("utm", {k: str(v)[:100] for k, v in st.query_params.items() if k.startswith("utm_")})
 
 _rtl_css = RTL_CSS if lang().startswith("العربية") else ""
-st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}\n{MOBILE_CSS}\n{_rtl_css}</style>", unsafe_allow_html=True)
+st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}\n{MOBILE_CSS}\n{LOCKED_CSS}\n{_rtl_css}</style>", unsafe_allow_html=True)
 if not ss.get("_viewport_set"):
     ss["_viewport_set"] = True
     run_in_page()  # installs the viewport lock, the pinch/double-tap blockers and the keyboard/scroll helpers
@@ -1252,6 +1294,12 @@ if ss.pop("_just_signed_up", False):
 if ss.pop("_cancel_ok", False):
     with _notices:
         st.success(x("msg_cancel_ok"))
+if ss.pop("_post_ok", False):
+    with _notices:
+        st.success(x("msg_world_posted"))
+if ss.pop("_delete_ok", False):
+    with _notices:
+        st.success(x("msg_world_deleted"))
 
 if _checkout_param == "success":
     if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
@@ -1303,13 +1351,16 @@ def clean_config(cfg):
             "lore": txt("lore", 800) or "None"}
 
 
-def fetch_worlds(creator_id=None):
-    """Worlds newest first (only one creator's when creator_id is given). None means the lookup failed."""
-    for cols in ("id,world_name,world_genre,config", "id,world_name,world_genre"):
+def fetch_worlds(creator_id=None, public_only=False):
+    """Worlds newest first. creator_id limits it to one person's worlds, public_only to the ones posted to the community.
+    None means the lookup failed."""
+    for cols in ("id,world_name,world_genre,config,is_public", "id,world_name,world_genre,config", "id,world_name,world_genre"):
         try:
             q = sb.table("worlds").select(cols).order("created_at", desc=True).limit(50)
             if creator_id:
                 q = q.eq("creator_id", creator_id)
+            if public_only and "is_public" in cols:  # (without the column, everything was public, as before)
+                q = q.eq("is_public", True)
             return q.execute().data or []
         except Exception as e:
             print("worlds error:", e)
@@ -1324,7 +1375,7 @@ def tab_explore():
     tabs = st.tabs([x("tab_community")] + labels)
     with tabs[0]:
         st.markdown(f"### {x('community_timeline_title')}")
-        rows = fetch_worlds()
+        rows = fetch_worlds(public_only=True)
         if rows is None:
             st.error(x("generic_err"))
             rows = []
@@ -1333,7 +1384,7 @@ def tab_explore():
         cols = st.columns(2)
         for i, w in enumerate(rows):
             with cols[i % 2]:
-                card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + str(w["world_genre"]))
+                card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + genre_label(w["world_genre"]))
                 if st.button(x("btn_join_world"), key=f"pub_{w['id']}", use_container_width=True):
                     # the creator's world rules (gravity, atmosphere, factions, lore) travel with the world
                     enter_world(w["id"], w["world_name"], w["world_genre"], x("lbl_wanderer"),
@@ -1353,6 +1404,36 @@ def tab_explore():
         st.info(x("msg_coming_soon"))
 
 
+def post_world(world_id):
+    """Make one of my worlds public. The database is checked afterwards, so True means it really is live."""
+    try:
+        sb.table("worlds").update({"is_public": True}).eq("id", world_id).eq("creator_id", ss.user.id).execute()
+        rows = sb.table("worlds").select("is_public").eq("id", world_id).limit(1).execute().data or []
+    except Exception as e:
+        print("post world error:", e)
+        return False
+    return bool(rows and rows[0].get("is_public"))
+
+
+def delete_world(world_id):
+    """Erase one world for good. It is a single row, so it leaves My Creations and the public community together.
+    The database is checked afterwards, so True means it is really gone."""
+    try:
+        sb.table("worlds").delete().eq("id", world_id).eq("creator_id", ss.user.id).execute()
+        left = sb.table("worlds").select("id").eq("id", world_id).limit(1).execute().data or []
+    except Exception as e:
+        print("delete world error:", e)
+        return False
+    if left:
+        print("delete world: the row is still there. Is there a DELETE policy on worlds? Run worlds_sync.sql")
+        return False
+    if ss.world_engine.get("world_id") == world_id:  # they are playing (or have saved) this world: close it as well
+        ss.world_engine = new_engine()
+        ss.world_cover_url = None
+        delete_game()
+    return True
+
+
 def tab_mine():
     st.markdown("### " + x("hdr_my_universes"))
     if not ss.get("user"):
@@ -1365,8 +1446,8 @@ def tab_mine():
     if not rows:
         st.info(x("msg_no_my_worlds"))
     for w in rows:
-        card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + str(w["world_genre"]))
-        c1, c2 = st.columns(2)
+        card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + genre_label(w["world_genre"]))
+        c1, c2, c3 = st.columns(3)
         with c1:
             if st.button(x("btn_start_timeline"), key=f"resume_{w['id']}", use_container_width=True):
                 cfg = w.get("config") if isinstance(w.get("config"), dict) else {}
@@ -1375,14 +1456,23 @@ def tab_mine():
                             str(cfg.get("char_backstory") or "A traveler stepping back into their alternate reality.")[:800],
                             clean_config(cfg))
         with c2:
-            if st.button(x("btn_delete_world"), key=f"purge_{w['id']}", type="primary", use_container_width=True):
-                try:  # removes it from "My Universes" and from the community list in one step
-                    sb.table("worlds").delete().eq("id", w["id"]).eq("creator_id", ss.user.id).execute()
-                except Exception as e:
-                    print("delete error:", e)
+            if w.get("is_public"):
+                st.caption(x("msg_world_public"))
+            else:
+                if st.button(x("btn_post_community"), key=f"post_{w['id']}", use_container_width=True,
+                             disabled=not ss.is_premium, help=None if ss.is_premium else x("msg_post_premium_required")):
+                    if post_world(w["id"]):
+                        ss["_post_ok"] = True
+                        st.rerun()
                     st.error(x("generic_err"))
-                    return
-                st.rerun()
+                if not ss.is_premium:  # a tooltip needs hovering: phones get the same words as plain text
+                    st.caption(x("msg_post_premium_required"))
+        with c3:
+            if st.button(x("btn_delete_world"), key=f"purge_{w['id']}", type="primary", use_container_width=True):
+                if delete_world(w["id"]):
+                    ss["_delete_ok"] = True
+                    st.rerun()
+                st.error(x("generic_err"))
         st.divider()
 
 
@@ -1393,7 +1483,7 @@ def tab_create():
     with left:
         st.markdown(x("lbl_celestial"))
         w_name = st.text_input(x("lbl_name"), placeholder=x("ph_world_name"), max_chars=60, key="cr_name")
-        w_genre = st.selectbox(x("lbl_genre"), x("genres"))
+        w_genre = st.selectbox(x("lbl_genre"), list(GENRE_ENGLISH.values()), format_func=genre_label)
         gravity = st.slider(x("lbl_gravity"), 0.1, 5.0, 1.0, 0.1)
         atmos_opts = x("atmosphere_options")
         atmosphere = st.select_slider(x("lbl_atmosphere"), options=atmos_opts, value=atmos_opts[2])
@@ -1433,57 +1523,8 @@ def tab_create():
 
 
 def tab_avatars():
-    st.markdown("### " + x("hdr_avatars_portal"))
-    st.caption(x("cap_avatars_portal"))
-    st.divider()
-    pick = st.selectbox(x("lbl_avatar_pick"), [a[0] for a in AVATAR_OPTIONS],
-                        format_func=avatar_label, key="avatar_pick")
-    st.image(AVATAR_URLS[pick], caption=avatar_label(pick), width=200)
-    if st.button(x("btn_lock_avatar"), use_container_width=True, key="avatar_lock"):
-        if not ss.get("user"):
-            st.error(x("msg_avatar_signin"))
-        elif not ss.is_premium:
-            st.error(x("msg_avatar_premium"))
-        else:
-            try:
-                sb.table("profiles").update({"avatar_url": AVATAR_URLS[pick]}).eq("id", ss.user.id).execute()
-                st.rerun()
-            except Exception as e:
-                print("avatar error:", e)
-                st.error(x("generic_err"))
-    st.divider()
-    st.markdown(x("active_records_title"))
-    if not ss.get("user"):
-        st.info(x("signin_prompt"))
-        return
-    try:
-        mine = sb.table("profiles").select("username,avatar_url").eq("id", ss.user.id).single().execute().data
-        try:
-            others = sb.rpc("get_public_avatars").execute().data or []
-        except Exception:
-            others = sb.table("public_avatars").select("username,avatar_url").limit(60).execute().data or []
-    except Exception as e:
-        print("avatar list error:", e)
-        st.error(x("generic_err"))
-        return
-    if mine and mine.get("avatar_url"):
-        st.markdown(x("your_identity_title"))
-        a, b = st.columns(2)
-        with a:
-            st.image(mine["avatar_url"], use_container_width=True)
-        with b:
-            st.markdown(f"### {esc(str(mine.get('username', 'Wanderer')).upper())}")
-        st.divider()
-    others = [o for o in others if str(o.get("avatar_url", "")).startswith("https://")]
-    if not others:
-        st.info(x("empty_ledger"))
-        return
-    st.markdown(x("allied_dreamers_title"))
-    cols = st.columns(3)
-    for i, o in enumerate(others):
-        with cols[i % 3]:
-            st.markdown(f"##### 🎭 {esc(str(o.get('username', 'Wanderer')).upper())}")
-            st.image(o["avatar_url"], use_container_width=True)
+    """The avatar vault is closed for now: one sci-fi notice fills the whole section."""
+    st.markdown(f'<div class="hm-locked">{esc(x("msg_avatar_locked"))}</div>', unsafe_allow_html=True)
 
 
 def tab_profile():
