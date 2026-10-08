@@ -9,7 +9,7 @@ Environment variables (this service only; the service key must never be put in t
   STRIPE_WEBHOOK_SECRET   the signing secret (whsec_...) of THIS endpoint in Stripe, test or live to match
   SUPABASE_URL            your project URL
   SUPABASE_SERVICE_KEY    the service_role / secret key
-  STRIPE_SECRET_KEY       sk_test_... / sk_live_... (needed by the Cancel Subscription button; webhooks work without it)
+  STRIPE_SECRET_KEY       sk_test_... / sk_live_... (needed by Cancel Subscription and by sync; webhooks work without it)
 
 Plans (all three give the same access; only the billing period differs)
   weekly    Weekly Premium Pass            $10 / week
@@ -24,6 +24,10 @@ Endpoints
   POST /stripe/webhook        called by Stripe
   POST /subscription/cancel   called by the app: "Authorization: Bearer <the person's Supabase access token>".
                               Cancels at the END of the paid period, marks the profile "cancelled", keeps access until then.
+  POST /subscription/sync     called by the app (same Bearer token, optional ?session_id=cs_...).
+                              Asks Stripe what this person has paid for and saves it in profiles, so a paid pass is never
+                              "forgotten" even if a Stripe event was missed. Only subscriptions that provably belong to the
+                              person are used: their checkout session, their id tag, or the customer already linked to them.
 """
 import json
 import logging
@@ -203,14 +207,19 @@ def process_event(etype, obj):
 
 
 # ---------------------------------------------------------------- cancel subscription (called by the app)
-def user_id_from_token(token):
-    """Ask Supabase who this access token belongs to. The caller never tells us who they are."""
+def user_from_token(token):
+    """(user id, email) of the person this Supabase access token belongs to, or (None, None).
+    The caller never tells us who they are."""
     try:
         user = getattr(db.auth.get_user(token), "user", None)
-        return getattr(user, "id", None)
+        return getattr(user, "id", None), getattr(user, "email", None)
     except Exception as e:
         log.warning("token check failed: %r", e)
-        return None
+        return None, None
+
+
+def user_id_from_token(token):
+    return user_from_token(token)[0]
 
 
 def cancel_for_user(user_id):
@@ -250,6 +259,87 @@ def cancel_subscription(authorization: str = Header(default="")):
     if not user_id:
         raise HTTPException(status_code=401, detail="Please sign in again")
     status, payload = cancel_for_user(user_id)
+    if status != 200:
+        raise HTTPException(status_code=status, detail=payload["detail"])
+    return payload
+
+
+# ---------------------------------------------------------------- sync with Stripe (called by the app)
+def apply_subscription(user_id, sub):
+    """Save what Stripe says about one subscription in the profile, using the same rules as the webhook events."""
+    sub = as_dict(sub)
+    status = sub.get("status")
+    access = status in ACCESS_STATUSES
+    shown = "cancelled" if (status == "canceled" or (access and sub.get("cancel_at_period_end"))) else status
+    customer = sub.get("customer")
+    customer = customer.get("id") if isinstance(customer, dict) else customer
+    save({
+        "is_premium": access,
+        "subscription_status": shown,
+        "stripe_customer_id": customer,
+        "stripe_subscription_id": sub.get("id"),
+        "tier": plan_of(sub),
+        "premium_until": paid_until(sub) if access else None,
+    }, user_id=user_id, label="sync")
+    return access
+
+
+def find_user_subscription(user_id, email, profile):
+    """The best subscription that provably belongs to this person: tagged with their id, or on the customer that is
+    already linked to their profile. An email address alone is never enough."""
+    linked = profile.get("stripe_customer_id")
+    customer_ids = [linked] if linked else []
+    if email:
+        for customer in stripe.Customer.list(email=email, limit=5)["data"]:
+            if customer["id"] not in customer_ids:
+                customer_ids.append(customer["id"])
+    best = None
+    for customer_id in customer_ids:
+        for sub in stripe.Subscription.list(customer=customer_id, status="all", limit=10)["data"]:
+            mine = as_dict(sub.get("metadata")).get("user_id") == user_id or customer_id == linked
+            if not mine:
+                continue
+            rank = (sub.get("status") in ACCESS_STATUSES, paid_until(sub) or "")
+            if best is None or rank > best[0]:
+                best = (rank, sub)
+    return best[1] if best else None
+
+
+def sync_for_user(user_id, email, session_id=""):
+    """Reconcile one account with Stripe. Returns (http status, payload)."""
+    if not stripe.api_key:
+        log.error("STRIPE_SECRET_KEY is not set on this service: syncing is unavailable")
+        return 503, {"detail": "Syncing is not configured"}
+    rows = db.table("profiles").select("stripe_subscription_id,stripe_customer_id").eq("id", user_id).limit(1).execute().data or []
+    profile = rows[0] if rows else {}
+    try:
+        sub = None
+        if session_id:  # coming back from checkout: that exact payment
+            cs = as_dict(stripe.checkout.Session.retrieve(session_id, expand=["subscription"]))
+            if cs.get("client_reference_id") != user_id or cs.get("mode") != "subscription" or cs.get("status") != "complete":
+                return 403, {"detail": "That checkout does not belong to this account"}
+            sub = cs.get("subscription")
+            if isinstance(sub, str):
+                sub = stripe.Subscription.retrieve(sub)
+        if sub is None:
+            sub = find_user_subscription(user_id, email, profile)
+        if sub is None:
+            return 200, {"ok": True, "found": False, "premium": False}
+        premium = apply_subscription(user_id, sub)
+    except Exception as e:
+        log.error("sync failed for user %s: %r", user_id, e)
+        return 502, {"detail": "Stripe could not be reached"}
+    log.info("user %s synced with Stripe (premium=%s)", user_id, premium)
+    return 200, {"ok": True, "found": True, "premium": premium}
+
+
+@app.post("/subscription/sync")
+def sync_subscription(authorization: str = Header(default=""), session_id: str = ""):
+    token = authorization[7:].strip() if authorization.lower().startswith("bearer ") else ""
+    user_id, email = user_from_token(token) if token else (None, None)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Please sign in again")
+    status, payload = sync_for_user(user_id, email, session_id)
     if status != 200:
         raise HTTPException(status_code=status, detail=payload["detail"])
     return payload

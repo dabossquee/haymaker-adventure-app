@@ -10,6 +10,7 @@ import json
 import os
 import re
 import time
+import uuid
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote, unquote
 
@@ -64,6 +65,7 @@ _notices = _notice_slot.container()
 FREE_ACTIONS = 12  # free story actions before the hard paywall
 PREMIUM_GRACE_DAYS = 3  # a paid period that ran out this long ago no longer counts, even if a webhook was missed
 STORY_MEMORY_TURNS = 20  # how many past messages the narrator sees: the same for everyone
+GUEST_COOKIE_DAYS = 365  # how long a browser keeps the id that its free-trial balance is stored under
 TYPEWRITER_DELAY = 0.02  # seconds per character: the story types out at about 50 characters a second
 TYPEWRITER_FRAME_CHARS = 2  # characters drawn per screen update (keeps the page smooth)
 ENABLE_PASSWORD_RESET = False  # hidden at launch: the reset link has no page to set a new password yet
@@ -344,6 +346,8 @@ DEFAULT_TEXT = {
     "genre_horror": "Horror",
     "genre_romance": "Romance",
     "genre_other": "Other",
+    "msg_profile_unverified": "We couldn't verify your account just now. Your pass is safe: tap Retry in a moment.",
+    "btn_retry": "🔄 Retry",
 }
 
 
@@ -436,9 +440,9 @@ def cookie_get(name):
     return unquote(value) if value else None
 
 
-def queue_cookie(name, value=None):
-    """Ask the browser to store a cookie (value=None deletes it). Written by flush_cookies()."""
-    ss.setdefault("_cookie_queue", {})[name] = value
+def queue_cookie(name, value=None, days=30):
+    """Ask the browser to store a cookie for `days` days (value=None deletes it). Written by flush_cookies()."""
+    ss.setdefault("_cookie_queue", {})[name] = (value, days)
 
 
 def flush_cookies():
@@ -447,11 +451,11 @@ def flush_cookies():
         return
     secure = "; Secure" if APP_URL.startswith("https") else ""
     js = "const d = window.parent.document;"
-    for name, value in queue.items():
+    for name, (value, days) in queue.items():
         if value is None:
             js += f"d.cookie = {json.dumps(name + '=; Max-Age=0; path=/; SameSite=Lax' + secure)};"
         else:
-            js += f"d.cookie = {json.dumps(name + '=' + quote(value, safe='') + '; Max-Age=2592000; path=/; SameSite=Lax' + secure)};"
+            js += (f"d.cookie = {json.dumps(name + '=' + quote(value, safe='') + '; Max-Age=' + str(int(days) * 86400) + '; path=/; SameSite=Lax' + secure)};")
     with _scripts:
         components.html(f"<script>{js}</script>", height=0)
 
@@ -566,6 +570,67 @@ def try_sign_in(email, password):
     return True
 
 
+def guest_ledger(fn, guest_id):
+    """Ask the guest_tracking ledger (through its two database functions) how many free actions this browser has left.
+    guest_claim registers a browser the first time and reports its balance; guest_consume spends one (-1 = none left).
+    None means the ledger could not be reached."""
+    try:
+        data = sb.rpc(fn, {"p_guest_id": guest_id}).execute().data
+        return int(data) if data is not None else None
+    except Exception as e:
+        print(f"{fn} error (is guest_tracking.sql installed?):", repr(e)[:300])
+        return None
+
+
+def init_guest():
+    """Recognise this browser's free-trial balance. The id lives in a long-lived cookie and the balance in the database,
+    so refreshing the page or closing the tab can never hand out fresh free actions."""
+    if ss.get("guest_id"):
+        return
+    raw = cookie_get("hm_guest")
+    try:
+        guest_id = str(uuid.UUID(raw)) if raw else str(uuid.uuid4())
+    except ValueError:
+        guest_id = str(uuid.uuid4())
+    queue_cookie("hm_guest", guest_id, days=GUEST_COOKIE_DAYS)  # written on every visit, so it keeps being renewed
+    ss["guest_id"] = guest_id
+    left = guest_ledger("guest_claim", guest_id)
+    if left is not None:
+        ss.guest_tokens = max(0, min(int(left), FREE_ACTIONS))
+
+
+def spend_guest_action():
+    """One free action for a guest, counted in the ledger. False means this browser has none left."""
+    left = guest_ledger("guest_consume", ss["guest_id"]) if ss.get("guest_id") else None
+    if left is None:
+        ss.guest_tokens -= 1  # the ledger could not be reached: count inside this visit only (the log says why)
+    elif left < 0:
+        ss.guest_tokens = 0
+        return False
+    else:
+        ss.guest_tokens = left
+    if ss.guest_tokens <= 0:
+        ss.guest_exhausted = True  # signing up later must not hand out a second free trial
+    return True
+
+
+def sync_premium_via_webhook(session_id=None, timeout=20):
+    """Ask the webhook service to reconcile this account with Stripe, so a paid pass is saved in the database even if
+    a Stripe event was missed or late. True when the service answered."""
+    if not (WEBHOOK_URL and ss.get("access_token")):
+        return False
+    try:
+        reply = requests.post(f"{WEBHOOK_URL}/subscription/sync", params={"session_id": session_id} if session_id else None,
+                              headers={"Authorization": f"Bearer {ss.access_token}"}, timeout=timeout)
+    except Exception as e:
+        print("sync request failed:", repr(e))
+        return False
+    if reply.status_code != 200:
+        print("sync failed:", reply.status_code, reply.text[:300])
+        return False
+    return True
+
+
 def save_game():
     """Keep the current adventure so a refresh or a new visit can pick it up again. True when it was saved."""
     if not (ss.get("user") and engine["world_name"]):
@@ -656,10 +721,20 @@ def refresh_profile():
             row = fetch_profile_row(ss.user.id)
         except Exception as e:
             print("ensure_profile error:", e)
+    if (row is not None and not premium_still_valid(row) and int(row.get("tokens_remaining") or 0) <= 0
+            and WEBHOOK_URL and not ss.get("_stripe_synced")):
+        # About to show a paywall: first ask Stripe (once per visit) whether this person has actually paid.
+        ss["_stripe_synced"] = True
+        if sync_premium_via_webhook(timeout=8):
+            try:
+                row = fetch_profile_row(ss.user.id)
+            except Exception as e:
+                print("profile re-read error:", e)
     cache = ss.get("profile_cache")
     if row is None and cache and cache.get("uid") == ss.user.id:  # database unreachable: keep the last known state
         row = {"is_premium": cache["is_premium"], "tokens_remaining": cache["tokens"],
                "stripe_customer_id": cache["customer"], "tier": cache["tier"]}
+    ss["profile_ok"] = row is not None  # False = we could NOT read the account: never treat that as "not premium"
     ss.is_premium = premium_still_valid(row)
     ss.guest_tokens = min(int(row["tokens_remaining"]), FREE_ACTIONS) if row else 0
     ss.stripe_customer_id = row.get("stripe_customer_id") if row else None
@@ -936,7 +1011,7 @@ def render_legal():
 
 
 def render_auth_form(prefix):
-    mode = st.radio("mode", [x("btn_signin"), x("btn_signup")], horizontal=True,
+    mode = st.radio("mode", [x("btn_signin"), x("btn_signup")], horizontal=True, index=1 if prefix == "paywall" else 0,
                     key=f"{prefix}_mode", label_visibility="collapsed")
     email = st.text_input(x("lbl_email"), key=f"{prefix}_email", max_chars=254).strip()
     password = st.text_input(x("lbl_pass"), type="password", key=f"{prefix}_pw", max_chars=128)
@@ -992,6 +1067,9 @@ def render_paywall():
         st.title(x("paywall_title"))
         st.write(x("paywall_subtitle"))
         logged_in = bool(ss.get("user"))
+        if not logged_in:  # no free actions left and no account: registering (or signing in) comes first
+            st.info(x("paywall_login"))
+            render_auth_form("paywall")
         for col, key in zip(st.columns(3), TIER_ORDER):
             tier = TIERS[key]
             with col:
@@ -1008,11 +1086,7 @@ def render_paywall():
                         go_checkout(key)
                     else:
                         ss.pending_tier = key  # kept in this session only, so signing up carries straight on to checkout
-                        ss.show_auth = True
         st.caption(x("paywall_note"))
-        if not logged_in and ss.get("show_auth"):
-            st.info(x("paywall_login"))
-            render_auth_form("paywall")
         render_legal()
 
 
@@ -1150,9 +1224,11 @@ if not ss.get("user") and not ss.get("_restore_tried"):  # refresh / locked phon
     if saved_rt:
         if not try_refresh(saved_rt):
             queue_cookie("hm_rt", None)
+if not ss.get("user"):
+    init_guest()  # this browser's free-trial balance comes from the ledger, never from a fresh session
 flush_cookies()
 if ss.get("user"):
-    refresh_profile()
+    refresh_profile()  # the database answers whether they have paid; nothing below is drawn before this answer is in
 else:
     ss.is_premium = False
 if ss.get("user") and not ss.get("_save_checked"):
@@ -1189,7 +1265,9 @@ with st.sidebar:
                 st.error(x("generic_err"))
         st.divider()
 
-    if ss.is_premium:
+    if ss.get("user") and not ss.get("profile_ok", True):
+        st.warning(x("msg_profile_unverified"))
+    elif ss.is_premium:
         st.success(x("premium_pilot").format(ss.user.email))
     elif ss.guest_tokens > 0:
         st.warning(x("trial_active").format(ss.guest_tokens))
@@ -1278,7 +1356,7 @@ def watch_for_pass():
 
 
 _checkout_param = st.query_params.get("checkout")
-if _checkout_param:  # back from Stripe: that trip is over, nothing may send them there again automatically
+if _checkout_param:  # back from Stripe: that trip is over, nothing may start another automatic trip
     ss.pop("_checkout_inflight", None)
     ss.pop("auto_checkout", None)
 
@@ -1304,9 +1382,11 @@ if ss.pop("_delete_ok", False):
 if _checkout_param == "success":
     if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
         ss["_payment_waited"] = True  # wait once per visit, not on every click
+        _sid = st.query_params.get("session_id")
         with _notices:
             with st.spinner(x("msg_activating")):
-                paid = wait_for_premium(20) or verify_checkout_session(st.query_params.get("session_id"))
+                sync_premium_via_webhook(session_id=_sid, timeout=20)  # saves the pass in the database even if Stripe's event is late
+                paid = wait_for_premium(10) or verify_checkout_session(_sid)
         if paid:
             st.rerun()
     with _notices:
@@ -1315,6 +1395,11 @@ if _checkout_param:  # drop the leftover address parameters so a refresh cannot 
     for _k in ("checkout", "session_id"):
         if _k in st.query_params:
             del st.query_params[_k]
+if ss.get("user") and not ss.get("profile_ok", True):  # could not read the account: do NOT guess "not premium"
+    st.warning(x("msg_profile_unverified"))
+    if st.button(x("btn_retry"), key="retry_profile", use_container_width=True):
+        st.rerun()
+    st.stop()
 if not (ss.is_premium or ss.guest_tokens > 0):
     if engine["world_name"] and engine["story_log"]:  # show the cliffhanger, then the paywall under it
         st.title(f"🎬 {engine['world_name'].upper()}")
@@ -1632,10 +1717,8 @@ def render_game():
             if left is None or int(left) < 0:
                 st.rerun()
             ss.guest_tokens = int(left)
-        else:
-            ss.guest_tokens -= 1
-            if ss.guest_tokens <= 0:
-                ss.guest_exhausted = True  # signing up later must not hand out a second free trial
+        elif not spend_guest_action():  # this browser has nothing left: the paywall (with sign-up) takes over
+            st.rerun()
         if ss.guest_tokens <= 0:  # that was the last free action: lock the chat box right now
             run_in_page("window.parent.hmLockChat();")
 
