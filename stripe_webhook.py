@@ -21,7 +21,7 @@ What it writes (table public.profiles)
   stripe_customer_id, stripe_subscription_id and premium_until (the end of the period that has been paid for).
 
 Endpoints
-  POST /stripe/webhook        called by Stripe
+  POST /webhook               called by Stripe (also answers /webhook/, /stripe/webhook and /stripe/webhook/)
   POST /subscription/cancel   called by the app: "Authorization: Bearer <the person's Supabase access token>".
                               Cancels at the END of the paid period, marks the profile "cancelled", keeps access until then.
   POST /subscription/sync     called by the app (same Bearer token, optional ?session_id=cs_...).
@@ -352,7 +352,13 @@ def health():
     return {"ok": True}
 
 
-@app.post("/stripe/webhook")
+# Stripe is set up to call /webhook. The other spellings are kept on purpose: an explicit "/webhook/" route means a trailing
+# slash is answered directly (Stripe does not follow the redirect FastAPI would otherwise send), and "/stripe/webhook"
+# keeps working for any endpoint that still uses the old address.
+@app.post("/webhook")
+@app.post("/webhook/", include_in_schema=False)
+@app.post("/stripe/webhook", include_in_schema=False)
+@app.post("/stripe/webhook/", include_in_schema=False)
 async def stripe_webhook(request: Request):
     payload = await request.body()
     signature = request.headers.get("stripe-signature", "")
