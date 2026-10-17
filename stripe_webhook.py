@@ -54,9 +54,10 @@ db = create_client(_require("SUPABASE_URL"), _require("SUPABASE_SERVICE_KEY"))
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "").strip() or None
 app = FastAPI()
 
-PLANS = ("weekly", "explorer", "legend")
-PLAN_BY_INTERVAL = {("week", 1): "weekly", ("month", 6): "explorer", ("year", 1): "legend"}
-PLAN_BY_CENTS = {1000: "weekly", 5000: "explorer", 10000: "legend"}
+# monthly / sixmonth are the current plans; explorer / legend are the old plans, kept so older subscriptions are still understood
+PLANS = ("weekly", "monthly", "sixmonth", "explorer", "legend")
+PLAN_BY_INTERVAL = {("week", 1): "weekly", ("month", 1): "monthly", ("month", 6): "sixmonth", ("year", 1): "legend"}
+PLAN_BY_CENTS = {1000: "weekly", 3000: "monthly", 6000: "sixmonth", 5000: "explorer", 10000: "legend"}
 
 # past_due keeps access while Stripe retries the card (grace period).
 # Access is revoked when Stripe gives up (unpaid / canceled / incomplete_expired).
