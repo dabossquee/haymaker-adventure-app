@@ -1651,14 +1651,35 @@ def _image_data_uri(path, mtime):
 
 
 def story_image_uri(base):
-    """The picture for a story card: assets/stories/<name>.jpg (or .jpeg, .png, .webp). None until you upload one."""
-    for ext in ("jpg", "jpeg", "png", "webp"):
-        path = os.path.join("assets", "stories", f"{base}.{ext}")
-        if os.path.isfile(path):
-            if os.path.getsize(path) > 3_000_000:
-                print(f"story picture {path} is over 3 MB and was skipped: compress it (aim for under 300 KB)")
-                continue
-            return _image_data_uri(path, os.path.getmtime(path))
+    """The picture for a story card, found in assets/stories. Forgiving about spelling: capitals, spaces, dashes, underscores,
+    a Mac copy marker like (1) and a doubled ending like .jpg.jpg are all ignored, so "Shadow Prince.JPG" finds shadow_prince.
+    None until a matching picture is uploaded."""
+    folder = os.path.join("assets", "stories")
+    try:
+        names = sorted(os.listdir(folder))
+    except OSError:
+        names = []
+    endings = ("jpg", "jpeg", "png", "webp")
+    want = re.sub(r"[^a-z0-9]", "", base.lower())
+    for name in names:
+        if name.startswith("."):  # hidden Mac files such as ._kade.jpg
+            continue
+        stem, _, ext = name.rpartition(".")
+        if ext.lower() not in endings:
+            continue
+        while "." in stem and stem.rpartition(".")[2].lower() in endings:  # shadow_prince.jpg.jpg
+            stem = stem.rpartition(".")[0]
+        if re.sub(r"[^a-z0-9]", "", re.sub(r"\(\d+\)", "", stem).lower()) != want:
+            continue
+        path = os.path.join(folder, name)
+        if os.path.getsize(path) > 3_000_000:
+            print(f"story picture {path} is over 3 MB and was skipped: compress it (aim for under 300 KB)")
+            continue
+        return _image_data_uri(path, os.path.getmtime(path))
+    logged = ss.setdefault("_art_logged", set())
+    if base not in logged:  # one log line per story and visit, so a missing picture is easy to diagnose
+        logged.add(base)
+        print(f"no picture found for '{base}' in assets/stories (files the server can see there: {names})")
     return None
 
 
@@ -1704,6 +1725,25 @@ def render_story_card(story):
             f'<div class="hm-story-hook">{esc(x("story_" + sid + "_hook"))}</div>', unsafe_allow_html=True)
         if st.button(x("btn_enter_story"), key="enter_" + sid, use_container_width=True):
             enter_story(story)
+
+
+STORY_BG_CSS = """
+.stApp { background-image: linear-gradient(rgba(5,3,10,.50), rgba(5,3,10,.80)), url("__URI__") !important;
+  background-size: cover !important; background-position: center top !important; background-attachment: fixed !important; }
+@supports (-webkit-touch-callout: none) {  /* iPhone and iPad ignore "fixed": show the picture once, across the top */
+  .stApp { background-size: 100% 100%, 100% auto !important; background-repeat: no-repeat, no-repeat !important;
+    background-position: top center, top center !important; background-attachment: scroll, scroll !important;
+    background-color: #05030a !important; }
+}
+.glass-bubble-ai, .glass-bubble-user { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); text-shadow: 0 1px 6px rgba(0,0,0,.85); }
+"""
+
+
+def story_background_uri():
+    """The picture of the premade story being played (None for other worlds, or until the picture is uploaded)."""
+    story_id = (engine.get("world_customization") or {}).get("story_id")
+    story = next((s for s in STORIES if s["id"] == story_id), None)
+    return story_image_uri(story["image"]) if story else None
 
 
 def tab_stories():
@@ -1943,14 +1983,17 @@ def render_game():
     st.title(f"🎬 {engine['world_name'].upper()}")
     if ss.pop("_blur_after", False):  # the page was just redrawn after a reply: make sure the keyboard stays closed
         run_in_page("setTimeout(function () { window.parent.hmBlur(); }, 150);")
-    if ss.get("world_cover_url"):
+    story_art = story_background_uri()  # a premade story shows its own picture behind the chat
+    if story_art:
+        st.markdown("<style>" + STORY_BG_CSS.replace("__URI__", story_art) + "</style>", unsafe_allow_html=True)
+    elif ss.get("world_cover_url"):
         st.markdown(
             "<style>.stApp{background-image:linear-gradient(rgba(5,3,10,.82),rgba(5,3,10,.82)),"
             f"url('{ss.world_cover_url}') !important;background-size:cover !important;"
             "background-attachment:fixed !important;}</style>", unsafe_allow_html=True)
 
     if not engine["story_log"]:  # opening scene
-        if not ss.get("world_cover_url"):
+        if not story_art and not ss.get("world_cover_url"):
             with st.spinner("⏳"):
                 ss.world_cover_url = make_cover()
         opening_prompt = ((engine.get("world_customization") or {}).get("opening")
