@@ -1529,7 +1529,7 @@ def watch_for_pass():
 
 
 _checkout_param = st.query_params.get("checkout")
-if _checkout_param:  # back from Stripe: that trip is over, nothing may start another automatic trip
+if _checkout_param:  # back from Stripe: that trip is over, nothing may send them there again automatically
     ss.pop("_checkout_inflight", None)
     ss.pop("auto_checkout", None)
 
@@ -1728,14 +1728,22 @@ def render_story_card(story):
 
 
 STORY_BG_CSS = """
-.stApp { background-image: linear-gradient(rgba(5,3,10,.50), rgba(5,3,10,.80)), url("__URI__") !important;
-  background-size: cover !important; background-position: center top !important; background-attachment: fixed !important; }
-@supports (-webkit-touch-callout: none) {  /* iPhone and iPad ignore "fixed": show the picture once, across the top */
-  .stApp { background-size: 100% 100%, 100% auto !important; background-repeat: no-repeat, no-repeat !important;
-    background-position: top center, top center !important; background-attachment: scroll, scroll !important;
-    background-color: #05030a !important; }
-}
-.glass-bubble-ai, .glass-bubble-user { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); text-shadow: 0 1px 6px rgba(0,0,0,.85); }
+/* layer 1: the picture, fixed behind the whole app */
+html body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -2; pointer-events: none;
+  background: url("__URI__") center top / cover no-repeat; }
+/* layer 2: the dark mask over the picture, so white text stays readable on any picture */
+html body::after { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; pointer-events: none;
+  background: rgba(0, 0, 0, 0.75); }
+/* Streamlit's own full-page containers must be see-through, or they would cover the two layers above */
+html body .stApp, html body [data-testid="stApp"], html body [data-testid="stAppViewContainer"], html body [data-testid="stMain"],
+html body [data-testid="stMainBlockContainer"], html body [data-testid="stHeader"], html body [data-testid="stBottom"],
+html body [data-testid="stBottomBlockContainer"] { background: transparent !important; background-image: none !important; }
+/* a dark glass panel behind the conversation, with crisp white text on top */
+html body .st-key-chat_glass { background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 14px; }
+html body .glass-bubble-ai, html body .glass-bubble-user { color: #ffffff !important; backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9); }
+html body [data-testid="stMain"] h1 { color: #ffffff !important; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9); }
 """
 
 
@@ -1984,13 +1992,9 @@ def render_game():
     if ss.pop("_blur_after", False):  # the page was just redrawn after a reply: make sure the keyboard stays closed
         run_in_page("setTimeout(function () { window.parent.hmBlur(); }, 150);")
     story_art = story_background_uri()  # a premade story shows its own picture behind the chat
-    if story_art:
-        st.markdown("<style>" + STORY_BG_CSS.replace("__URI__", story_art) + "</style>", unsafe_allow_html=True)
-    elif ss.get("world_cover_url"):
-        st.markdown(
-            "<style>.stApp{background-image:linear-gradient(rgba(5,3,10,.82),rgba(5,3,10,.82)),"
-            f"url('{ss.world_cover_url}') !important;background-size:cover !important;"
-            "background-attachment:fixed !important;}</style>", unsafe_allow_html=True)
+    chat_art = story_art or ss.get("world_cover_url")  # other worlds may have an AI cover picture instead
+    if chat_art:
+        st.markdown("<style>" + STORY_BG_CSS.replace("__URI__", str(chat_art).replace('"', "")) + "</style>", unsafe_allow_html=True)
 
     if not engine["story_log"]:  # opening scene
         if not story_art and not ss.get("world_cover_url"):
@@ -2011,7 +2015,10 @@ def render_game():
         save_game()
         st.rerun()
 
-    box = st.container()
+    try:
+        box = st.container(key="chat_glass")  # its CSS class is st-key-chat_glass: the dark glass panel
+    except TypeError:  # older Streamlit has no container keys: a plain container
+        box = st.container()
     with box:
         render_story_history()
 
