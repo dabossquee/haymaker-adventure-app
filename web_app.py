@@ -4,7 +4,7 @@ HOW TO FIND THINGS
   Every block starts with a banner line that ends in a #TAG, for example  #SIDEBAR.
   Press Cmd+F, type the tag, and press Enter twice (the first match is the list below).
   A block runs from its banner down to the next banner. To change one block, replace only those lines.
-  Needs these files beside it: localization.py, styles.py, stories.py.
+  Needs these files beside it: localization.py, styles.py, stories.py, legal_docs.py.
 
 THE BLOCKS, IN ORDER
   #IMPORTS              the libraries the app uses, plus your stories.py texts
@@ -41,7 +41,7 @@ THE BLOCKS, IN ORDER
   #BILLING-PORTAL       the Manage subscription button
   #CANCEL               the Cancel call to the payment service
   #SUBSCRIPTION-SCREEN  the Subscription Management screen in settings
-  #LEGAL-TEXT           the Terms and Privacy box, with the real plan prices filled in
+  #LEGAL-TEXT           the Terms of Use / Privacy / Cookie box (texts are in legal_docs.py)
   #AUTH-FORM            the sign-in / sign-up form
   #PAYWALL-SCREEN       the pricing screen: sign-up form for visitors, plan cards, Terms
   #CHAT-HELPERS         the world card, the chat bubble, cleaning the narrator's text
@@ -93,6 +93,7 @@ try:
 except ImportError:
     replicate = None
 
+import legal_docs
 from localization import LOCALIZATION_VAULT
 from stories import (ACTION_LEVELS, ACTION_RULE, ARCHETYPE_EN, ARCHETYPES, COMPANION_ROLES, COMPANION_VIBES, ROLE_EN,
                      ROMANCE_LEVELS, ROMANCE_RULE, STORIES, STORY_TEXT, TRAIT_EN, TRAITS, VIBE_EN)
@@ -1211,7 +1212,7 @@ def settings_nav(labels):
 
 
 # =============================================================== #LEGAL-TEXT
-# WHAT: the Terms and Privacy box, with the real plan prices filled in  |  CHANGE WHEN: the Terms text looks wrong
+# WHAT: the Terms of Use / Privacy / Cookie box (the texts live in legal_docs.py)  |  CHANGE WHEN: the box looks wrong
 def plans_sentence():
     """The plan names and prices for the Terms text, always taken from TIERS so they cannot go out of date."""
     return ", ".join(f"{x(TIERS[k]['name_key'])} (${TIERS[k]['cents'] // 100} {x(TIERS[k]['per_key'])})" for k in TIER_ORDER)
@@ -1219,11 +1220,7 @@ def plans_sentence():
 
 def render_legal():
     with st.expander(x("legal_compliance_link")):
-        st.markdown(f"### {x('legal_header')}")
-        for n in (1, 2, 3):
-            st.markdown(f"**{x('legal_sec%d_title' % n)}**")
-            text = x("legal_plans_text").format(plans=plans_sentence()) if n == 2 else x("legal_sec%d_text" % n)
-            st.markdown(text.replace("$", "\\$"))  # stop "$5 ... $10" rendering as math
+        legal_docs.render(st, plans_sentence())  # Terms of Use, Privacy Policy and Cookie Policy: the texts live in legal_docs.py
 
 
 # ================================================================ #AUTH-FORM
