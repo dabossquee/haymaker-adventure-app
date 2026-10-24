@@ -93,7 +93,12 @@ try:
 except ImportError:
     replicate = None
 
-import legal_docs
+try:
+    import legal_docs
+except ImportError:  # legal_docs.py did not reach the server: the site keeps running with the older, shorter legal text
+    legal_docs = None
+    print("CONFIG ERROR: legal_docs.py is missing next to web_app.py. Add it to GitHub and redeploy.")
+
 from localization import LOCALIZATION_VAULT
 from stories import (ACTION_LEVELS, ACTION_RULE, ARCHETYPE_EN, ARCHETYPES, COMPANION_ROLES, COMPANION_VIBES, ROLE_EN,
                      ROMANCE_LEVELS, ROMANCE_RULE, STORIES, STORY_TEXT, TRAIT_EN, TRAITS, VIBE_EN)
@@ -1220,7 +1225,14 @@ def plans_sentence():
 
 def render_legal():
     with st.expander(x("legal_compliance_link")):
-        legal_docs.render(st, plans_sentence())  # Terms of Use, Privacy Policy and Cookie Policy: the texts live in legal_docs.py
+        if legal_docs is not None:
+            legal_docs.render(st, plans_sentence())  # Terms of Use, Privacy Policy and Cookie Policy: the texts live in legal_docs.py
+            return
+        st.markdown(f"### {x('legal_header')}")
+        for n in (1, 2, 3):
+            st.markdown(f"**{x('legal_sec%d_title' % n)}**")
+            text = x("legal_plans_text").format(plans=plans_sentence()) if n == 2 else x("legal_sec%d_text" % n)
+            st.markdown(text.replace("$", "\\$"))  # stop "$5 ... $10" rendering as math
 
 
 # ================================================================ #AUTH-FORM
