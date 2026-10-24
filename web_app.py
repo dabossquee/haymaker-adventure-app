@@ -1,9 +1,74 @@
-"""Haymaker Industry: corrected main app file.
+"""Haymaker Industry: main app file (web_app.py).
 
-Needs two sibling files you create by moving your own content into them (see notes):
-  localization.py -> LOCALIZATION_VAULT (your three vault blocks, unchanged)
-  styles.py       -> GLOBAL_CSS and CHAT_CSS (your two <style> blocks, rules only)
+HOW TO FIND THINGS
+  Every block starts with a banner line that ends in a #TAG, for example  #SIDEBAR.
+  Press Cmd+F, type the tag, and press Enter twice (the first match is the list below).
+  A block runs from its banner down to the next banner. To change one block, replace only those lines.
+  Needs these files beside it: localization.py, styles.py, stories.py.
+
+THE BLOCKS, IN ORDER
+  #IMPORTS              the libraries the app uses, plus your stories.py texts
+  #PAGE-SETUP           browser tab title and icon, the phone-screen rule, local .env loading
+  #SECRETS              reads your keys and addresses from Render's Environment tab
+  #SLOTS                each visitor's memory (ss) and the fixed spots for hidden scripts and messages
+  #TIKTOK-PIXEL         loads the TikTok Pixel once per visit, into the real page
+  #SETTINGS             free actions, grace days, story memory, typewriter speed
+  #LANGUAGES            link language codes and the languages Stripe's checkout page supports
+  #NAV-KEYS             names of the hub sections and the form boxes that keep their text
+  #GENRES               the genre list and its order in the Create form
+  #CSS-MOBILE           phone rules: no zoom, 16px input text, stacked columns
+  #CSS-LOCKED           the glowing box of the locked Avatars section
+  #CSS-STORIES          the glowing Stories button and the look of the story cards
+  #CSS-ARABIC           right-to-left rules for Arabic, including the sidebar
+  #PAGE-SCRIPTS         small JavaScript: stops zoom, closes the phone keyboard, locks the chat box, scrolls to the paywall
+  #PLANS                the three plans: names, prices and billing periods
+  #MUSIC                the list of music files in the assets folder
+  #SCENARIOS            the ready-made scenarios shown in Explore
+  #TEXT-FALLBACK        English text used when a translation is missing
+  #HELPERS              the text lookup x(), the browser-script runner, genre helpers, the empty game
+  #SESSION-DEFAULTS     first-time values for each visit
+  #COOKIES              reading, queuing and writing browser cookies
+  #LANGUAGE-DETECT      picks the starting language and saves a language change
+  #STYLES-INJECT        puts all the style sheets on the page
+  #CLIENTS              connects OpenAI, Supabase and Stripe; refuses to run if keys are missing
+  #LOGIN                sign-in, the login session and staying logged in
+  #GUEST-TRIAL          the free actions for visitors with no account
+  #WEBHOOK-SYNC         asks the payment service to confirm a payment with Stripe
+  #SAVE-LOAD            saving, loading and deleting the saved game
+  #PROFILE-CHECK        reads who has paid and how many free actions are left
+  #LOGOUT               signing out
+  #CHECKOUT             builds the Stripe checkout page and sends people to it
+  #BILLING-PORTAL       the Manage subscription button
+  #CANCEL               the Cancel call to the payment service
+  #SUBSCRIPTION-SCREEN  the Subscription Management screen in settings
+  #LEGAL-TEXT           the Terms and Privacy box, with the real plan prices filled in
+  #AUTH-FORM            the sign-in / sign-up form
+  #PAYWALL-SCREEN       the pricing screen: sign-up form for visitors, plan cards, Terms
+  #CHAT-HELPERS         the world card, the chat bubble, cleaning the narrator's text
+  #NARRATOR-PROMPT      the narrator's rulebook and the world details it is given
+  #NARRATOR-STREAM      calls OpenAI and types the reply out; applies loot and health tags
+  #SAFETY-GATE          blocks unsafe messages before they reach OpenAI
+  #COVER-PIC            AI cover pictures for worlds (needs a Replicate key)
+  #PAGE-START           runs on every click: restores login, guest id, reads the account, claims a plan pick
+  #SIDEBAR              the left menu: language, save, status, music, login, settings
+  #PAYWALL-FLOW         payment-return handling, the retry screen and the paywall gate
+  #WORLD-SETTINGS       cleans world settings for the narrator and loads world lists
+  #STORY-PICTURES       finds the uploaded story pictures in assets/stories
+  #STORY-CARDS          entering a story and the card layout
+  #CHAT-BACKGROUND      the story picture behind the chat, under the 75% dark mask
+  #TAB-STORIES          the Stories screen
+  #TAB-EXPLORE          Explore: community worlds and genre scenarios
+  #WORLD-ACTIONS        post a world to the community, or delete it
+  #TAB-MINE             My Creations
+  #TAB-CREATE           the Create-a-World form
+  #TAB-AVATARS          the locked Avatars message
+  #TAB-PROFILE          the Account section
+  #HUB-NAV              the row of section buttons and the hub page
+  #GAME                 the chat loop: opening scene, safety gate, free actions, narrator reply
+  #START                the last lines: show the game or the hub
 """
+# ================================================================== #IMPORTS
+# WHAT: the libraries the app uses, plus your stories.py texts  |  CHANGE WHEN: you add a library (also add it to requirements.txt)
 import base64
 import html
 import json
@@ -36,12 +101,16 @@ from styles import CHAT_CSS, GLOBAL_CSS
 for _lang_name, _texts in STORY_TEXT.items():  # the new texts live in stories.py: add them to the vault so x() finds them
     LOCALIZATION_VAULT.setdefault(_lang_name, {}).update(_texts)
 
+# =============================================================== #PAGE-SETUP
+# WHAT: browser tab title and icon, the phone-screen rule, local .env loading  |  CHANGE WHEN: you rename the site or change the icon
 st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
 # Entry point: the mobile viewport rule goes in before anything else on the page.
 st.markdown('<span class="hm-hidden"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"></span>',
             unsafe_allow_html=True)
 load_dotenv()
 
+# ================================================================== #SECRETS
+# WHAT: reads your keys and addresses from Render's Environment tab  |  CHANGE WHEN: you add a new key or setting
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 STRIPE_SECRET = os.getenv("STRIPE_SECRET_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -59,6 +128,8 @@ WEBHOOK_URL = (os.getenv("WEBHOOK_URL") or "").strip().rstrip("/")
 # Optional: a Stripe "payment method configuration" id (pmc_...) with Link switched off. See the notes in create_checkout_url.
 PAYMENT_METHOD_CONFIG = os.getenv("STRIPE_PAYMENT_METHOD_CONFIG", "").strip()
 
+# ==================================================================== #SLOTS
+# WHAT: each visitor's memory (ss) and the fixed spots for hidden scripts and messages  |  CHANGE WHEN: messages or scripts show up in the wrong place
 ss = st.session_state
 
 # Fixed homes for hidden scripts (top of the sidebar) and notices (top of the page). They exist on every run, empty or
@@ -68,6 +139,45 @@ _scripts = _script_slot.container()
 _notice_slot = st.empty()
 _notices = _notice_slot.container()
 
+# ============================================================= #TIKTOK-PIXEL
+# WHAT: loads the TikTok Pixel once per visit, into the real page  |  CHANGE WHEN: the pixel ID changes, or you want it switched off
+ENABLE_TIKTOK_PIXEL = True  # False = the pixel is not loaded at all
+TIKTOK_PIXEL_ID = "DBECVTBC77U0QK5QC2A0"
+
+# TikTok's official pixel script, exactly as TikTok provided it (only the ID is filled in from the line above).
+TIKTOK_PIXEL_JS = """!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+  ttq.load('__PIXEL_ID__');
+  ttq.page();
+}(window, document, 'ttq');""".replace("__PIXEL_ID__", TIKTOK_PIXEL_ID)
+
+
+def inject_tiktok_pixel():
+    """Load the TikTok Pixel ONCE per visit. The invisible 0 x 0 frame below only carries the script into the real page
+    (a pixel left inside the frame would report the frame's address and miss the ad-click id in your link). It never
+    runs twice: one frame per visit, and the page is checked for an existing pixel first."""
+    if not ENABLE_TIKTOK_PIXEL or ss.get("_tt_pixel_sent"):
+        return
+    ss["_tt_pixel_sent"] = True  # clicks, free actions and other reruns never send it again
+    script = json.dumps(TIKTOK_PIXEL_JS).replace("</", "<\\/")
+    loader = ("<script>(function () {"
+              "var p = window.parent, d = p.document;"
+              "if (p.ttq || d.getElementById('hm-tiktok-pixel')) { return; }"  # already in the page: never a second copy
+              "var s = d.createElement('script'); s.id = 'hm-tiktok-pixel'; s.text = " + script + ";"
+              "d.head.appendChild(s);"
+              "})();</script>")
+    with _scripts:  # the same hidden spot as the other page scripts, so the layout never shifts
+        components.html(loader, width=0, height=0)
+
+
+inject_tiktok_pixel()
+
+
+# ================================================================= #SETTINGS
+# WHAT: free actions, grace days, story memory, typewriter speed  |  CHANGE WHEN: you tune the game
 FREE_ACTIONS = 12  # free story actions before the hard paywall
 PREMIUM_GRACE_DAYS = 3  # a paid period that ran out this long ago no longer counts, even if a webhook was missed
 STORY_MEMORY_TURNS = 20  # how many past messages the narrator sees: the same for everyone
@@ -75,6 +185,8 @@ GUEST_COOKIE_DAYS = 365  # how long a browser keeps the id that its free-trial b
 TYPEWRITER_DELAY = 0.02  # seconds per character: the story types out at about 50 characters a second
 TYPEWRITER_FRAME_CHARS = 2  # characters drawn per screen update (keeps the page smooth)
 ENABLE_PASSWORD_RESET = False  # hidden at launch: the reset link has no page to set a new password yet
+# ================================================================ #LANGUAGES
+# WHAT: link language codes and the languages Stripe's checkout page supports  |  CHANGE WHEN: you add a language
 LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match localization.py)
     "en": "English", "es": "Español (Spanish)", "zh": "简体中文 (Mandarin)", "ru": "Русский (Russian)",
     "fr": "Français (French)", "ar": "العربية (Arabic)", "hi": "हिन्दी (Hindi)", "ja": "日本語 (Japanese)",
@@ -83,10 +195,14 @@ LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match
 LANG_BY_NAME = {v: k for k, v in LANG_CODES.items()}
 CHECKOUT_LOCALES = {"en": "en", "es": "es", "pt": "pt", "zh": "zh", "ru": "ru", "fr": "fr", "ja": "ja", "ko": "ko"}
 
+# ================================================================= #NAV-KEYS
+# WHAT: names of the hub sections and the form boxes that keep their text  |  CHANGE WHEN: you add a hub section
 HUB_TAB_KEYS = ["stories", "explore", "mine", "create", "avatars", "profile"]  # first = opens by default; ?tab=profile opens a section directly
 HUB_PROFILE_IDX = HUB_TAB_KEYS.index("profile")
 CREATE_FORM_KEYS = ("your_name", "cr_name", "cr_char", "cr_story", "cr_comp_name", "cr_enemies", "cr_lore")
 
+# =================================================================== #GENRES
+# WHAT: the genre list and its order in the Create form  |  CHANGE WHEN: you add a genre
 # Genres. Worlds store the English name below; what people SEE comes from the vault keys genre_<code> in their own language.
 GENRE_ENGLISH = {"sci_fi": "Sci-Fi", "dark_fantasy": "Dark Fantasy", "cyberpunk": "Cyberpunk",
                  "horror": "Horror", "romance": "Romance", "other": "Other",
@@ -94,6 +210,8 @@ GENRE_ENGLISH = {"sci_fi": "Sci-Fi", "dark_fantasy": "Dark Fantasy", "cyberpunk"
 GENRE_KEYS = list(GENRE_ENGLISH)  # the first six are the genre tabs in the Explore section, in this order
 CREATE_GENRES = ["Romance", "Dark Fantasy", "Action / Progression", "Superhero", "Horror", "Cyberpunk", "Sci-Fi", "Other"]  # order in the Create form
 
+# =============================================================== #CSS-MOBILE
+# WHAT: phone rules: no zoom, 16px input text, stacked columns  |  CHANGE WHEN: the phone layout looks wrong
 # The viewport rule. interactive-widget=resizes-content (Android Chrome) makes the page resize cleanly when the keyboard opens.
 VIEWPORT_CONTENT = ("width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, "
                     "interactive-widget=resizes-content")
@@ -126,6 +244,8 @@ input, textarea, select,
 }
 """
 
+# =============================================================== #CSS-LOCKED
+# WHAT: the glowing box of the locked Avatars section  |  CHANGE WHEN: you restyle that box
 LOCKED_CSS = """
 .hm-locked { max-width: 760px; margin: 8vh auto; padding: 38px 30px; text-align: center; color: #c4b5fd;
   border: 1px solid rgba(167,139,250,.55); border-radius: 18px;
@@ -140,6 +260,8 @@ LOCKED_CSS = """
 @media (max-width: 768px) { .hm-locked { margin: 4vh auto; padding: 26px 18px; font-size: .9rem; letter-spacing: .08em; } }
 """
 
+# ============================================================== #CSS-STORIES
+# WHAT: the glowing Stories button and the look of the story cards  |  CHANGE WHEN: you restyle the Stories tab
 STORIES_CSS = """
 /* the first button of the hub navigation (Stories) glows so it stands out */
 @keyframes hm-glow {
@@ -183,6 +305,8 @@ STORIES_CSS = """
 @media (max-width: 768px) { [class*="st-key-story_"] { min-height: 400px; } }
 """
 
+# =============================================================== #CSS-ARABIC
+# WHAT: right-to-left rules for Arabic, including the sidebar  |  CHANGE WHEN: Arabic layout problems
 # Arabic (right-to-left). Streamlit closes its sidebar by sliding it to the LEFT, which in a right-to-left page drags it
 # across the middle of the screen. Here the sidebar always sits on the right edge and slides fully off to the RIGHT.
 RTL_CSS = """
@@ -207,6 +331,8 @@ section[data-testid="stSidebar"][aria-expanded="true"] {
 .hm-locked { letter-spacing: 0 !important; font-family: inherit !important; }  /* spaced-out letters break Arabic joining */
 """
 
+# ============================================================= #PAGE-SCRIPTS
+# WHAT: small JavaScript: stops zoom, closes the phone keyboard, locks the chat box, scrolls to the paywall  |  CHANGE WHEN: keyboard, zoom or scroll glitches on phones
 # Runs inside the page itself (not inside a hidden frame), so it keeps working after the frame is replaced.
 HELPERS_CODE = """(function () {
   var doc = document;
@@ -257,7 +383,8 @@ HELPERS_CODE = """(function () {
   };
 })();""".replace("__VIEWPORT__", VIEWPORT_CONTENT)
 
-# ---------------------------------------------------------------- constants
+# ==================================================================== #PLANS
+# WHAT: the three plans: names, prices and billing periods  |  CHANGE WHEN: you change a price or add a plan (also edit stripe_webhook.py)
 # The three plans. All give exactly the same access; only the billing period differs.
 # The keys are what the Stripe webhook stores in profiles.tier.
 TIERS = {
@@ -270,8 +397,12 @@ TIERS = {
 }
 TIER_ORDER = ("weekly", "monthly", "sixmonth")
 
+# ==================================================================== #MUSIC
+# WHAT: the list of music files in the assets folder  |  CHANGE WHEN: you add or remove tracks
 PLAYLIST = ["assets/menu_theme.mp3", "assets/adventure_loop.mp3"] + [f"assets/track_{i}.mp3" for i in range(1, 9)]
 
+# ================================================================ #SCENARIOS
+# WHAT: the ready-made scenarios shown in Explore  |  CHANGE WHEN: you add a scenario
 # genre, icon, [(preset id, character name, backstory sent to the narrator)].
 # Scenario names and plot descriptions come from localization keys preset_<id>_name / preset_<id>_bio.
 PRESETS = [
@@ -297,6 +428,8 @@ PRESETS = [
     ]),
 ]
 
+# ============================================================ #TEXT-FALLBACK
+# WHAT: English text used when a translation is missing  |  CHANGE WHEN: you add any new button or message
 # English safety net. Every other language is read from localization.py through x().
 DEFAULT_TEXT = {
     "paywall_title": "🔒 Your free actions are used up",
@@ -398,7 +531,8 @@ DEFAULT_TEXT = {
 }
 
 
-# ---------------------------------------------------------------- helpers
+# ================================================================== #HELPERS
+# WHAT: the text lookup x(), the browser-script runner, genre helpers, the empty game  |  CHANGE WHEN: text is missing or in the wrong language
 def esc(value):
     return html.escape("" if value is None else str(value))
 
@@ -465,6 +599,8 @@ def new_engine():
     }
 
 
+# ========================================================= #SESSION-DEFAULTS
+# WHAT: first-time values for each visit  |  CHANGE WHEN: you add something to remember per visit
 ss.setdefault("app_language", None)
 ss.setdefault("guest_tokens", FREE_ACTIONS)
 ss.setdefault("is_premium", False)
@@ -477,7 +613,8 @@ if "hub_nav" not in ss:  # first run of a visit only: honour links such as ?tab=
     _wanted_tab = str(st.query_params.get("tab", "")).lower()
     ss["hub_nav"] = HUB_TAB_KEYS.index(_wanted_tab) if _wanted_tab in HUB_TAB_KEYS else ss.active_tab_idx
 
-# ---------------------------------------------------------------- cookies + language
+# ================================================================== #COOKIES
+# WHAT: reading, queuing and writing browser cookies  |  CHANGE WHEN: cookies are not saving
 def cookie_get(name):
     """Cookies the browser sent when this page loaded."""
     try:
@@ -507,6 +644,8 @@ def flush_cookies():
         components.html(f"<script>{js}</script>", height=0)
 
 
+# ========================================================== #LANGUAGE-DETECT
+# WHAT: picks the starting language and saves a language change  |  CHANGE WHEN: the wrong starting language
 def detect_language():
     """Order: ?lang= from the ad link, the saved choice, the browser language."""
     raw = str(st.query_params.get("lang", "")).lower().strip()
@@ -537,13 +676,16 @@ if ss.app_language not in LOCALIZATION_VAULT:  # first load of this visit: no pi
     queue_cookie("hm_lang", ss.app_language)
     ss.setdefault("utm", {k: str(v)[:100] for k, v in st.query_params.items() if k.startswith("utm_")})
 
+# ============================================================ #STYLES-INJECT
+# WHAT: puts all the style sheets on the page  |  CHANGE WHEN: styles are missing or in the wrong order
 _rtl_css = RTL_CSS if lang().startswith("العربية") else ""
 st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}\n{MOBILE_CSS}\n{LOCKED_CSS}\n{STORIES_CSS}\n{_rtl_css}</style>", unsafe_allow_html=True)
 if not ss.get("_viewport_set"):
     ss["_viewport_set"] = True
     run_in_page()  # installs the viewport lock, the pinch/double-tap blockers and the keyboard/scroll helpers
 
-# ---------------------------------------------------------------- clients
+# ================================================================== #CLIENTS
+# WHAT: connects OpenAI, Supabase and Stripe; refuses to run if keys are missing  |  CHANGE WHEN: you see 'Server configuration' errors
 def key_role(key):
     """Which kind of Supabase key this is: 'anon' (public) or 'service_role' (secret). '' if unknown."""
     if key.startswith("sb_secret_"):
@@ -577,7 +719,8 @@ if STRIPE_SECRET:
     stripe.api_key = STRIPE_SECRET
 
 
-# ---------------------------------------------------------------- account / billing
+# ==================================================================== #LOGIN
+# WHAT: sign-in, the login session and staying logged in  |  CHANGE WHEN: login problems
 def adopt_session(res):
     """Store a Supabase login in this session and queue the refresh-token cookie."""
     session = getattr(res, "session", None)
@@ -617,6 +760,8 @@ def try_sign_in(email, password):
     return True
 
 
+# ============================================================== #GUEST-TRIAL
+# WHAT: the free actions for visitors with no account  |  CHANGE WHEN: free actions reset or miscount
 def guest_ledger(fn, guest_id):
     """Ask the guest_tracking ledger (through its two database functions) how many free actions this browser has left.
     guest_claim registers a browser the first time and reports its balance; guest_consume spends one (-1 = none left).
@@ -661,6 +806,8 @@ def spend_guest_action():
     return True
 
 
+# ============================================================= #WEBHOOK-SYNC
+# WHAT: asks the payment service to confirm a payment with Stripe  |  CHANGE WHEN: a paying customer sees the paywall
 def sync_premium_via_webhook(session_id=None, timeout=20):
     """Ask the webhook service to reconcile this account with Stripe, so a paid pass is saved in the database even if
     a Stripe event was missed or late. True when the service answered."""
@@ -678,6 +825,8 @@ def sync_premium_via_webhook(session_id=None, timeout=20):
     return True
 
 
+# ================================================================ #SAVE-LOAD
+# WHAT: saving, loading and deleting the saved game  |  CHANGE WHEN: saves are failing
 def save_game():
     """Keep the current adventure so a refresh or a new visit can pick it up again. True when it was saved."""
     if not (ss.get("user") and engine["world_name"]):
@@ -714,6 +863,8 @@ def delete_game():
             print("delete save error:", e)
 
 
+# ============================================================ #PROFILE-CHECK
+# WHAT: reads who has paid and how many free actions are left  |  CHANGE WHEN: premium or free-action problems
 PROFILE_COLUMNS = ("is_premium,tokens_remaining,stripe_customer_id,tier,premium_until,subscription_status",
                    "is_premium,tokens_remaining,stripe_customer_id,tier,subscription_status",
                    "is_premium,tokens_remaining,stripe_customer_id,tier")  # the shorter ones work before premium_until exists
@@ -805,6 +956,8 @@ def refresh_profile():
                            "tier": ss.tier, "customer": ss.get("stripe_customer_id")}
 
 
+# =================================================================== #LOGOUT
+# WHAT: signing out  |  CHANGE WHEN: logout problems
 def do_logout():
     try:
         sb.auth.sign_out()
@@ -818,6 +971,8 @@ def do_logout():
     st.rerun()
 
 
+# ================================================================= #CHECKOUT
+# WHAT: builds the Stripe checkout page and sends people to it  |  CHANGE WHEN: prices, checkout or redirect problems
 def _create_checkout_session(params):
     """Create the Checkout Session with Stripe Link switched off (plain card entry).
 
@@ -966,6 +1121,8 @@ def verify_checkout_session(session_id):
     return False
 
 
+# =========================================================== #BILLING-PORTAL
+# WHAT: the Manage subscription button  |  CHANGE WHEN: billing portal problems
 def billing_button(key):
     cid = ss.get("stripe_customer_id")
     if not (cid and STRIPE_SECRET):
@@ -981,6 +1138,8 @@ def billing_button(key):
             st.error(x("generic_err"))
 
 
+# =================================================================== #CANCEL
+# WHAT: the Cancel call to the payment service  |  CHANGE WHEN: cancelling fails
 def cancel_subscription_via_webhook():
     """Ask the haymaker-webhook service to stop the renewal. It checks who is asking, tells Stripe to cancel at the end of
     the paid period and marks the profile cancelled. True when it worked."""
@@ -1001,6 +1160,8 @@ def cancel_subscription_via_webhook():
     return True
 
 
+# ====================================================== #SUBSCRIPTION-SCREEN
+# WHAT: the Subscription Management screen in settings  |  CHANGE WHEN: you change that screen
 def render_subscription_management():
     st.subheader(x("sub_mgmt_title"))
     if not ss.get("user"):
@@ -1049,6 +1210,8 @@ def settings_nav(labels):
     return choice
 
 
+# =============================================================== #LEGAL-TEXT
+# WHAT: the Terms and Privacy box, with the real plan prices filled in  |  CHANGE WHEN: the Terms text looks wrong
 def plans_sentence():
     """The plan names and prices for the Terms text, always taken from TIERS so they cannot go out of date."""
     return ", ".join(f"{x(TIERS[k]['name_key'])} (${TIERS[k]['cents'] // 100} {x(TIERS[k]['per_key'])})" for k in TIER_ORDER)
@@ -1063,6 +1226,8 @@ def render_legal():
             st.markdown(text.replace("$", "\\$"))  # stop "$5 ... $10" rendering as math
 
 
+# ================================================================ #AUTH-FORM
+# WHAT: the sign-in / sign-up form  |  CHANGE WHEN: sign-up or login problems
 def render_auth_form(prefix):
     mode = st.radio("mode", [x("btn_signin"), x("btn_signup")], horizontal=True, index=1 if prefix == "paywall" else 0,
                     key=f"{prefix}_mode", label_visibility="collapsed")
@@ -1110,6 +1275,8 @@ def render_auth_form(prefix):
                     st.success(x("msg_recovery_sent"))  # same message either way (no account probing)
 
 
+# =========================================================== #PAYWALL-SCREEN
+# WHAT: the pricing screen: sign-up form for visitors, plan cards, Terms  |  CHANGE WHEN: you change how the paywall looks
 def render_paywall():
     try:
         area = st.container(key="hm_paywall")  # becomes the CSS class st-key-hm_paywall (used by the scroll helper)
@@ -1143,7 +1310,8 @@ def render_paywall():
         render_legal()
 
 
-# ---------------------------------------------------------------- game helpers
+# ============================================================= #CHAT-HELPERS
+# WHAT: the world card, the chat bubble, cleaning the narrator's text  |  CHANGE WHEN: bubble or card looks
 def card(icon, title, line=""):
     st.markdown(
         f'<div class="premium-discovery-card"><div style="padding:20px;"><h4>{icon} {esc(title.upper())}</h4>'
@@ -1173,6 +1341,8 @@ def fmt_ai(text):
     return safe.replace("\n", "<br>")
 
 
+# ========================================================== #NARRATOR-PROMPT
+# WHAT: the narrator's rulebook and the world details it is given  |  CHANGE WHEN: narrator style or rules
 def build_system_prompt():
     cust = engine.get("world_customization") or {}
     lines = [f"World: {engine['world_name']}", f"Genre: {engine['world_genre']}", f"Character: {char['name']}"]
@@ -1230,6 +1400,8 @@ def build_system_prompt():
     )
 
 
+# ========================================================== #NARRATOR-STREAM
+# WHAT: calls OpenAI and types the reply out; applies loot and health tags  |  CHANGE WHEN: model, reply length or typing speed
 def narrate(log, holder=None):
     """Ask the narrator. With a holder, the reply is typed out like a typewriter instead of appearing in bursts."""
     window = STORY_MEMORY_TURNS
@@ -1266,7 +1438,8 @@ def apply_tags(text):
         char["health"] = max(0, min(100, char["health"] + int(mod)))
 
 
-# ---------------------------------------------------------------- input safety gate
+# ============================================================== #SAFETY-GATE
+# WHAT: blocks unsafe messages before they reach OpenAI  |  CHANGE WHEN: messages are blocked too often or not enough
 # Hard-blocked: explicit pornography, real-world instructions for illegal acts, terrorism, threats and abuse, and anything
 # involving a child. Deliberately NOT checked: "violence" and "violence/graphic", so combat, blood, guns, explosions and
 # warfare pass straight through. Moderation scores run from 0 to 1 and are not exact probabilities, so watch the
@@ -1375,6 +1548,8 @@ def guard_input(text, where=None):
     st.stop()
 
 
+# ================================================================ #COVER-PIC
+# WHAT: AI cover pictures for worlds (needs a Replicate key)  |  CHANGE WHEN: cover pictures
 def make_cover():
     if not (replicate and REPLICATE_TOKEN):
         return None
@@ -1390,7 +1565,8 @@ def make_cover():
         return None
 
 
-# ---------------------------------------------------------------- page state
+# =============================================================== #PAGE-START
+# WHAT: runs on every click: restores login, guest id, reads the account, claims a plan pick  |  CHANGE WHEN: logged out after reload, or premium problems
 if not ss.get("user") and not ss.get("_restore_tried"):  # refresh / locked phone: log back in from the cookie
     ss["_restore_tried"] = True
     saved_rt = cookie_get("hm_rt")
@@ -1416,7 +1592,8 @@ if ss.get("user") and not ss.is_premium and not ss.get("_tier_claimed"):
 engine = ss.world_engine
 char = engine["player_character"]
 
-# ---------------------------------------------------------------- sidebar
+# ================================================================== #SIDEBAR
+# WHAT: the left menu: language, save, status, music, login, settings  |  CHANGE WHEN: you change the menu
 with st.sidebar:
     st.title(x("status_control"))
     ss["lang_switch"] = lang()
@@ -1504,7 +1681,8 @@ with st.sidebar:
         else:
             render_subscription_management()
 
-# ---------------------------------------------------------------- paywall
+# ============================================================= #PAYWALL-FLOW
+# WHAT: payment-return handling, the retry screen and the paywall gate  |  CHANGE WHEN: paid but still locked, or paywall behavior
 def render_story_history():
     for m in engine["story_log"]:
         if m.get("hidden"):
@@ -1591,7 +1769,8 @@ if not (ss.is_premium or ss.guest_tokens > 0):
 ss["_paywall_scrolled"] = False
 
 
-# ---------------------------------------------------------------- hub
+# =========================================================== #WORLD-SETTINGS
+# WHAT: cleans world settings for the narrator and loads world lists  |  CHANGE WHEN: world limits or lists
 def clean_config(cfg):
     """A creator's saved world settings, made safe before they reach the narrator prompt: only known options and short texts."""
     if not isinstance(cfg, dict):
@@ -1641,6 +1820,8 @@ def fetch_worlds(creator_id=None, public_only=False):
     return None
 
 
+# =========================================================== #STORY-PICTURES
+# WHAT: finds the uploaded story pictures in assets/stories  |  CHANGE WHEN: a story picture does not show
 @st.cache_data(show_spinner=False)
 def _image_data_uri(path, mtime):
     """The picture as a data: address. Cached, and mtime makes a replaced file show up straight away."""
@@ -1699,6 +1880,8 @@ def stories_art_css():
     return "\n".join(rules)
 
 
+# ============================================================== #STORY-CARDS
+# WHAT: entering a story and the card layout  |  CHANGE WHEN: story start or card problems
 def enter_story(story):
     """Start a premade story: the narrator is already in character and the first scene is waiting."""
     player = str(ss.get("your_name") or "").strip()[:30]
@@ -1727,6 +1910,8 @@ def render_story_card(story):
             enter_story(story)
 
 
+# ========================================================== #CHAT-BACKGROUND
+# WHAT: the story picture behind the chat, under the 75% dark mask  |  CHANGE WHEN: the chat background look
 STORY_BG_CSS = """
 /* layer 1: the picture, fixed behind the whole app */
 html body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -2; pointer-events: none;
@@ -1754,6 +1939,8 @@ def story_background_uri():
     return story_image_uri(story["image"]) if story else None
 
 
+# ============================================================== #TAB-STORIES
+# WHAT: the Stories screen  |  CHANGE WHEN: you change that screen
 def tab_stories():
     st.markdown("<style>" + stories_art_css() + "</style>", unsafe_allow_html=True)
     st.markdown(f'<div class="hm-stories-title">{esc(x("stories_title"))}</div>'
@@ -1766,6 +1953,8 @@ def tab_stories():
                 render_story_card(story)
 
 
+# ============================================================== #TAB-EXPLORE
+# WHAT: Explore: community worlds and genre scenarios  |  CHANGE WHEN: you change that screen
 def tab_explore():
     defaults = ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"]
     got = list(x("sub_genres_lbls") or defaults)
@@ -1803,6 +1992,8 @@ def tab_explore():
         st.info(x("msg_coming_soon"))
 
 
+# ============================================================ #WORLD-ACTIONS
+# WHAT: post a world to the community, or delete it  |  CHANGE WHEN: posting or deleting problems
 def post_world(world_id):
     """Make one of my worlds public. The database is checked afterwards, so True means it really is live."""
     try:
@@ -1833,6 +2024,8 @@ def delete_world(world_id):
     return True
 
 
+# ================================================================= #TAB-MINE
+# WHAT: My Creations  |  CHANGE WHEN: you change that screen
 def tab_mine():
     st.markdown("### " + x("hdr_my_universes"))
     if not ss.get("user"):
@@ -1875,6 +2068,8 @@ def tab_mine():
         st.divider()
 
 
+# =============================================================== #TAB-CREATE
+# WHAT: the Create-a-World form  |  CHANGE WHEN: you change the form
 def tab_create():
     st.markdown(f"### {x('cr_title')}")
     st.write(x("cr_subtitle"))
@@ -1933,11 +2128,15 @@ def tab_create():
         enter_world("user_custom", w_name.strip(), w_genre, c_name.strip(), c_backstory.strip(), custom)
 
 
+# ============================================================== #TAB-AVATARS
+# WHAT: the locked Avatars message  |  CHANGE WHEN: you reopen avatars
 def tab_avatars():
     """The avatar vault is closed for now: one sci-fi notice fills the whole section."""
     st.markdown(f'<div class="hm-locked">{esc(x("msg_avatar_locked"))}</div>', unsafe_allow_html=True)
 
 
+# ============================================================== #TAB-PROFILE
+# WHAT: the Account section  |  CHANGE WHEN: you change that screen
 def tab_profile():
     st.markdown(x("auth_title"))
     st.write(x("auth_subtitle"))
@@ -1952,6 +2151,8 @@ def tab_profile():
         render_legal()
 
 
+# ================================================================== #HUB-NAV
+# WHAT: the row of section buttons and the hub page  |  CHANGE WHEN: you add a hub section
 def _on_nav_change():
     chosen = ss.get("hub_nav")
     if chosen is None:  # tapping the selected pill again would clear it: put it back
@@ -1986,7 +2187,8 @@ def render_hub():
     panels[render_nav(labels)]()
 
 
-# ---------------------------------------------------------------- game
+# ===================================================================== #GAME
+# WHAT: the chat loop: opening scene, safety gate, free actions, narrator reply  |  CHANGE WHEN: chat flow problems
 def render_game():
     st.title(f"🎬 {engine['world_name'].upper()}")
     if ss.pop("_blur_after", False):  # the page was just redrawn after a reply: make sure the keyboard stays closed
@@ -2070,6 +2272,8 @@ def render_game():
     st.rerun()
 
 
+# ==================================================================== #START
+# WHAT: the last lines: show the game or the hub  |  CHANGE WHEN: navigation problems
 if engine["world_name"]:
     render_game()
 else:
