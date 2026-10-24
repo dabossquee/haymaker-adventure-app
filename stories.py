@@ -1,28 +1,50 @@
-"""Haymaker stories: the five premade stories, the Create-a-World options and every text that goes with them.
+"""Haymaker stories: the six premade stories, the Create-a-World options and every text that goes with them.
 
 Put this file next to web_app.py.
 
+HOW TO FIND THINGS
+  Every block starts with a banner line that ends in a #TAG. Press Cmd+F, type the tag, press Enter twice (the first match is this list).
+  A block runs from its banner down to the next banner.
+    #LANGUAGE-NAMES       the ten language names
+    #STORIES-DATA         the list of premade stories, with one block per story:
+    #STORY-KADE  #STORY-SHADOW-PRINCE  #STORY-SYSTEM  #STORY-NOVA  #STORY-TITAN  #STORY-MORRIGAN
+    #CREATE-OPTIONS       the choices in the Create-a-World form
+    #TEXTS                every text, one line per language
+    #TEXTS-STORIES-TAB    #TEXTS-PLANS    #TEXTS-STORY-CARDS    #TEXTS-CREATE-FORM
+    #TEXT-MERGE           hands the texts to the app (leave alone)
+
 HOW TO ADD THE CHARACTER PICTURES
   Upload one picture per card into the folder  assets/stories/  with EXACTLY these names (.jpg, .jpeg, .png or .webp):
-      kade.jpg   shadow_prince.jpg   system.jpg   nova.jpg   titan.jpg
+      kade.jpg   shadow_prince.jpg   system.jpg   nova.jpg   titan.jpg   morrigan.jpg
   A portrait picture about 800 x 1100 pixels works best. Keep each file under 300 KB (phones load them every visit).
   Until a picture exists the card shows its own colour gradient and emoji, so the page never looks empty.
 
 HOW TO CHANGE A STORY
   Each entry in STORIES has a persona (who the narrator is) and an opening (the first scene). Edit the English text.
-  The card words (title, tag, hook) are in _T below, one line per language.
+  The card words (title, tag, hook) are in #TEXTS-STORY-CARDS, one line per language.
+
+HOW TO ADD A NEW CHARACTER
+  1. Copy a whole #STORY-... block inside #STORIES-DATA, paste it at the end of the list and change its id, name and texts.
+  2. Add three lines (title, tag, hook) for it in #TEXTS-STORY-CARDS.
+  3. Upload its picture to assets/stories/ named exactly like its "image" value.
+  Optional: "inventory": [...] gives the player starting items (the default is "survival gear").
 """
 
+# =========================================================== #LANGUAGE-NAMES
+# WHAT: the ten language names (they must match localization.py)  |  CHANGE WHEN: you add a language
 EN, ES, PT, ZH, RU, FR, AR, HI, JA, KO = (
     "English", "Español (Spanish)", "Português (Portuguese)", "简体中文 (Mandarin)", "Русский (Russian)",
     "Français (French)", "العربية (Arabic)", "हिन्दी (Hindi)", "日本語 (Japanese)", "한국어 (Korean)")
 LANGS = [EN, ES, PT, ZH, RU, FR, AR, HI, JA, KO]
 
-# ---------------------------------------------------------------- the five premade stories
+# ============================================================= #STORIES-DATA
+# WHAT: the list of premade stories; each has its own #STORY-... block below  |  CHANGE WHEN: you add, remove or reorder a story
 # mode: "love_interest" = the narrator plays the character and the player is the protagonist
 #       "system"        = the narrator is a game-like System voice
 #       "hero"          = the player IS the superhero (the card's name)
 STORIES = [
+# =============================================================== #STORY-KADE
+# WHAT: the card, persona and opening scene of Kade, the wolf alpha  |  CHANGE WHEN: you change who they are, how they talk or how the story starts
     {
         "id": "kade", "name": "Kade", "emoji": "🐺", "genre": "Romance", "mode": "love_interest",
         "image": "kade", "colors": ("#1a0b14", "#9f1d4e"), "tag_key": "story_kade_tag",
@@ -41,6 +63,8 @@ STORIES = [
             "Ironpine territory, hurt and lost. Kade steps out from the treeline, eyes glowing gold, and catches their scent. "
             "Open with that moment, in Kade's presence."),
     },
+# ====================================================== #STORY-SHADOW-PRINCE
+# WHAT: the card, persona and opening scene of the Shadow Prince, the fae prince  |  CHANGE WHEN: you change who they are, how they talk or how the story starts
     {
         "id": "shadow_prince", "name": "Shadow Prince", "emoji": "🥀", "genre": "Dark Fantasy", "mode": "love_interest",
         "image": "shadow_prince", "colors": ("#0d0a1f", "#4c1d95"), "tag_key": "story_shadow_prince_tag",
@@ -59,6 +83,8 @@ STORIES = [
             "the Court of Dusk open and the Shadow Prince is waiting, a crown of thorns on his brow, already holding the "
             "terms of a bargain."),
     },
+# ============================================================= #STORY-SYSTEM
+# WHAT: the card, persona and opening scene of the System, S-Rank awakening  |  CHANGE WHEN: you change who they are, how they talk or how the story starts
     {
         "id": "system", "name": "System", "emoji": "⚡", "genre": "Action / Progression", "mode": "system",
         "image": "system", "colors": ("#06141f", "#0e7490"), "tag_key": "story_system_tag",
@@ -77,6 +103,8 @@ STORIES = [
             "a glowing window appears in front of them: the System announces an emergency awakening and assigns their rank. "
             "Open with that moment."),
     },
+# =============================================================== #STORY-NOVA
+# WHAT: the card, persona and opening scene of Nova, the female superhero  |  CHANGE WHEN: you change who they are, how they talk or how the story starts
     {
         "id": "nova", "name": "Nova", "emoji": "🌟", "genre": "Superhero", "mode": "hero",
         "image": "nova", "colors": ("#1f0b2e", "#db2777"), "tag_key": "story_hero_tag",
@@ -93,6 +121,8 @@ STORIES = [
             "Begin the story now. An alarm sounds over Aurelia: a bank tower is on fire and a Syndicate crew has taken "
             "hostages. The player, as Nova, is already in the air above the skyline. Open with the decision in front of them."),
     },
+# ============================================================== #STORY-TITAN
+# WHAT: the card, persona and opening scene of Titan, the male superhero  |  CHANGE WHEN: you change who they are, how they talk or how the story starts
     {
         "id": "titan", "name": "Titan", "emoji": "🛡️", "genre": "Superhero", "mode": "hero",
         "image": "titan", "colors": ("#1a1208", "#b45309"), "tag_key": "story_hero_tag",
@@ -109,9 +139,36 @@ STORIES = [
             "Begin the story now. A freight crane is collapsing onto a crowded dock while Ironjaw's crew opens fire from the "
             "shadows. The player, as Titan, is the only one close enough to act. Open with the moment before the first move."),
     },
+# =========================================================== #STORY-MORRIGAN
+# WHAT: the card, persona and opening scene of Morrigan, the Witch  |  CHANGE WHEN: you change who they are, how they talk or how the story starts
+    {
+        "id": "morrigan", "name": "Morrigan", "emoji": "🔮", "genre": "Dark Fantasy", "mode": "love_interest",
+        "image": "morrigan", "colors": ("#07140c", "#15803d"), "tag_key": "story_morrigan_tag",
+        "inventory": ["Ancient Spellbook", "Silver Ritual Dagger", "Raven Feather", "Vial of Crimson Elixir"],  # what the player starts with
+        "persona": (
+            "You are MORRIGAN, the Witch of the Hollow Crown: an adult sorceress who looks about thirty-five and is bound to a "
+            "realm of ancient spellcraft, forbidden rites and supernatural consequences. Intelligent, confident, fiercely "
+            "sarcastic and deeply unpredictable; she never answers plainly when a cutting remark will do. The player has just "
+            "woken inside her ritual circle, carrying four items she says she merely 'lent' them: an ancient spellbook, a "
+            "silver ritual dagger, a raven feather and a vial of crimson elixir. Everything lent has a price. Play Morrigan in "
+            "character in every reply: short, sharp, wry lines. She tests the player's resolve, teases them and threatens them "
+            "with playful curses (a hex that turns every candle blue, a spell that forces them to tell only the truth for an "
+            "hour). She is intimidating yet captivating. Every spell has a cost and every bargain has fine print: track the "
+            "debts, curses and promises. Depending on the player's choices she can become an ally, a rival, a mentor or a "
+            "slow-burn romance. The player's choices decide: she never forces or coerces anyone, and her curses are playful or "
+            "carry consequences the player can answer. Setting: a witch's tower on a haunted moor, forbidden libraries, rival "
+            "covens, bargains with old spirits. Sensual moments stay tasteful and fade to black before explicit detail. End "
+            "most replies with a choice, a dare or a dangerous invitation. Every character is an adult."),
+        "opening": (
+            "Wake up and look around. Begin the story now. The player wakes on cold stone inside a chalk circle at the top of "
+            "Morrigan's tower, a storm of ravens beating at the window and four items laid out beside them: a spellbook, a "
+            "silver ritual dagger, a raven feather and a vial of crimson elixir. Morrigan is already watching from the "
+            "shadows with a smirk, deciding what the player will be to her. Open with that moment, in her presence."),
+    },
 ]
 
-# ---------------------------------------------------------------- Create-a-World options (codes are what gets saved)
+# =========================================================== #CREATE-OPTIONS
+# WHAT: the choices in the Create-a-World form and the English wording the narrator receives  |  CHANGE WHEN: you add an archetype, trait, companion type or level
 ARCHETYPES = ["chosen_one", "outcast", "hunter", "heir", "rogue", "guardian"]
 TRAITS = ["brave", "cunning", "loyal", "reckless", "charming", "mysterious", "ruthless", "kind"]
 COMPANION_ROLES = ["love", "ally", "rival"]
@@ -142,10 +199,13 @@ ACTION_RULE = {
     "brutal": "Brutal action: visceral combat, blood and consequences are welcome.",
 }
 
-# ---------------------------------------------------------------- texts: key -> {language: text}
+# ==================================================================== #TEXTS
+# WHAT: every text in the file: key -> one line per language (missing languages show English)  |  CHANGE WHEN: you reword anything or add a language
 # Keys with all 10 languages are the ones every visitor sees first. The rest are English, Spanish and Portuguese for now;
 # any language missing a line simply shows the English one.
 _T = {
+# ======================================================== #TEXTS-STORIES-TAB
+# WHAT: the Stories tab title, button and genre names, in all 10 languages  |  CHANGE WHEN: you reword the Stories tab
     # --- the Stories tab (all 10 languages)
     "tab_stories": {EN: "✨ Stories", ES: "✨ Historias", PT: "✨ Histórias", ZH: "✨ 故事", RU: "✨ Истории", FR: "✨ Histoires",
                     AR: "✨ قصص", HI: "✨ कहानियाँ", JA: "✨ ストーリー", KO: "✨ 스토리"},
@@ -173,6 +233,8 @@ _T = {
     "genre_progression": {EN: "Action / Progression", ES: "Acción / Progresión", PT: "Ação / Progressão", ZH: "动作 / 成长",
                           RU: "Экшен / Прокачка", FR: "Action / Progression", AR: "أكشن / تطوّر", HI: "एक्शन / प्रोग्रेशन",
                           JA: "アクション／成長", KO: "액션 / 성장"},
+# ============================================================== #TEXTS-PLANS
+# WHAT: the plan names, descriptions and the Terms pricing sentence, in all 10 languages  |  CHANGE WHEN: you change a plan's wording
     # --- the three plans (all 10 languages: prices must read correctly everywhere)
     "plan_monthly_name": {EN: "Monthly Premium Pass", ES: "Pase Premium Mensual", PT: "Passe Premium Mensal", ZH: "每月高级通行证",
                           RU: "Месячный премиум-пропуск", FR: "Pass Premium Mensuel", AR: "باقة بريميوم الشهرية",
@@ -217,6 +279,8 @@ _T = {
         JA: "安全なStripeゲートウェイでお支払いいただくことで、選択したプランの定期購読を承認したものとみなされます：{plans}。各プランは、解約されるまで各請求期間の終了時に自動更新され、すべてのプランに同じアクセスが含まれます。アカウントプロファイルからいつでも解約でき、お支払い済みの期間の終了までアクセスは継続します。法律で別段の定めがある場合を除き、お支払いは返金されません。",
         KO: "안전한 Stripe 게이트웨이로 결제하시면 선택한 플랜의 정기 구독을 승인하시는 것입니다: {plans}. 각 플랜은 해지하실 때까지 매 결제 주기가 끝날 때 자동 갱신되며, 모든 플랜은 동일한 이용 권한을 제공합니다. 계정 프로필에서 언제든지 해지할 수 있으며, 이미 결제한 기간이 끝날 때까지 이용할 수 있습니다. 법률에서 달리 정하는 경우를 제외하고 결제 금액은 환불되지 않습니다."},
 
+# ======================================================== #TEXTS-STORY-CARDS
+# WHAT: the title, tag and hook shown on each story card (one set of three lines per story)  |  CHANGE WHEN: you add a story or reword a card
     # --- story cards (English, Spanish, Portuguese)
     "story_kade_title": {EN: "The Wolf Alpha", ES: "El Alfa Lobo", PT: "O Alfa Lobo"},
     "story_kade_tag": {EN: "BookTok Romance", ES: "Romance BookTok", PT: "Romance BookTok"},
@@ -238,7 +302,15 @@ _T = {
     "story_titan_hook": {EN: "Strength no one can match. Choices only you can make.",
                          ES: "Una fuerza sin igual. Decisiones que solo tú puedes tomar.",
                          PT: "Uma força sem igual. Escolhas que só você pode fazer."},
+    "story_morrigan_title": {EN: "The Witch", ES: "La Bruja", PT: "A Bruxa"},
+    "story_morrigan_tag": {EN: "Dark Fantasy / Ancient Magic", ES: "Fantasía oscura / Magia antigua",
+                           PT: "Fantasia sombria / Magia antiga"},
+    "story_morrigan_hook": {EN: "She'll test you, curse you, and maybe save you.",
+                            ES: "Te pondrá a prueba, te maldecirá y quizá te salve.",
+                            PT: "Ela vai te testar, te amaldiçoar e talvez te salvar."},
 
+# ======================================================== #TEXTS-CREATE-FORM
+# WHAT: the words of the Create-a-World form, in English, Spanish and Portuguese  |  CHANGE WHEN: you change the form's wording
     # --- Create-a-World form (English, Spanish, Portuguese)
     "cr_title": {EN: "Build your story world", ES: "Construye tu mundo de historias", PT: "Construa seu mundo de histórias"},
     "cr_subtitle": {EN: "A few choices is all it takes. Your world, your character, your rules.",
@@ -299,6 +371,8 @@ _T = {
     "action_brutal": {EN: "Brutal", ES: "Brutal", PT: "Brutal"},
 }
 
+# =============================================================== #TEXT-MERGE
+# WHAT: hands every text to the app (leave this alone)  |  CHANGE WHEN: you never need to change it
 # language -> {key: text}, ready to be merged into LOCALIZATION_VAULT
 STORY_TEXT = {lang: {} for lang in LANGS}
 for _key, _by_lang in _T.items():
