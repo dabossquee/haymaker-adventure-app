@@ -1,4 +1,3 @@
-
 """Haymaker Industry: main app file (web_app.py).
 
 HOW TO FIND THINGS
@@ -1319,10 +1318,12 @@ def card(icon, title, line=""):
         f'<p style="color:#94a3b8;font-size:14px;">{esc(line)}</p></div></div>', unsafe_allow_html=True)
 
 
-def enter_world(world_id, name, genre, char_name, backstory, custom=None):
+def enter_world(world_id, name, genre, char_name, backstory, custom=None, inventory=None):
     eng = new_engine()
     eng.update(world_id=world_id, world_name=name, world_genre=genre, world_customization=custom)
     eng["player_character"].update(name=char_name, backstory=backstory)
+    if inventory:  # a story may start the player with its own items; without this they carry "survival gear"
+        eng["player_character"]["inventory"] = [str(item)[:40] for item in inventory][:30]
     ss.world_engine = eng
     ss.world_cover_url = None
     st.rerun()
@@ -1892,7 +1893,7 @@ def enter_story(story):
     custom = {"story_id": story["id"], "persona": story["persona"], "opening": story["opening"],
               "player_name": "" if hero else player}
     enter_world("story_" + story["id"], f"{story['name']} — {x('story_' + story['id'] + '_title')}", story["genre"],
-                story["name"] if hero else (player or x("lbl_wanderer")), "", custom)
+                story["name"] if hero else (player or x("lbl_wanderer")), "", custom, story.get("inventory"))
 
 
 def render_story_card(story):
@@ -1947,8 +1948,9 @@ def tab_stories():
     st.markdown(f'<div class="hm-stories-title">{esc(x("stories_title"))}</div>'
                 f'<div class="hm-stories-sub">{esc(x("stories_sub"))}</div>', unsafe_allow_html=True)
     st.text_input(x("lbl_your_name"), key="your_name", max_chars=30)
-    for cards, widths in ((STORIES[:3], [1, 1, 1]), (STORIES[3:], [0.5, 1, 1, 0.5])):  # second row centred
-        cols = st.columns(widths)
+    for start in range(0, len(STORIES), 3):  # three cards per row; a short last row is centred
+        cards = STORIES[start:start + 3]
+        cols = st.columns([1, 1, 1] if len(cards) == 3 else [0.5, 1, 1, 0.5])
         for col, story in zip(cols if len(cards) == 3 else cols[1:3], cards):
             with col:
                 render_story_card(story)
