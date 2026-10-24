@@ -4,7 +4,7 @@ HOW TO FIND THINGS
   Every block starts with a banner line that ends in a #TAG, for example  #SIDEBAR.
   Press Cmd+F, type the tag, and press Enter twice (the first match is the list below).
   A block runs from its banner down to the next banner. To change one block, replace only those lines.
-  Needs these files beside it: localization.py, styles.py, stories.py, legal_docs.py.
+  Needs these files beside it: localization.py, styles.py, stories.py.
 
 THE BLOCKS, IN ORDER
   #IMPORTS              the libraries the app uses, plus your stories.py texts
@@ -41,7 +41,8 @@ THE BLOCKS, IN ORDER
   #BILLING-PORTAL       the Manage subscription button
   #CANCEL               the Cancel call to the payment service
   #SUBSCRIPTION-SCREEN  the Subscription Management screen in settings
-  #LEGAL-TEXT           the Terms of Use / Privacy / Cookie box (texts are in legal_docs.py)
+  #LEGAL-DOCS           the Terms of Use, Privacy Policy and Cookie Policy texts + your company details
+  #LEGAL-TEXT           the box that shows them (three tabs)
   #AUTH-FORM            the sign-in / sign-up form
   #PAYWALL-SCREEN       the pricing screen: sign-up form for visitors, plan cards, Terms
   #CHAT-HELPERS         the world card, the chat bubble, cleaning the narrator's text
@@ -92,12 +93,6 @@ try:
     import replicate
 except ImportError:
     replicate = None
-
-try:
-    import legal_docs
-except ImportError:  # legal_docs.py did not reach the server: the site keeps running with the older, shorter legal text
-    legal_docs = None
-    print("CONFIG ERROR: legal_docs.py is missing next to web_app.py. Add it to GitHub and redeploy.")
 
 from localization import LOCALIZATION_VAULT
 from stories import (ACTION_LEVELS, ACTION_RULE, ARCHETYPE_EN, ARCHETYPES, COMPANION_ROLES, COMPANION_VIBES, ROLE_EN,
@@ -1216,8 +1211,431 @@ def settings_nav(labels):
     return choice
 
 
+# ============================================================== #LEGAL-DOCS
+# WHAT: the Terms of Use, Privacy Policy and Cookie Policy texts, with your company details at the top  |  CHANGE WHEN: your email, address or state changes, or the app collects new data
+# Fill in LEGAL_ADDRESS and LEGAL_STATE when you can (empty is fine). If you add a new cookie, tracker or AI company, tell Claude: these texts must match the app.
+LEGAL_COMPANY = "Haymaker Industries LLC"
+LEGAL_SITE_URL = "https://haymaker-adventure-app.onrender.com"
+LEGAL_EMAIL = "hmaker682@gmail.com"
+LEGAL_DSAR_URL = "https://app.termly.io/dsar/80af5b76-0993-4889-98e7-f9e26134439d"  # your Termly data request form
+LEGAL_ADDRESS = ""  # your business mailing address, for example "123 Main St, Austin, TX 78701, United States". "" = email only
+LEGAL_STATE = ""  # the US state your LLC is registered in, for example "Texas". "" = a general sentence is used instead
+LEGAL_UPDATED = "October 24, 2026"
+
+LEGAL_LABELS = ("Terms of Use", "Privacy Policy", "Cookie Policy")
+LEGAL_NOTE = "These documents are in English. If a translation ever differs, the English version applies."
+
+
+# ---- the Terms of Use (plan names and prices come from #PLANS)
+# ---- the Privacy Policy and the Cookie Policy follow below
+def _legal_contact():
+    return f"by email at {LEGAL_EMAIL}" + (f" or by post at {LEGAL_ADDRESS}" if LEGAL_ADDRESS else "")
+
+
+def legal_terms_text(plans=""):
+    plans = (plans or "the plans shown on the pricing screen").replace("$", "\\$")  # a dollar sign would start a math formula
+    law = (f"the laws of the State of {LEGAL_STATE}, USA" if LEGAL_STATE
+           else f"the laws of the United States and of the U.S. state in which {LEGAL_COMPANY} is organized")
+    return f"""
+# Terms of Use
+
+*Last updated {LEGAL_UPDATED}*
+
+These Terms of Use ("**Terms**") are an agreement between you and **{LEGAL_COMPANY}** ("**we**," "**us**," or "**our**"). They apply when you use Haymaker, our website at {LEGAL_SITE_URL} and everything we offer through it (the "**Service**"). By using the Service you agree to these Terms and to our Privacy Policy and Cookie Policy. If you do not agree, please do not use the Service.
+
+## 1. Who can use the Service
+You must be at least **18 years old** (or the age of adulthood where you live, if that is higher). By using the Service you confirm that you meet this requirement. We may refuse or end access at any time if we believe someone is under age.
+
+## 2. What the Service is
+Haymaker is an interactive story game. A narrator powered by artificial intelligence, provided by third parties such as OpenAI, writes the story as you play. All characters, worlds and events are fictional.
+
+- Stories can contain mature themes such as danger, violence, dark fantasy and romance. We do not allow sexually explicit content, and romance scenes are written to stay non-explicit.
+- The Service is for entertainment only. It is not medical, legal, financial, mental-health or any other kind of advice.
+- AI can make mistakes or write things you did not expect. We do not promise that any story will be accurate, consistent or suitable for you.
+- If you are in danger or in crisis, contact your local emergency number or a crisis line. Do not rely on the game.
+
+## 3. Your account
+- You sign up with an email address and a password. Give us accurate information and keep your password private.
+- You are responsible for everything that happens under your account. Tell us right away if you think someone else has used it.
+- Do not share, sell or transfer your account.
+
+## 4. Free actions
+New visitors get a limited number of free story actions so they can try the Service. We count them to stop abuse. You may not get around the limit, for example by creating several accounts, clearing cookies to reset the count, or using automated tools.
+
+## 5. Premium passes and payments
+- **Plans.** We offer these passes: {plans}. All passes give the same access; only the billing period differs. Prices are in US dollars.
+- **Payment.** Payments are handled by Stripe. When you buy a pass you authorize us, through Stripe, to charge your payment method now and at every renewal.
+- **Automatic renewal.** Each pass renews automatically at the end of its billing period, at the price shown to you at the time, until you cancel.
+- **Cancelling.** You can cancel at any time from Subscription Management in the app's menu, or through the billing portal. Cancelling stops future renewals. You keep full access until the end of the period you already paid for.
+- **Refunds.** Payments are non-refundable except where the law requires otherwise. If you live somewhere that gives you mandatory cancellation or refund rights, those rights are not affected by these Terms.
+- **Price changes.** We may change prices for future billing periods. We will tell you before a change reaches your next renewal (for example by updating the pricing screen or emailing you), and you can cancel before it applies.
+- **Taxes.** Any taxes that apply to your purchase are shown at checkout.
+- **Failed payments.** If a payment fails, we may pause your premium access until it is fixed.
+
+## 6. Rules
+You agree not to use the Service to:
+- create, request or share anything that sexualizes minors, or any content that depicts or promotes the abuse of children;
+- create or request explicit pornography;
+- get real-world instructions for crimes, weapons, drugs, hacking or other harm to people;
+- threaten, harass, or spread hate against any person or group, or encourage violence or self-harm in the real world;
+- type in personal information about other people without their permission;
+- break the law, or infringe other people's rights;
+- get around our safety checks, free-action limit or payment system, or try to access parts of the Service you are not allowed to use;
+- copy, scrape or resell the Service, or use bots, scripts or other automation to play or to collect data;
+- attack, overload, probe or reverse engineer the Service, or interfere with other players.
+
+## 7. Your content
+- **What you write.** You keep ownership of the messages, character details and world descriptions you enter ("**Your Content**").
+- **Our permission to use it.** You give us a worldwide, non-exclusive, royalty-free license to host, copy, process and display Your Content, and to send it to our service providers (including AI providers), only as needed to run, protect and improve the Service and to show worlds you choose to post. You promise that you have the right to give us this permission and that Your Content follows these Terms.
+- **Story text.** The story text the narrator writes for you may be similar to text written for other players. You may use it for personal purposes. We do not promise that it is unique or free of anyone else's rights.
+- **Removal.** We may remove or block content that breaks these Terms or that we believe could cause harm.
+
+## 8. Community worlds
+Premium members can post a world they created to the public community. A posted world, including its name, genre and the settings you wrote, can be seen and played by other players. It does not show your email address. You can delete a world from My Creations at any time; this removes it from the community. Do not post anything you want to keep private.
+
+## 9. Our content
+The Service, including its software, design, characters, artwork, music and text that we created, belongs to us or our licensors and is protected by law. We give you a limited, personal, non-transferable permission to use the Service as these Terms allow. We reserve every right we do not expressly give you.
+
+## 10. Third-party services
+The Service relies on other companies, such as Stripe for payments, OpenAI for the AI narrator and safety screening, and our hosting and database providers. Their own terms and privacy notices apply to what they do. We are not responsible for them.
+
+## 11. Safety tools
+We screen messages and story replies with automated tools. Some messages may be blocked, and some replies may be removed. These tools are not perfect, and we may change them at any time.
+
+## 12. Suspension and ending
+You can stop using the Service at any time and cancel your pass. We may suspend or end your access, with or without notice, if you break these Terms, if we must for legal or safety reasons, or if the Service is closed. Sections that by their nature should continue (such as 7, 9, 13, 14, 15 and 16) will continue after your access ends.
+
+## 13. No warranties
+The Service is provided "**as is**" and "**as available**." To the fullest extent the law allows, we do not make any promise about the Service, including that it will be uninterrupted, error-free, secure, or fit for a particular purpose. Some places do not allow these limits, so they may not fully apply to you.
+
+## 14. Limit on our responsibility
+To the fullest extent the law allows, we are not responsible for indirect, incidental, special, consequential or punitive losses, or for lost profits, data or goodwill. Our total responsibility to you for anything connected to the Service is limited to the amount you paid us in the 12 months before the event that caused the claim. Nothing in these Terms limits responsibility that cannot be limited by law.
+
+## 15. If you cause us a loss
+If your use of the Service, Your Content or your breach of these Terms leads to a claim against us, you agree to cover our reasonable losses from that claim, to the extent the law allows.
+
+## 16. Governing law and disputes
+These Terms are governed by {law}, without regard to conflict-of-law rules. Before starting a legal claim, please contact us {_legal_contact()} so we can try to fix the problem informally. Any claim that cannot be settled that way will be brought in the courts that have authority in that place, unless the law of where you live gives you the right to use your local courts.
+
+## 17. Changes to these Terms
+We may update these Terms. The date at the top shows when they last changed. If a change is significant we will try to tell you, for example by a notice in the app. If you keep using the Service after a change, you accept the new Terms.
+
+## 18. Contact
+Questions about these Terms? Contact us {_legal_contact()}.
+"""
+
+
+LEGAL_PRIVACY = f"""
+# Privacy Policy
+
+*Last updated {LEGAL_UPDATED}*
+
+This Privacy Notice for **{LEGAL_COMPANY}** ("**we**," "**us**," or "**our**") describes how and why we might access, collect, store, use, and/or share ("**process**") your personal information when you use our services ("**Services**"), including when you:
+
+- Visit our website at {LEGAL_SITE_URL} or any website of ours that links to this Privacy Notice
+- Create an account, play our interactive story game, or buy a pass
+- Engage with us in other related ways, including any marketing or events
+
+**Questions or concerns?** Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us {_legal_contact()}.
+
+## Summary of key points
+
+*This summary provides key points from our Privacy Notice. You can find more detail in the sections below.*
+
+- **What personal information do we process?** Depending on how you use the Services: your email address, the stories you write and the narrator's replies, your saved games, limited payment status from Stripe, and technical information such as your IP address and cookie identifiers. See Section 1.
+- **Do we process sensitive personal information?** We do not ask for it. Stories are free-form text, so please do not type sensitive details into a story.
+- **Do we collect information from third parties?** Only a little: Stripe tells us whether your payment and plan are active, and an ad click identifier can arrive in the link if you come from an ad.
+- **How do we process your information?** To run the game, manage accounts and passes, keep the Services safe, measure our advertising, and follow the law. See Section 2.
+- **Who do we share it with?** Service providers that help us run the Services, including AI, payment, hosting and advertising-measurement companies. We do not sell your personal information for money. See Section 4.
+- **How do we keep your information safe?** With technical and organizational measures. No system is 100% secure. See Section 7.
+- **What are your rights?** Depending on where you live, you may be able to access, correct, delete or get a copy of your information, and to opt out of some uses. See Sections 9 and 11.
+- **How do you use your rights?** Email us at {LEGAL_EMAIL} or use our [data subject access request]({LEGAL_DSAR_URL}).
+
+## 1. What information do we collect?
+
+### Personal information you disclose to us
+
+*In short: we collect personal information that you provide to us.*
+
+We collect personal information that you voluntarily give us when you register on the Services, play, buy a pass, express an interest in our products and Services, or contact us. The personal information we collect depends on the context of your interactions with us and the Services, the choices you make, and the products and features you use. It may include:
+
+- **Account details:** your email address, your password (handled by our sign-in provider; we cannot read it), and the language you choose.
+- **Story content:** the messages you type, the narrator's replies, the character and world details you enter (such as names, backstories and descriptions), and your saved games (we keep the most recent part of your story so you can continue later).
+- **Messages to us:** anything you send when you contact us.
+
+**Sensitive information.** We do not ask for sensitive information. Please do not enter sensitive details about yourself or other people into a story.
+
+**Payment data.** Payments are handled by **Stripe**. We do not receive or store your full card number or security code. We receive limited information from Stripe, such as a customer ID, the plan you bought, the subscription status and the end date of your paid period. You can read Stripe's privacy notice at https://stripe.com/privacy.
+
+All personal information that you provide to us must be true, complete, and accurate, and you must tell us about any changes.
+
+### Information automatically collected
+
+*In short: some information, such as your IP address and browser and device characteristics, is collected automatically when you visit our Services.*
+
+- **Device and usage data:** IP address, browser and device type, the pages and features you use, dates and times, and the site that sent you to us. Our hosting and security providers process this to deliver the Services and to prevent abuse.
+- **Advertising tags:** if you arrive from an ad or a link that carries tags (for example `utm_` tags or an ad click ID), we keep them for your visit and add them to your checkout record if you buy, so we can tell which ads work. The TikTok Pixel also receives page-view information. See Section 4 and the Cookie Policy.
+- **Free-trial identifier:** before you have an account, a random ID in a cookie and in our database counts the free story actions used by that browser. It is not linked to your name or email until you sign up.
+- **Cookies and similar technologies:** see our Cookie Policy for the full list.
+
+### Information from third parties
+
+We do not buy personal information about you. We receive limited information from Stripe (above) and, if you arrive from a TikTok ad, an ad click identifier that is added to the link.
+
+## 2. How do we process your information?
+
+*In short: we process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. We may also process your information for other purposes with your consent.*
+
+We process your personal information for a variety of reasons, depending on how you interact with our Services, including:
+
+- **To create and manage accounts**, so you can sign up, sign in, and keep your account working.
+- **To deliver the Services**, including writing the story with AI, saving your game, and showing worlds you choose to share.
+- **To manage purchases**, including starting, renewing, changing and cancelling your pass, and showing the right access.
+- **To protect the Services and people**, including screening messages with safety tools, limiting free actions, and preventing fraud and abuse.
+- **To respond to you** when you contact us.
+- **To measure and improve our advertising and our Services**, including with the TikTok Pixel and by looking at how features are used.
+- **To comply with the law** and to defend our legal rights.
+- **To save or protect an individual's vital interest**, such as to prevent harm.
+
+## 3. What legal bases do we rely on to process your information?
+
+*In short: we only process your personal information when we believe it is necessary and we have a valid legal reason (a legal basis) to do so under applicable law.*
+
+**If you are located in the EU or UK, this section applies to you.** The General Data Protection Regulation (GDPR) and UK GDPR require us to explain the legal bases we rely on. We may rely on:
+
+- **Consent.** We may process your information if you have given us permission to use it for a specific purpose. You can withdraw your consent at any time (see Section 9).
+- **Performance of a contract.** We may process your information when necessary to provide the Services you ask for, such as your account and your pass.
+- **Legitimate interests.** We may process your information when it is reasonably necessary for our legitimate business interests and does not override your rights, for example to keep the Services secure, to prevent abuse of the free trial, and to understand and improve the Services.
+- **Legal obligations.** We may process your information where necessary to comply with our legal obligations, such as cooperating with a law enforcement body or regulatory agency, exercising or defending our legal rights, or disclosing your information as evidence in litigation.
+- **Vital interests.** We may process your information where necessary to protect your vital interests or those of another person, such as situations involving potential threats to anyone's safety.
+
+**If you are located in Canada, this section applies to you.** We may process your information if you have given us specific permission (express consent) to use your personal information for a specific purpose, or in situations where your permission can be inferred (implied consent). You can withdraw your consent at any time. In some exceptional cases, we may be legally permitted under applicable law to process your information without your consent, including, for example: if collection is clearly in the interests of an individual and consent cannot be obtained in a timely way; for investigations and fraud detection and prevention; for business transactions provided certain conditions are met; if it is contained in a witness statement and the collection is necessary to assess, process, or settle an insurance claim; for identifying injured, ill, or deceased persons and communicating with next of kin; if we have reasonable grounds to believe an individual has been, is, or may be a victim of financial abuse; if it is reasonable to expect that collection and use with consent would compromise the availability or accuracy of the information and the collection is reasonable for purposes related to investigating a breach of an agreement or a contravention of the laws of Canada or a province; if disclosure is required to comply with a subpoena, warrant, court order, or rules of the court relating to the production of records; if it was produced by an individual in the course of their employment, business, or profession and the collection is consistent with the purposes for which the information was produced; if the collection is solely for journalistic, artistic, or literary purposes; or if the information is publicly available and is specified by the regulations.
+
+## 4. When and with whom do we share your personal information?
+
+*In short: we may share information in specific situations described in this section and with the following categories of third parties.*
+
+We share your personal information with service providers that process it on our behalf under their own terms and privacy notices:
+
+- **Hosting:** Render, which runs our website and services.
+- **Database and sign-in:** Supabase, which stores accounts, saved games, worlds and free-trial counts.
+- **Payments:** Stripe, which processes payments and manages subscriptions.
+- **Artificial intelligence:** OpenAI, which writes the narrator's replies and screens messages for safety. Replicate may create cover pictures from a world's title and genre.
+- **Advertising measurement:** TikTok, through the TikTok Pixel on our website. It receives information such as the page you viewed, your IP address, your browser details, cookie identifiers and the ad click ID, and TikTok may combine that with information it already has about you. See the Cookie Policy.
+- **Privacy requests:** Termly, which hosts the form for data requests.
+
+We may also share your information in these situations:
+
+- **Worlds you post.** If you post a world to the public community, its name, genre and the settings you wrote can be seen and played by other players. Your email address is not shown.
+- **Business transfers.** We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.
+- **Legal reasons and safety.** We may share information where the law requires it or to protect people, our rights or the Services.
+
+We do not sell your personal information for money. See Section 11 for how US state laws treat advertising pixels.
+
+## 5. Do we offer artificial intelligence-based products?
+
+*In short: we offer products, features, or tools powered by artificial intelligence, machine learning, or similar technologies.*
+
+As part of our Services, we offer products, features, or tools powered by artificial intelligence, machine learning, or similar technologies (collectively, "**AI Products**"). The story narrator is an AI Product. We provide it through third-party service providers ("**AI Service Providers**"), including OpenAI.
+
+- **What is sent.** To write each reply, we send the AI Service Provider your latest messages, the recent story so far, the character and world details you chose, and our instructions to the narrator. We also send your messages and the narrator's replies for automated safety screening.
+- **How the information is handled.** Your input, output and personal information are shared with and processed by these AI Service Providers to enable your use of our AI Products, and are handled in line with this Privacy Notice and our agreements with them.
+- **Limits.** AI replies can be wrong or surprising, and we do not use them to make legal or similarly significant decisions about you.
+- **Your responsibility.** Please do not enter sensitive information about yourself or others. You must not use the AI Products in any way that violates the terms or policies of any AI Service Provider.
+
+## 6. How long do we keep your information?
+
+*In short: we keep your information for as long as necessary to fulfill the purposes outlined in this Privacy Notice unless otherwise required by law.*
+
+We keep your personal information only as long as it is necessary for the purposes set out in this Privacy Notice, unless a longer period is required or permitted by law (such as tax, accounting, or other legal requirements).
+
+- **Account information** is kept while you have an account with us.
+- **Saved games** are kept until you delete them or your account is deleted.
+- **Free-trial records** are kept for as long as needed to stop repeat abuse of the free trial.
+- **Payment records** are kept by us and by Stripe as long as the law requires.
+
+When we have no ongoing legitimate business need to process your personal information, we will either delete or anonymize it, or, if this is not possible (for example, because it has been stored in backup archives), we will securely store it and isolate it from any further processing until deletion is possible.
+
+## 7. How do we keep your information safe?
+
+*In short: we aim to protect your personal information through a system of organizational and technical security measures.*
+
+We have implemented appropriate and reasonable technical and organizational security measures designed to protect the security of any personal information we process. However, despite our safeguards and efforts to secure your information, no electronic transmission over the Internet or information storage technology can be guaranteed to be 100% secure, so we cannot promise or guarantee that hackers, cybercriminals, or other unauthorized third parties will not be able to defeat our security and improperly collect, access, steal, or modify your information. Although we will do our best to protect your personal information, transmission of personal information to and from our Services is at your own risk. You should only access the Services within a secure environment.
+
+## 8. Do we collect information from minors?
+
+*In short: we do not knowingly collect data from or market to children under 18 years of age.*
+
+We do not knowingly collect, solicit data from, or market to children under 18 years of age (or the equivalent age as specified by law in your jurisdiction), nor do we knowingly sell such personal information. By using the Services, you represent that you are at least 18 or the equivalent age as specified by law in your jurisdiction. If we learn that personal information from users less than 18 years of age has been collected, we will deactivate the account and take reasonable measures to promptly delete such data from our records. If you become aware of any data we may have collected from children under age 18, please contact us at {LEGAL_EMAIL}.
+
+## 9. What are your privacy rights?
+
+*In short: depending on your state of residence in the US or in some regions, such as the European Economic Area (EEA), United Kingdom (UK), Switzerland, and Canada, you have rights that allow you greater access to and control over your personal information. You may review, change, or terminate your account at any time, depending on your country, province, or state of residence.*
+
+In some regions (like the EEA, UK, Switzerland, and Canada), you have certain rights under applicable data protection laws. These may include the right (i) to request access and obtain a copy of your personal information, (ii) to request rectification or erasure; (iii) to restrict the processing of your personal information; (iv) if applicable, to data portability; and (v) not to be subject to automated decision-making. If a decision that produces legal or similarly significant effects is made solely by automated means, we will inform you, explain the main factors, and offer a simple way to request human review. In certain circumstances, you may also have the right to object to the processing of your personal information. You can make such a request by contacting us {_legal_contact()}. We will consider and act upon any request in accordance with applicable data protection laws.
+
+If you are located in the UK and are unhappy with how we have handled your personal information, you can make a complaint directly to us, in addition to the rights you have under the UK GDPR and the Data Protection Act 2018. We will acknowledge your complaint within 30 days of receiving it, investigate without unjustifiable or excessive delay, and keep you informed of progress and explain the outcome. If you are not happy with our final response, you can refer your complaint to the Information Commissioner's Office, the UK supervisory authority: website ico.org.uk/make-a-complaint, helpline 0303 123 1113, or by post at Information Commissioner's Office, Wycliffe House, Water Lane, Wilmslow, Cheshire, SK9 5AF.
+
+If you are located in the EEA or UK and you believe we are unlawfully processing your personal information, you also have the right to complain to your Member State data protection authority or the UK data protection authority. If you are located in Switzerland, you may contact the Federal Data Protection and Information Commissioner.
+
+**Withdrawing your consent.** If we are relying on your consent to process your personal information, which may be express and/or implied consent depending on the applicable law, you have the right to withdraw your consent at any time by contacting us {_legal_contact()}. This will not affect the lawfulness of the processing before its withdrawal nor, when applicable law allows, the processing of your personal information conducted in reliance on lawful processing grounds other than consent.
+
+### Account information
+
+If you would at any time like to review or change the information in your account or terminate your account, you can:
+
+- Log in to your account settings and update your user account.
+- Email us at {LEGAL_EMAIL} and ask us to delete your account.
+
+Upon your request to terminate your account, we will deactivate or delete your account and information from our active databases. However, we may retain some information in our files to prevent fraud, troubleshoot problems, assist with any investigations, enforce our legal terms and/or comply with applicable legal requirements.
+
+## 10. Controls for Do-Not-Track features
+
+Most web browsers and some mobile operating systems include a Do-Not-Track ("DNT") feature or setting you can activate to signal your privacy preference not to have data about your online browsing activities monitored and collected. At this stage, no uniform technology standard for recognizing and implementing DNT signals has been finalized. As such, we do not currently respond to DNT browser signals or any other mechanism that automatically communicates your choice not to be tracked online, including the Global Privacy Control signal. If a standard for online tracking is adopted that we must follow in the future, we will inform you about that practice in a revised version of this Privacy Notice. You can still opt out of advertising pixels by following the steps in Section 11 or in our Cookie Policy.
+
+California law requires us to let you know how we respond to web browser DNT signals. Because there currently is not an industry or legal standard for recognizing or honoring DNT signals, we do not respond to them at this time.
+
+## 11. Do United States residents have specific privacy rights?
+
+*In short: if you are a resident of California, Colorado, Connecticut, Delaware, Florida, Indiana, Iowa, Kentucky, Maryland, Minnesota, Montana, Nebraska, New Hampshire, New Jersey, Oregon, Rhode Island, Tennessee, Texas, Utah, or Virginia, you may have the right to request access to and receive details about the personal information we maintain about you and how we have processed it, correct inaccuracies, get a copy of, or delete your personal information. You may also have the right to withdraw your consent to our processing of your personal information. These rights may be limited in some circumstances by applicable law.*
+
+### Categories of personal information we collect
+
+The table below shows the categories of personal information we have collected in the past twelve (12) months. The table includes illustrative examples of each category and does not reflect everything we collect from you. For a full list, see Section 1.
+
+| Category | Examples | Collected |
+|---|---|---|
+| A. Identifiers | Email address, account ID, IP address, online identifiers such as cookie IDs | YES |
+| B. Personal information as defined in the California Customer Records statute | Contact information (email address). Card details are handled by Stripe, not by us | YES |
+| C. Protected classification characteristics under state or federal law | Gender, age, date of birth, race and ethnicity, national origin, marital status | NO |
+| D. Commercial information | Plan bought, subscription status, Stripe customer ID, purchase dates | YES |
+| E. Biometric information | Fingerprints and voiceprints | NO |
+| F. Internet or other similar network activity | Pages and features used, referring site, ad click data, interactions with our site and ads | YES |
+| G. Geolocation data | Precise device location | NO |
+| H. Audio, electronic, sensory, or similar information | Images and audio, video or call recordings | NO |
+| I. Professional or employment-related information | Job title, work history | NO |
+| J. Education information | Student records and directory information | NO |
+| K. Inferences drawn from collected personal information | Profiles or summaries about preferences and characteristics | NO |
+| L. Sensitive personal information | Account log-in (email and password), used only to run your account | YES |
+
+We may also collect other personal information outside of these categories through instances where you interact with us in person, online, or by phone or mail in the context of receiving help through our customer support channels, participating in customer surveys or contests, and facilitation in the delivery of our Services and to respond to your inquiries.
+
+### How we use and share personal information
+
+Learn more about how we use your personal information in Section 2, and about whom we share it with in Section 4. We may disclose your personal information to our service providers pursuant to a written contract between us and each service provider. We may use your personal information for our own business purposes, such as internal research for technological development. This is not considered to be "selling" of your personal information.
+
+**Advertising pixels.** We have not sold personal information for money in the past twelve (12) months. We use the TikTok Pixel to measure our advertising. Under some US state laws, this may count as "sharing" for cross-context behavioral advertising or as "targeted advertising." You have the right to opt out. To opt out, email us at {LEGAL_EMAIL} or use our [data subject access request]({LEGAL_DSAR_URL}), and you can also block the pixel with the browser steps in our Cookie Policy. We do not knowingly sell or share the personal information of anyone under 18.
+
+### Your rights
+
+You have rights under certain US state data protection laws. However, these rights are not absolute, and in certain cases, we may decline your request as permitted by law. These rights include:
+
+- Right to know whether or not we are processing your personal data
+- Right to access your personal data
+- Right to correct inaccuracies in your personal data
+- Right to request the deletion of your personal data
+- Right to obtain a copy of the personal data you previously shared with us
+- Right to non-discrimination for exercising your rights
+- Right to opt out of the processing of your personal data if it is used for targeted advertising (or sharing as defined under California's privacy law), the sale of personal data, or profiling in furtherance of decisions that produce legal or similarly significant effects ("profiling")
+
+Depending upon the state where you live, you may also have the following rights:
+
+- Right to access the categories of personal data being processed (as permitted by applicable law, including the privacy law in Minnesota)
+- Right to obtain a list of the categories of third parties to which we have disclosed personal data (as permitted by applicable law, including the privacy law in California, Delaware, and Maryland)
+- Right to obtain a list of specific third parties to which we have disclosed personal data (as permitted by applicable law, including the privacy law in Minnesota and Oregon)
+- Right to obtain a list of third parties to which we have sold personal data (as permitted by applicable law, including the privacy law in Connecticut)
+- Right to review, understand, question, and depending on where you live, correct how personal data has been profiled (as permitted by applicable law, including the privacy law in Connecticut and Minnesota)
+- Right to limit use and disclosure of sensitive personal data (as permitted by applicable law, including the privacy law in California)
+- Right to opt out of the collection of sensitive data and personal data collected through the operation of a voice or facial recognition feature (as permitted by applicable law, including the privacy law in Florida)
+
+### How to exercise your rights
+
+To exercise these rights, you can contact us by submitting a [data subject access request]({LEGAL_DSAR_URL}), by emailing us at {LEGAL_EMAIL}, or by referring to the contact details at the bottom of this document.
+
+Under certain US state data protection laws, you can designate an authorized agent to make a request on your behalf. We may deny a request from an authorized agent that does not submit proof that they have been validly authorized to act on your behalf in accordance with applicable laws.
+
+### Request verification
+
+Upon receiving your request, we will need to verify your identity to determine you are the same person about whom we have the information in our system. We will only use personal information provided in your request to verify your identity or authority to make the request. However, if we cannot verify your identity from the information already maintained by us, we may request that you provide additional information for the purposes of verifying your identity and for security or fraud-prevention purposes. If you submit the request through an authorized agent, we may need to collect additional information to verify your identity before processing your request and the agent will need to provide a written and signed permission from you to submit such request on your behalf.
+
+### Appeals
+
+Under certain US state data protection laws, if we decline to take action regarding your request, you may appeal our decision by emailing us at {LEGAL_EMAIL}. We will inform you in writing of any action taken or not taken in response to the appeal, including a written explanation of the reasons for the decisions. If your appeal is denied, you may submit a complaint to your state attorney general.
+
+### California "Shine The Light" law
+
+California Civil Code Section 1798.83, also known as the "Shine The Light" law, permits our users who are California residents to request and obtain from us, once a year and free of charge, information about categories of personal information (if any) we disclosed to third parties for direct marketing purposes and the names and addresses of all third parties with which we shared personal information in the immediately preceding calendar year. If you are a California resident and would like to make such a request, please submit your request in writing to us by using the contact details in Section 13.
+
+## 12. Do we make updates to this notice?
+
+*In short: yes, we will update this notice as necessary to stay compliant with relevant laws.*
+
+We may update this Privacy Notice from time to time. The updated version will be indicated by an updated "Last updated" date at the top of this Privacy Notice. If we make material changes to this Privacy Notice, we may notify you either by prominently posting a notice of such changes or by directly sending you a notification. We encourage you to review this Privacy Notice frequently to be informed of how we are protecting your information.
+
+## 13. How can you contact us about this notice?
+
+If you have questions or comments about this notice, you may contact us {_legal_contact()}.
+
+**{LEGAL_COMPANY}**, United States
+
+## 14. How can you review, update, or delete the data we collect from you?
+
+Based on the applicable laws of your country or state of residence in the US, you may have the right to request access to the personal information we collect from you, details about how we have processed it, correct inaccuracies, or delete your personal information. You may also have the right to withdraw your consent to our processing of your personal information. These rights may be limited in some circumstances by applicable law. To request to review, update, or delete your personal information, please fill out and submit a [data subject access request]({LEGAL_DSAR_URL}) or email us at {LEGAL_EMAIL}.
+"""
+
+
+LEGAL_COOKIES = f"""
+# Cookie Policy
+
+*Last updated {LEGAL_UPDATED}*
+
+This Cookie Policy explains how **{LEGAL_COMPANY}** ("**we**," "**us**," or "**our**") uses cookies and similar technologies on {LEGAL_SITE_URL}. It should be read together with our Privacy Policy.
+
+## What are cookies?
+Cookies are small text files that a website saves in your browser. They let the site remember you, keep you signed in, and understand how the site is used. Some cookies are set by us (first-party). Others are set by companies we work with (third-party).
+
+## The cookies we use
+
+| Name | Set by | What it does | How long it lasts |
+|---|---|---|---|
+| `hm_lang` | Us | Remembers the language you chose | 30 days |
+| `hm_rt` | Us | Keeps you signed in on this device (a secure sign-in token). It is deleted when you sign out | Up to 30 days |
+| `hm_guest` | Us | A random ID that counts free story actions for this browser before you have an account, and helps stop abuse of the free trial | Up to 1 year |
+| `hm_checkout` | Us | Remembers that you were just sent to checkout, so you are not sent there twice | 30 minutes |
+| `hm_tier` | Us | Used briefly to clear an old plan choice. It is removed straight away | Removed immediately |
+| Session and security cookies | Our hosting framework | Keep your game session working and protect the site | Your visit (session) |
+| TikTok Pixel cookies (for example `_ttp`) | TikTok | Measure how our TikTok ads perform and connect ad clicks to visits and purchases. TikTok may also use this information for its own advertising purposes | Set for an extended period (months) |
+
+The first five rows are needed to run the game, keep you signed in, protect the free trial and complete payments. The TikTok row is for advertising measurement and is not needed to play.
+
+## Other similar technologies
+- **Ad tags in links.** If you arrive from an ad, the link may carry tags such as `utm_` values or a TikTok click ID. We keep them for your visit and attach them to your checkout record if you buy.
+- **Web beacons (pixels).** The TikTok Pixel is a small script on our site that tells TikTok when a page is viewed.
+
+## Your choices
+- **Browser settings.** You can block or delete cookies in your browser. If you block the cookies we need, you may not be able to stay signed in or use the free trial.
+- **Advertising cookies.** You can block the TikTok Pixel by blocking third-party and advertising cookies, or by using a content blocker. You can also manage ad personalization in your TikTok settings.
+- **Ask us.** To opt out of our use of advertising pixels, email {LEGAL_EMAIL} or use our [data subject access request]({LEGAL_DSAR_URL}).
+- **Do Not Track.** We do not currently respond to Do-Not-Track or Global Privacy Control signals automatically. Please use the steps above.
+
+## Changes
+We may update this Cookie Policy when we add or remove cookies. The date at the top shows when it last changed.
+
+## Contact
+Questions about cookies? Contact us {_legal_contact()}.
+"""
+
+
+def legal_render(st, plans=""):
+    """Show the documents. `st` is Streamlit, `plans` is the plan sentence from web_app.py."""
+    st.caption(LEGAL_NOTE)
+    tabs = st.tabs(list(LEGAL_LABELS))
+    for tab, body in zip(tabs, (legal_terms_text(plans), LEGAL_PRIVACY, LEGAL_COOKIES)):
+        with tab:
+            st.markdown(body)
+
 # =============================================================== #LEGAL-TEXT
-# WHAT: the Terms of Use / Privacy / Cookie box (the texts live in legal_docs.py)  |  CHANGE WHEN: the box looks wrong
+# WHAT: the Terms of Use / Privacy / Cookie box (texts are in #LEGAL-DOCS above)  |  CHANGE WHEN: the box looks wrong
 def plans_sentence():
     """The plan names and prices for the Terms text, always taken from TIERS so they cannot go out of date."""
     return ", ".join(f"{x(TIERS[k]['name_key'])} (${TIERS[k]['cents'] // 100} {x(TIERS[k]['per_key'])})" for k in TIER_ORDER)
@@ -1225,14 +1643,7 @@ def plans_sentence():
 
 def render_legal():
     with st.expander(x("legal_compliance_link")):
-        if legal_docs is not None:
-            legal_docs.render(st, plans_sentence())  # Terms of Use, Privacy Policy and Cookie Policy: the texts live in legal_docs.py
-            return
-        st.markdown(f"### {x('legal_header')}")
-        for n in (1, 2, 3):
-            st.markdown(f"**{x('legal_sec%d_title' % n)}**")
-            text = x("legal_plans_text").format(plans=plans_sentence()) if n == 2 else x("legal_sec%d_text" % n)
-            st.markdown(text.replace("$", "\\$"))  # stop "$5 ... $10" rendering as math
+        legal_render(st, plans_sentence())  # Terms of Use, Privacy Policy and Cookie Policy: the texts are in #LEGAL-DOCS above
 
 
 # ================================================================ #AUTH-FORM
