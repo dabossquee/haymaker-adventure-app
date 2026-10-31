@@ -12,6 +12,8 @@ THE BLOCKS, IN ORDER
   #SECRETS              reads your keys and addresses from Render's Environment tab
   #SLOTS                each visitor's memory (ss) and the fixed spots for hidden scripts and messages
   #TIKTOK-PIXEL         loads the TikTok Pixel once per visit, into the real page
+  #META-PIXEL           loads the Meta (Facebook / Instagram) Pixel once per visit, once you paste its ID
+  #TRACK-EVENTS         sends the key steps (story, plan picked, checkout, purchase, sign-up) to the pixels + the ?pixelcheck=1 test panel
   #SETTINGS             free actions, grace days, story memory, typewriter speed
   #LANGUAGES            link language codes and the languages Stripe's checkout page supports
   #NAV-KEYS             names of the hub sections and the form boxes that keep their text
@@ -175,6 +177,111 @@ def inject_tiktok_pixel():
 
 
 inject_tiktok_pixel()
+
+
+# =============================================================== #META-PIXEL
+# WHAT: loads the Meta (Facebook / Instagram) Pixel once per visit, into the real page  |  CHANGE WHEN: you paste your Meta Pixel ID, or want it switched off
+ENABLE_META_PIXEL = True  # needs the ID below: with no ID the Meta Pixel is simply not loaded
+META_PIXEL_ID = ""  # paste your Meta Pixel ID here (numbers only): Meta Events Manager > Data sources > your pixel
+
+# Meta's standard pixel code (only the ID is filled in from the line above).
+META_PIXEL_JS = """!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '__META_PIXEL_ID__');
+fbq('track', 'PageView');"""
+
+
+def inject_meta_pixel():
+    """Load the Meta Pixel ONCE per visit into the real page (same method as the TikTok Pixel above)."""
+    pixel_id = re.sub(r"\D", "", META_PIXEL_ID)
+    if not (ENABLE_META_PIXEL and pixel_id) or ss.get("_fb_pixel_sent"):
+        return
+    ss["_fb_pixel_sent"] = True
+    script = json.dumps(META_PIXEL_JS.replace("__META_PIXEL_ID__", pixel_id)).replace("</", "<\\/")
+    loader = ("<script>(function () {"
+              "var p = window.parent, d = p.document;"
+              "if (p.fbq || d.getElementById('hm-meta-pixel')) { return; }"  # already in the page: never a second copy
+              "var s = d.createElement('script'); s.id = 'hm-meta-pixel'; s.text = " + script + ";"
+              "d.head.appendChild(s);"
+              "})();</script>")
+    with _scripts:
+        components.html(loader, width=0, height=0)
+
+
+inject_meta_pixel()
+
+
+# ============================================================= #TRACK-EVENTS
+# WHAT: sends the key steps (story opened, plan picked, checkout, purchase, sign-up) to the TikTok and Meta pixels, once each  |  CHANGE WHEN: an event is missing in Events Manager, or you add a new step
+TRACK_EVENTS = True  # False = no events are sent (page views still are)
+
+
+def track_event(name, key=None, **params):
+    """Queue one event for the pixels. Each key is sent once per visit, so reruns and refreshes never double-count."""
+    if not TRACK_EVENTS:
+        return
+    sent = ss.setdefault("_ev_keys", set())
+    k = key or name
+    if k in sent:
+        return
+    sent.add(k)
+    ss.setdefault("_ev_queue", []).append({"name": name, "data": params})
+
+
+def track_plan_event(name, tier_key):
+    """AddToCart or InitiateCheckout for one of the three plans, with its price (card details are never involved)."""
+    tier = TIERS.get(tier_key)
+    if tier:
+        track_event(name, key=f"{name}_{tier_key}", value=tier["cents"] / 100, currency="USD",
+                    content_type="product", content_id=tier_key, content_name=tier["product"])
+
+
+def flush_events():
+    """Hand the queued events to the pixels. It waits up to 4 seconds for a pixel that is still loading."""
+    queue = ss.pop("_ev_queue", None)
+    if not queue:
+        return
+    js = ("var p = window.parent, evs = " + json.dumps(queue).replace("</", "<\\/") + ";"
+          "evs.forEach(function (ev) {"
+          "var tries = 0, tt = false, fb = false, timer = null;"
+          "function go() {"
+          "tries += 1;"
+          "if (!tt && p.ttq) { try { p.ttq.track(ev.name, ev.data); } catch (e) {} tt = true; }"
+          "if (!fb && p.fbq) { try { p.fbq('track', ev.name, ev.data); } catch (e) {} fb = true; }"
+          "if (((tt && fb) || tries > 40) && timer) { clearInterval(timer); }"
+          "}"
+          "timer = setInterval(go, 100); go();"
+          "(p.__hmEvents = p.__hmEvents || []).push(ev.name);"
+          "});")
+    with _scripts:
+        components.html("<script>(function () {" + js + "})();</script>", height=0)
+
+
+# A small test panel: open the site with ?pixelcheck=1 at the end of the address to see what the pixels are doing.
+PIXEL_CHECK_HTML = """<div id="o" style="font:14px/1.6 monospace;color:#e2e8f0;background:#0f172a;border:1px solid #334155;border-radius:10px;padding:10px 12px;"></div>
+<script>
+var p = window.parent;
+function count(part) {
+  try { return p.performance.getEntriesByType("resource").filter(function (e) { return e.name.indexOf(part) > -1; }).length; } catch (e) { return "?"; }
+}
+function show() {
+  var tt = p.ttq ? "loaded" + (p.ttq._i ? " (pixel " + Object.keys(p.ttq._i).join(", ") + ")" : "") : "NOT loaded";
+  var fb = p.fbq ? "loaded" : "not loaded (off, or no Meta Pixel ID set)";
+  var ev = (p.__hmEvents || []).join(", ") || "none yet";
+  document.getElementById("o").innerHTML = "<b>Pixel check</b><br>TikTok Pixel: " + tt + "<br>requests that reached TikTok: " + count("tiktok") +
+    "<br>Meta Pixel: " + fb + "<br>requests that reached Meta: " + count("facebook") + "<br>events sent this visit: " + ev;
+}
+show(); setInterval(show, 800);
+</script>"""
+if st.query_params.get("pixelcheck"):
+    with _notices:
+        components.html(PIXEL_CHECK_HTML, height=190)
 
 
 # ================================================================= #SETTINGS
@@ -675,7 +782,7 @@ def _on_lang_change():
 if ss.app_language not in LOCALIZATION_VAULT:  # first load of this visit: no picker, straight into the app
     ss.app_language = detect_language() or "English"
     queue_cookie("hm_lang", ss.app_language)
-    ss.setdefault("utm", {k: str(v)[:100] for k, v in st.query_params.items() if k.startswith("utm_")})
+    ss.setdefault("utm", {k: str(v)[:200] for k, v in st.query_params.items() if k.startswith("utm_") or k in ("ttclid", "fbclid")})
 
 # ============================================================ #STYLES-INJECT
 # WHAT: puts all the style sheets on the page  |  CHANGE WHEN: styles are missing or in the wrong order
@@ -1032,6 +1139,9 @@ def go_checkout(tier_key):
     except Exception as e:
         print("checkout error:", e)
         st.error(x("checkout_fail"))
+        return
+    track_plan_event("InitiateCheckout", tier_key)  # the Stripe page is ready
+    flush_events()
 
 
 def checkout_recently_launched():
@@ -1066,6 +1176,7 @@ def finish_signup(banner=True):
     ss["_tier_claimed"] = False  # the pass picked in this visit (if any) is claimed exactly once, on the next run
     if banner:
         ss["_just_signed_up"] = True
+        track_event("CompleteRegistration", key="signup", content_name="account")
 
 
 def launch_checkout(tier_key):
@@ -1077,6 +1188,8 @@ def launch_checkout(tier_key):
         st.error(x("checkout_fail"))
         return
     ss["_checkout_inflight"] = True  # until they come back, nothing may start another automatic trip
+    track_plan_event("InitiateCheckout", tier_key)  # sent now, because the browser is about to leave for Stripe
+    flush_events()
     st.title("⏳ " + x("msg_redirecting"))
     st.link_button(x("btn_open_stripe"), url, type="primary")
     with _scripts:
@@ -1085,7 +1198,7 @@ def launch_checkout(tier_key):
             "d.cookie = 'hm_tier=; Max-Age=0; path=/; SameSite=Lax';"  # cleared in the same breath as the redirect
             "d.cookie = 'hm_checkout=' + Date.now() + '; Max-Age=1800; path=/; SameSite=Lax';"
             "const a = d.createElement('a');"
-            f"a.href = {json.dumps(url)}; a.target = '_self'; d.body.appendChild(a); a.click();</script>",
+            f"a.href = {json.dumps(url)}; a.target = '_self'; d.body.appendChild(a); setTimeout(function () {{ a.click(); }}, 700);</script>",  # a short pause lets the pixels send first
             height=0)
 
 
@@ -1221,6 +1334,10 @@ LEGAL_DSAR_URL = "https://app.termly.io/dsar/80af5b76-0993-4889-98e7-f9e26134439
 LEGAL_ADDRESS = ""  # your business mailing address, for example "123 Main St, Austin, TX 78701, United States". "" = email only
 LEGAL_STATE = ""  # the US state your LLC is registered in, for example "Texas". "" = a general sentence is used instead
 LEGAL_UPDATED = "October 24, 2026"
+LEGAL_META_ON = bool(ENABLE_META_PIXEL and re.sub(r"\D", "", META_PIXEL_ID))  # the Meta lines below appear only when the Meta Pixel is on
+LEGAL_AD_PARTNERS = "TikTok and Meta (Facebook and Instagram)" if LEGAL_META_ON else "TikTok"
+LEGAL_META_ROW = ("| Meta Pixel cookies (for example `_fbp`, `_fbc`) | Meta | Measure how our Facebook and Instagram ads perform and connect ad clicks to visits and purchases. "
+                  "Meta may also use this information for its own advertising purposes | Up to about 3 months |") if LEGAL_META_ON else ""
 
 LEGAL_LABELS = ("Terms of Use", "Privacy Policy", "Cookie Policy")
 LEGAL_NOTE = "These documents are in English. If a translation ever differs, the English version applies."
@@ -1374,13 +1491,13 @@ All personal information that you provide to us must be true, complete, and accu
 *In short: some information, such as your IP address and browser and device characteristics, is collected automatically when you visit our Services.*
 
 - **Device and usage data:** IP address, browser and device type, the pages and features you use, dates and times, and the site that sent you to us. Our hosting and security providers process this to deliver the Services and to prevent abuse.
-- **Advertising tags:** if you arrive from an ad or a link that carries tags (for example `utm_` tags or an ad click ID), we keep them for your visit and add them to your checkout record if you buy, so we can tell which ads work. The TikTok Pixel also receives page-view information. See Section 4 and the Cookie Policy.
+- **Advertising tags:** if you arrive from an ad or a link that carries tags (for example `utm_` tags or an ad click ID), we keep them for your visit and add them to your checkout record if you buy, so we can tell which ads work. Our advertising pixels also receive information about your visit and about key steps, such as opening a story, picking a plan, starting checkout, creating an account or buying a pass. See Section 4 and the Cookie Policy.
 - **Free-trial identifier:** before you have an account, a random ID in a cookie and in our database counts the free story actions used by that browser. It is not linked to your name or email until you sign up.
 - **Cookies and similar technologies:** see our Cookie Policy for the full list.
 
 ### Information from third parties
 
-We do not buy personal information about you. We receive limited information from Stripe (above) and, if you arrive from a TikTok ad, an ad click identifier that is added to the link.
+We do not buy personal information about you. We receive limited information from Stripe (above) and, if you arrive from an ad, an ad click identifier (for example from {LEGAL_AD_PARTNERS}) that is added to the link.
 
 ## 2. How do we process your information?
 
@@ -1393,7 +1510,7 @@ We process your personal information for a variety of reasons, depending on how 
 - **To manage purchases**, including starting, renewing, changing and cancelling your pass, and showing the right access.
 - **To protect the Services and people**, including screening messages with safety tools, limiting free actions, and preventing fraud and abuse.
 - **To respond to you** when you contact us.
-- **To measure and improve our advertising and our Services**, including with the TikTok Pixel and by looking at how features are used.
+- **To measure and improve our advertising and our Services**, including with advertising pixels and by looking at how features are used.
 - **To comply with the law** and to defend our legal rights.
 - **To save or protect an individual's vital interest**, such as to prevent harm.
 
@@ -1421,7 +1538,7 @@ We share your personal information with service providers that process it on our
 - **Database and sign-in:** Supabase, which stores accounts, saved games, worlds and free-trial counts.
 - **Payments:** Stripe, which processes payments and manages subscriptions.
 - **Artificial intelligence:** OpenAI, which writes the narrator's replies and screens messages for safety. Replicate may create cover pictures from a world's title and genre.
-- **Advertising measurement:** TikTok, through the TikTok Pixel on our website. It receives information such as the page you viewed, your IP address, your browser details, cookie identifiers and the ad click ID, and TikTok may combine that with information it already has about you. See the Cookie Policy.
+- **Advertising measurement:** {LEGAL_AD_PARTNERS}, through advertising pixels on our website. They receive information such as the page you viewed, your IP address, your browser details, cookie identifiers, the ad click ID, and key steps in the game (opening a story, picking a plan, starting checkout, creating an account, buying a pass and its price). These companies may combine that with information they already have about you. We do not send them the text you type into stories. See the Cookie Policy.
 - **Privacy requests:** Termly, which hosts the form for data requests.
 
 We may also share your information in these situations:
@@ -1524,7 +1641,7 @@ We may also collect other personal information outside of these categories throu
 
 Learn more about how we use your personal information in Section 2, and about whom we share it with in Section 4. We may disclose your personal information to our service providers pursuant to a written contract between us and each service provider. We may use your personal information for our own business purposes, such as internal research for technological development. This is not considered to be "selling" of your personal information.
 
-**Advertising pixels.** We have not sold personal information for money in the past twelve (12) months. We use the TikTok Pixel to measure our advertising. Under some US state laws, this may count as "sharing" for cross-context behavioral advertising or as "targeted advertising." You have the right to opt out. To opt out, email us at {LEGAL_EMAIL} or use our [data subject access request]({LEGAL_DSAR_URL}), and you can also block the pixel with the browser steps in our Cookie Policy. We do not knowingly sell or share the personal information of anyone under 18.
+**Advertising pixels.** We have not sold personal information for money in the past twelve (12) months. We use advertising pixels from {LEGAL_AD_PARTNERS} to measure our advertising. Under some US state laws, this may count as "sharing" for cross-context behavioral advertising or as "targeted advertising." You have the right to opt out. To opt out, email us at {LEGAL_EMAIL} or use our [data subject access request]({LEGAL_DSAR_URL}), and you can also block the pixels with the browser steps in our Cookie Policy. We do not knowingly sell or share the personal information of anyone under 18.
 
 ### Your rights
 
@@ -1605,16 +1722,17 @@ Cookies are small text files that a website saves in your browser. They let the 
 | `hm_tier` | Us | Used briefly to clear an old plan choice. It is removed straight away | Removed immediately |
 | Session and security cookies | Our hosting framework | Keep your game session working and protect the site | Your visit (session) |
 | TikTok Pixel cookies (for example `_ttp`) | TikTok | Measure how our TikTok ads perform and connect ad clicks to visits and purchases. TikTok may also use this information for its own advertising purposes | Set for an extended period (months) |
+{LEGAL_META_ROW}
 
-The first five rows are needed to run the game, keep you signed in, protect the free trial and complete payments. The TikTok row is for advertising measurement and is not needed to play.
+The first five rows are needed to run the game, keep you signed in, protect the free trial and complete payments. The rows for advertising companies are for advertising measurement and are not needed to play.
 
 ## Other similar technologies
-- **Ad tags in links.** If you arrive from an ad, the link may carry tags such as `utm_` values or a TikTok click ID. We keep them for your visit and attach them to your checkout record if you buy.
-- **Web beacons (pixels).** The TikTok Pixel is a small script on our site that tells TikTok when a page is viewed.
+- **Ad tags in links.** If you arrive from an ad, the link may carry tags such as `utm_` values or an ad click ID. We keep them for your visit and attach them to your checkout record if you buy.
+- **Advertising pixels.** The pixels from {LEGAL_AD_PARTNERS} are small scripts on our site. They tell those companies when a page is viewed and when you take key steps, such as opening a story, picking a plan, starting checkout, creating an account or buying a pass (including the price of the pass). We do not send them the text you type into stories.
 
 ## Your choices
 - **Browser settings.** You can block or delete cookies in your browser. If you block the cookies we need, you may not be able to stay signed in or use the free trial.
-- **Advertising cookies.** You can block the TikTok Pixel by blocking third-party and advertising cookies, or by using a content blocker. You can also manage ad personalization in your TikTok settings.
+- **Advertising cookies.** You can block the advertising pixels by blocking third-party and advertising cookies, or by using a content blocker. You can also manage ad personalization in your TikTok and Meta settings.
 - **Ask us.** To opt out of our use of advertising pixels, email {LEGAL_EMAIL} or use our [data subject access request]({LEGAL_DSAR_URL}).
 - **Do Not Track.** We do not currently respond to Do-Not-Track or Global Privacy Control signals automatically. Please use the steps above.
 
@@ -1722,6 +1840,7 @@ def render_paywall():
                     f'<p style="color:#94a3b8;font-size:12px;">{esc(x(tier["desc_key"]))}</p></div>',
                     unsafe_allow_html=True)
                 if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
+                    track_plan_event("AddToCart", key)  # a plan was picked
                     if logged_in:
                         go_checkout(key)
                     else:
@@ -1746,6 +1865,8 @@ def enter_world(world_id, name, genre, char_name, backstory, custom=None, invent
         eng["player_character"]["inventory"] = [str(item)[:40] for item in inventory][:30]
     ss.world_engine = eng
     ss.world_cover_url = None
+    track_event("ViewContent", key="view_" + str(world_id), content_type="product", content_id=str(world_id),
+                content_name=(custom or {}).get("story_id") or "world")  # a story or world was opened (what players type is never sent)
     st.rerun()
 
 
@@ -1998,6 +2119,7 @@ if not ss.get("user") and not ss.get("_restore_tried"):  # refresh / locked phon
 if not ss.get("user"):
     init_guest()  # this browser's free-trial balance comes from the ledger, never from a fresh session
 flush_cookies()
+flush_events()  # events queued on the previous click (story opened, signed up, purchase) are sent first thing
 if ss.get("user"):
     refresh_profile()  # the database answers whether they have paid; nothing below is drawn before this answer is in
 else:
@@ -2153,6 +2275,12 @@ if ss.pop("_delete_ok", False):
         st.success(x("msg_world_deleted"))
 
 if _checkout_param == "success":
+    _sid_ev = st.query_params.get("session_id")
+    if _sid_ev and ss.get("user") and f"Purchase_{_sid_ev}" not in ss.get("_ev_keys", set()) and verify_checkout_session(_sid_ev):
+        _bought_key = ss.get("verified_tier") or ss.get("tier") or ""  # Stripe confirmed this exact checkout was paid by this person
+        _bought = TIERS.get(_bought_key)
+        track_event("Purchase", key=f"Purchase_{_sid_ev}", value=(_bought["cents"] / 100) if _bought else 0, currency="USD",
+                    content_type="product", content_id=_bought_key or "pass", content_name=_bought["product"] if _bought else "Premium Pass")
     if ss.get("user") and not ss.is_premium and not ss.get("_payment_waited"):
         ss["_payment_waited"] = True  # wait once per visit, not on every click
         _sid = st.query_params.get("session_id")
@@ -2164,6 +2292,7 @@ if _checkout_param == "success":
             st.rerun()
     with _notices:
         st.success(x("msg_payment_success"))
+    flush_events()
 if _checkout_param:  # drop the leftover address parameters so a refresh cannot replay them
     for _k in ("checkout", "session_id"):
         if _k in st.query_params:
@@ -2184,6 +2313,7 @@ if not (ss.is_premium or ss.guest_tokens > 0):
             pass
     watch_for_pass()
     render_paywall()
+    flush_events()  # a plan click (AddToCart) leaves now: the run ends a few lines below
     if not ss.get("_paywall_scrolled"):  # once per appearance, not on every click inside the paywall
         ss["_paywall_scrolled"] = True
         run_in_page("window.parent.hmScrollTo('.st-key-hm_paywall, #hm-paywall', 1200);")
