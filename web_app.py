@@ -5,6 +5,7 @@ HOW TO FIND THINGS
   Press Cmd+F, type the tag, and press Enter twice (the first match is the list below).
   A block runs from its banner down to the next banner. To change one block, replace only those lines.
   Needs these files beside it: localization.py, styles.py, stories.py.
+  One-time setup in Supabase: run conversations.sql (it creates the table that saves conversations).
 
 THE BLOCKS, IN ORDER
   #IMPORTS              the libraries the app uses, plus your stories.py texts
@@ -13,62 +14,49 @@ THE BLOCKS, IN ORDER
   #SLOTS                each visitor's memory (ss) and the fixed spots for hidden scripts and messages
   #TIKTOK-PIXEL         loads the TikTok Pixel once per visit, into the real page
   #META-PIXEL           loads the Meta (Facebook / Instagram) Pixel once per visit, once you paste its ID
-  #TRACK-EVENTS         sends the key steps (story, plan picked, checkout, purchase, sign-up) to the pixels + the ?pixelcheck=1 test panel
-  #SETTINGS             free actions, grace days, story memory, typewriter speed
+  #TRACK-EVENTS         sends the key steps (story, first message, plan picked, checkout, purchase, sign-up) to the pixels + the ?pixelcheck=1 test panel
+  #SETTINGS             free messages, grace days, which characters are on, story memory, typewriter speed
   #LANGUAGES            link language codes and the languages Stripe's checkout page supports
-  #NAV-KEYS             names of the hub sections and the form boxes that keep their text
-  #GENRES               the genre list and its order in the Create form
   #CSS-MOBILE           phone rules: no zoom, 16px input text, stacked columns
-  #CSS-LOCKED           the glowing box of the locked Avatars section
-  #CSS-STORIES          the glowing Stories button and the look of the story cards
+  #CSS-VISUAL-NOVEL     the visual-novel look: art behind the chat, see-through bubbles, readable input box
   #CSS-ARABIC           right-to-left rules for Arabic, including the sidebar
-  #PAGE-SCRIPTS         small JavaScript: stops zoom, closes the phone keyboard, locks the chat box, scrolls to the paywall
-  #PLANS                the three plans: names, prices and billing periods
+  #PAGE-SCRIPTS         small JavaScript: stops zoom, forces dark mode, closes the phone keyboard, scrolls the chat
+  #PLANS                the one plan: $15 a month
   #MUSIC                the list of music files in the assets folder
-  #SCENARIOS            the ready-made scenarios shown in Explore
   #TEXT-FALLBACK        English text used when a translation is missing
-  #HELPERS              the text lookup x(), the browser-script runner, genre helpers, the empty game
+  #NEW-TEXTS            paywall, counter, restart and error texts (English, Spanish, Portuguese, Arabic)
+  #HELPERS              the text lookup x(), the browser-script runner, the empty game, which story is open
   #SESSION-DEFAULTS     first-time values for each visit
   #COOKIES              reading, queuing and writing browser cookies
   #LANGUAGE-DETECT      picks the starting language and saves a language change
   #STYLES-INJECT        puts all the style sheets on the page
   #CLIENTS              connects OpenAI, Supabase and Stripe; refuses to run if keys are missing
   #LOGIN                sign-in, the login session and staying logged in
-  #GUEST-TRIAL          the free actions for visitors with no account
+  #GUEST-TRIAL          the free messages for visitors with no account (cookie + local storage)
   #WEBHOOK-SYNC         asks the payment service to confirm a payment with Stripe
-  #SAVE-LOAD            saving, loading and deleting the saved game
-  #PROFILE-CHECK        reads who has paid and how many free actions are left
+  #SAVE-LOAD            saving, loading, restarting and moving conversations (needs conversations.sql)
+  #PROFILE-CHECK        reads who has paid and how many free messages are left
   #LOGOUT               signing out
   #CHECKOUT             builds the Stripe checkout page and sends people to it
   #BILLING-PORTAL       the Manage subscription button
   #CANCEL               the Cancel call to the payment service
-  #SUBSCRIPTION-SCREEN  the Subscription Management screen in settings
+  #SUBSCRIPTION-SCREEN  the Subscription Management screen in the menu
   #LEGAL-DOCS           the Terms of Use, Privacy Policy and Cookie Policy texts + your company details
   #LEGAL-TEXT           the box that shows them (three tabs)
   #AUTH-FORM            the sign-in / sign-up form
-  #PAYWALL-SCREEN       the pricing screen: sign-up form for visitors, plan cards, Terms
-  #CHAT-HELPERS         the world card, the chat bubble, cleaning the narrator's text
-  #NARRATOR-PROMPT      the narrator's rulebook and the world details it is given
+  #PAYWALL-SCREEN       the $15 a month offer after the free messages
+  #CHAT-HELPERS         the chat bubble, the dialogue styling, the typing dots
+  #NARRATOR-PROMPT      the narrator's rulebook (short replies) and the story details it is given
   #NARRATOR-STREAM      calls OpenAI and types the reply out; applies loot and health tags
   #SAFETY-GATE          blocks unsafe messages before they reach OpenAI
-  #COVER-PIC            AI cover pictures for worlds (needs a Replicate key)
-  #PAGE-START           runs on every click: restores login, guest id, reads the account, claims a plan pick
-  #SIDEBAR              the left menu: language, save, status, music, login, settings
-  #PAYWALL-FLOW         payment-return handling, the retry screen and the paywall gate
-  #WORLD-SETTINGS       cleans world settings for the narrator and loads world lists
   #STORY-PICTURES       finds the uploaded story pictures in assets/stories
-  #STORY-CARDS          entering a story and the card layout
-  #CHAT-BACKGROUND      the story picture behind the chat, under the 75% dark mask
-  #TAB-STORIES          the Stories screen
-  #TAB-EXPLORE          Explore: community worlds and genre scenarios
-  #WORLD-ACTIONS        post a world to the community, or delete it
-  #TAB-MINE             My Creations
-  #TAB-CREATE           the Create-a-World form
-  #TAB-AVATARS          the locked Avatars message
-  #TAB-PROFILE          the Account section
-  #HUB-NAV              the row of section buttons and the hub page
-  #GAME                 the chat loop: opening scene, safety gate, free actions, narrator reply
-  #START                the last lines: show the game or the hub
+  #CHAT-BACKGROUND      the character's picture behind the whole chat
+  #STORY-START          opens Kade (or the story left off in), first messages, quick replies, switching, restarting
+  #PAGE-START           runs on every click: login, guest id, account, opens the story
+  #SIDEBAR              the menu: language, status, restart, sign in / out, music, subscription, legal
+  #PAYWALL-FLOW         payment-return handling, the retry screen and the paywall gate
+  #GAME                 the chat screen: picture, picker, history, quick replies, message box, reply
+  #START                the last lines: show the chat, with a friendly crash handler
 """
 # ================================================================== #IMPORTS
 # WHAT: the libraries the app uses, plus your stories.py texts  |  CHANGE WHEN: you add a library (also add it to requirements.txt)
@@ -91,11 +79,6 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from supabase import create_client
 
-try:
-    import replicate
-except ImportError:
-    replicate = None
-
 from localization import LOCALIZATION_VAULT
 from stories import (ACTION_LEVELS, ACTION_RULE, ARCHETYPE_EN, ARCHETYPES, COMPANION_ROLES, COMPANION_VIBES, ROLE_EN,
                      ROMANCE_LEVELS, ROMANCE_RULE, STORIES, STORY_TEXT, TRAIT_EN, TRAITS, VIBE_EN)
@@ -106,7 +89,7 @@ for _lang_name, _texts in STORY_TEXT.items():  # the new texts live in stories.p
 
 # =============================================================== #PAGE-SETUP
 # WHAT: browser tab title and icon, the phone-screen rule, local .env loading  |  CHANGE WHEN: you rename the site or change the icon
-st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide")
+st.set_page_config(page_title="Haymaker Hub", page_icon="🪐", layout="wide", initial_sidebar_state="collapsed")
 # Entry point: the mobile viewport rule goes in before anything else on the page.
 st.markdown('<span class="hm-hidden"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"></span>',
             unsafe_allow_html=True)
@@ -125,7 +108,6 @@ ADMIN_USER_ID = (os.getenv("ADMIN_USER_ID") or "").strip()  # the admin's Supaba
 APP_URL = (os.getenv("APP_URL") or os.getenv("RENDER_EXTERNAL_URL") or "http://localhost:8501").strip().rstrip("/")
 _APP_HOST = APP_URL.split("//", 1)[-1].split("/")[0].lower()
 APP_URL_OK = _APP_HOST not in ("", "onrender.com", "www.onrender.com", "render.com", "www.render.com")
-REPLICATE_TOKEN = os.getenv("REPLICATE_API_TOKEN")
 # Public address of the haymaker-webhook service, e.g. https://haymaker-webhook.onrender.com (used by Cancel Subscription).
 WEBHOOK_URL = (os.getenv("WEBHOOK_URL") or "").strip().rstrip("/")
 # Optional: a Stripe "payment method configuration" id (pmc_...) with Link switched off. See the notes in create_checkout_url.
@@ -248,12 +230,13 @@ def flush_events():
     if not queue:
         return
     js = ("var p = window.parent, evs = " + json.dumps(queue).replace("</", "<\\/") + ";"
+          "var std = {ViewContent: 1, AddToCart: 1, InitiateCheckout: 1, Purchase: 1, CompleteRegistration: 1};"  # anything else is sent to Meta as a custom event
           "evs.forEach(function (ev) {"
           "var tries = 0, tt = false, fb = false, timer = null;"
           "function go() {"
           "tries += 1;"
           "if (!tt && p.ttq) { try { p.ttq.track(ev.name, ev.data); } catch (e) {} tt = true; }"
-          "if (!fb && p.fbq) { try { p.fbq('track', ev.name, ev.data); } catch (e) {} fb = true; }"
+          "if (!fb && p.fbq) { try { p.fbq(std[ev.name] ? 'track' : 'trackCustom', ev.name, ev.data); } catch (e) {} fb = true; }"
           "if (((tt && fb) || tries > 40) && timer) { clearInterval(timer); }"
           "}"
           "timer = setInterval(go, 100); go();"
@@ -286,11 +269,12 @@ if st.query_params.get("pixelcheck"):
 
 # ================================================================= #SETTINGS
 # WHAT: free actions, grace days, story memory, typewriter speed  |  CHANGE WHEN: you tune the game
-FREE_ACTIONS = 12  # free story actions before the hard paywall
+FREE_ACTIONS = 12  # free messages before the hard paywall
+ACTIVE_STORIES = ("kade", "morrigan")  # the characters visitors can pick; the first one opens for every new visitor (the other stories stay in stories.py, switched off)
 PREMIUM_GRACE_DAYS = 3  # a paid period that ran out this long ago no longer counts, even if a webhook was missed
 STORY_MEMORY_TURNS = 20  # how many past messages the narrator sees: the same for everyone
 GUEST_COOKIE_DAYS = 365  # how long a browser keeps the id that its free-trial balance is stored under
-TYPEWRITER_DELAY = 0.02  # seconds per character: the story types out at about 50 characters a second
+TYPEWRITER_DELAY = 0.012  # seconds per character: replies type out fast, about 80 characters a second
 TYPEWRITER_FRAME_CHARS = 2  # characters drawn per screen update (keeps the page smooth)
 ENABLE_PASSWORD_RESET = False  # hidden at launch: the reset link has no page to set a new password yet
 # ================================================================ #LANGUAGES
@@ -302,21 +286,6 @@ LANG_CODES = {  # ?lang=xx in an ad link -> interface language (names must match
 }
 LANG_BY_NAME = {v: k for k, v in LANG_CODES.items()}
 CHECKOUT_LOCALES = {"en": "en", "es": "es", "pt": "pt", "zh": "zh", "ru": "ru", "fr": "fr", "ja": "ja", "ko": "ko"}
-
-# ================================================================= #NAV-KEYS
-# WHAT: names of the hub sections and the form boxes that keep their text  |  CHANGE WHEN: you add a hub section
-HUB_TAB_KEYS = ["stories", "explore", "mine", "create", "avatars", "profile"]  # first = opens by default; ?tab=profile opens a section directly
-HUB_PROFILE_IDX = HUB_TAB_KEYS.index("profile")
-CREATE_FORM_KEYS = ("your_name", "cr_name", "cr_char", "cr_story", "cr_comp_name", "cr_enemies", "cr_lore")
-
-# =================================================================== #GENRES
-# WHAT: the genre list and its order in the Create form  |  CHANGE WHEN: you add a genre
-# Genres. Worlds store the English name below; what people SEE comes from the vault keys genre_<code> in their own language.
-GENRE_ENGLISH = {"sci_fi": "Sci-Fi", "dark_fantasy": "Dark Fantasy", "cyberpunk": "Cyberpunk",
-                 "horror": "Horror", "romance": "Romance", "other": "Other",
-                 "superhero": "Superhero", "progression": "Action / Progression"}  # (the last two are new: keep new genres at the end)
-GENRE_KEYS = list(GENRE_ENGLISH)  # the first six are the genre tabs in the Explore section, in this order
-CREATE_GENRES = ["Romance", "Dark Fantasy", "Action / Progression", "Superhero", "Horror", "Cyberpunk", "Sci-Fi", "Other"]  # order in the Create form
 
 # =============================================================== #CSS-MOBILE
 # WHAT: phone rules: no zoom, 16px input text, stacked columns  |  CHANGE WHEN: the phone layout looks wrong
@@ -352,65 +321,86 @@ input, textarea, select,
 }
 """
 
-# =============================================================== #CSS-LOCKED
-# WHAT: the glowing box of the locked Avatars section  |  CHANGE WHEN: you restyle that box
-LOCKED_CSS = """
-.hm-locked { max-width: 760px; margin: 8vh auto; padding: 38px 30px; text-align: center; color: #c4b5fd;
-  border: 1px solid rgba(167,139,250,.55); border-radius: 18px;
-  background: linear-gradient(145deg, rgba(16,12,31,.88), rgba(46,35,78,.55));
-  box-shadow: 0 0 28px rgba(167,139,250,.25), inset 0 0 22px rgba(167,139,250,.08);
-  font-family: "Courier New", monospace; font-size: 1.05rem; font-weight: 700; letter-spacing: .14em;
-  line-height: 1.9; text-transform: uppercase; animation: hm-pulse 3.2s ease-in-out infinite; }
-@keyframes hm-pulse {
-  0%, 100% { box-shadow: 0 0 22px rgba(167,139,250,.20), inset 0 0 18px rgba(167,139,250,.06); }
-  50% { box-shadow: 0 0 38px rgba(167,139,250,.45), inset 0 0 26px rgba(167,139,250,.14); }
-}
-@media (max-width: 768px) { .hm-locked { margin: 4vh auto; padding: 26px 18px; font-size: .9rem; letter-spacing: .08em; } }
-"""
+# ========================================================== #CSS-VISUAL-NOVEL
+# WHAT: the visual-novel look: character art behind the chat, see-through bubbles, a readable input box, mobile-first type  |  CHANGE WHEN: you restyle the chat
+# Everything here uses !important on purpose: phone in-app browsers (TikTok, Instagram, Facebook) otherwise force their own light or dark colors onto the input box.
+VN_CSS = """
+:root, html { color-scheme: dark; }
+html { background: #0b0714 !important; font-size: 16px; }
+html body { background: transparent !important; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+html body .stApp, html body [data-testid="stApp"], html body [data-testid="stAppViewContainer"], html body [data-testid="stMain"],
+html body [data-testid="stMainBlockContainer"], html body [data-testid="stBottom"], html body [data-testid="stBottomBlockContainer"] { background: transparent !important; background-image: none !important; }
+html body [data-testid="stHeader"] { background: transparent !important; height: 2.6rem !important; }
+html body [data-testid="stToolbar"], html body [data-testid="stDecoration"], html body footer, html body #MainMenu { display: none !important; }
+html body .block-container, html body [data-testid="stMainBlockContainer"] { max-width: 720px !important; padding: 0.4rem 0.9rem 7.5rem 0.9rem !important; }
+html body [data-testid="stVerticalBlock"] { gap: 0.55rem; }
 
-# ============================================================== #CSS-STORIES
-# WHAT: the glowing Stories button and the look of the story cards  |  CHANGE WHEN: you restyle the Stories tab
-STORIES_CSS = """
-/* the first button of the hub navigation (Stories) glows so it stands out */
-@keyframes hm-glow {
-  0%, 100% { box-shadow: 0 0 8px 1px rgba(244,114,182,.60), 0 0 18px 4px rgba(167,139,250,.35); }
-  50% { box-shadow: 0 0 16px 4px rgba(244,114,182,.95), 0 0 34px 10px rgba(167,139,250,.65); }
+/* the character picker (Kade / Morrigan) and the free-message counter */
+html body .st-key-char_nav { display: flex; justify-content: center; margin: 0 0 0.2rem 0; }
+html body .st-key-char_nav button { background: rgba(15, 10, 30, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.28) !important; color: #ffffff !important;
+  border-radius: 999px !important; font-weight: 700 !important; padding: 0.3rem 1rem !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+html body .st-key-char_nav button[data-testid="stBaseButton-pillsActive"] { background: linear-gradient(135deg, #f472b6, #7c3aed) !important; border-color: transparent !important; }
+html body .hm-left { text-align: center; color: rgba(255, 255, 255, 0.86); font-size: 0.85rem; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); margin-bottom: 0.1rem; }
+
+/* the conversation: no box, so the character art stays visible behind the bubbles */
+html body .st-key-chat_flow { padding-top: 30vh; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+html body .chat-row-ai, html body .chat-row-user { display: flex; margin: 0.45rem 0; background: transparent !important; }
+html body .chat-row-user { justify-content: flex-end; }
+html body .avatar-box { display: none !important; }
+html body .glass-bubble-ai, html body .glass-bubble-user { box-sizing: border-box; max-width: 88% !important; padding: 0.7rem 1rem !important; color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff; backdrop-filter: blur(10px) saturate(115%); -webkit-backdrop-filter: blur(10px) saturate(115%);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); line-height: 1.55 !important; word-wrap: break-word; overflow-wrap: anywhere; }
+html body .glass-bubble-ai { background: rgba(12, 8, 24, 0.5) !important; border: 1px solid rgba(255, 255, 255, 0.14) !important; border-radius: 20px 20px 20px 6px !important;
+  font-family: Georgia, "Times New Roman", serif !important; font-size: 1.08rem !important; font-style: italic; color: #f1f5f9 !important; -webkit-text-fill-color: #f1f5f9; }
+html body .glass-bubble-user { background: rgba(124, 58, 237, 0.46) !important; border: 1px solid rgba(216, 180, 254, 0.4) !important; border-radius: 20px 20px 6px 20px !important;
+  font-size: 1rem !important; font-weight: 500; }
+html body .hm-who { font-style: normal; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f9a8d4; -webkit-text-fill-color: #f9a8d4; }
+html body .hm-say { font-style: normal; font-weight: 600; color: #ffffff; -webkit-text-fill-color: #ffffff; }
+
+/* tap-to-send first replies */
+html body .st-key-hm_chips { margin-top: 0.4rem; }
+html body .st-key-hm_chips button { background: rgba(12, 8, 24, 0.55) !important; border: 1px solid rgba(255, 255, 255, 0.36) !important; border-radius: 16px !important; min-height: 48px !important;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+html body .st-key-hm_chips button, html body .st-key-hm_chips button p { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 600 !important; text-align: left; }
+html body .st-key-hm_chips button:hover, html body .st-key-hm_chips button:active { background: linear-gradient(135deg, #f472b6, #7c3aed) !important; border-color: transparent !important; }
+
+/* the message box: always dark with white text, whatever theme the in-app browser pushes */
+html body [data-testid="stBottom"] > div { background: transparent !important; padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)) !important; }
+html body [data-testid="stChatInput"] { background: rgba(14, 10, 28, 0.94) !important; border: 1px solid rgba(255, 255, 255, 0.32) !important; border-radius: 26px !important; }
+html body [data-testid="stChatInput"] > div, html body [data-testid="stChatInput"] div[data-baseweb="textarea"], html body [data-testid="stChatInput"] div[data-baseweb="base-input"] { background: transparent !important; border: 0 !important; }
+html body [data-testid="stChatInput"] textarea, html body [data-testid="stChatInputTextArea"] { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; caret-color: #ffffff !important;
+  background: transparent !important; opacity: 1 !important; font-size: 16px !important; }
+html body [data-testid="stChatInput"] textarea::placeholder { color: rgba(255, 255, 255, 0.62) !important; -webkit-text-fill-color: rgba(255, 255, 255, 0.62) !important; opacity: 1 !important; }
+html body [data-testid="stChatInput"] button { background: #7c3aed !important; color: #ffffff !important; border-radius: 50% !important; }
+html body [data-testid="stChatInput"] button svg { fill: #ffffff !important; color: #ffffff !important; }
+
+/* sign-in boxes in the menu and on the paywall */
+html body [data-testid="stTextInput"] input, html body [data-testid="stSidebar"] input { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; caret-color: #ffffff !important; background: rgba(255, 255, 255, 0.09) !important; }
+html body [data-testid="stTextInput"] div[data-baseweb="input"], html body [data-testid="stTextInput"] div[data-baseweb="base-input"] { background: rgba(255, 255, 255, 0.09) !important; border-radius: 12px !important; }
+html body input:-webkit-autofill, html body input:-webkit-autofill:focus { -webkit-text-fill-color: #ffffff !important; box-shadow: 0 0 0 1000px #1a1230 inset !important; caret-color: #ffffff !important; }
+html body [data-testid="stBaseButton-primary"] { background: linear-gradient(135deg, #f472b6, #7c3aed) !important; border: 0 !important; color: #ffffff !important; font-weight: 800 !important; border-radius: 16px !important; min-height: 50px !important; }
+
+/* waiting states: three bouncing dots while the narrator writes, a shimmer while a saved story loads */
+.hm-typing { display: inline-flex; gap: 5px; align-items: center; height: 1.3em; }
+.hm-typing i { width: 8px; height: 8px; border-radius: 50%; background: #e9d5ff; opacity: 0.4; animation: hm-dot 1.2s infinite ease-in-out; }
+.hm-typing i:nth-child(2) { animation-delay: 0.2s; }
+.hm-typing i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes hm-dot { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-4px); } }
+.hm-skel { height: 64px; border-radius: 20px; margin: 10px 0; max-width: 88%; background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.16) 37%, rgba(255, 255, 255, 0.06) 63%); background-size: 400% 100%; animation: hm-shimmer 1.3s ease infinite; }
+@keyframes hm-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+@media (prefers-reduced-motion: reduce) { .hm-typing i, .hm-skel { animation: none; } }
+
+/* the paywall card that sits under the last messages */
+html body .hm-gate { margin: 0.8rem 0; padding: 1.3rem 1.1rem; border-radius: 22px; text-align: center; background: rgba(12, 8, 24, 0.7); border: 1px solid rgba(244, 114, 182, 0.5);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); }
+html body .hm-gate-title { font-size: 1.4rem; font-weight: 800; color: #ffffff; line-height: 1.25; }
+html body .hm-gate-body { margin-top: 0.45rem; color: #e2e8f0; font-size: 1.02rem; line-height: 1.5; }
+
+@media (max-width: 768px) {
+  html body .block-container, html body [data-testid="stMainBlockContainer"] { padding-left: 0.7rem !important; padding-right: 0.7rem !important; }
+  html body .glass-bubble-ai, html body .glass-bubble-user { max-width: 92% !important; }
+  html body h1 { font-size: 1.5rem !important; }
 }
-.st-key-hub_nav button:first-of-type,
-[data-testid="stMain"] [data-testid="stButtonGroup"] button:first-of-type,
-.st-key-hub_nav [role="radiogroup"] label:first-of-type {
-  border: 1px solid #f472b6 !important;
-  background: linear-gradient(135deg, rgba(244,114,182,.28), rgba(124,58,237,.42)) !important;
-  color: #ffffff !important; font-weight: 800 !important;
-  box-shadow: 0 0 14px 3px rgba(244,114,182,.75);
-}
-.st-key-hub_nav button[data-testid="stBaseButton-pillsActive"]:first-of-type,
-[data-testid="stMain"] [data-testid="stButtonGroup"] button[data-testid="stBaseButton-pillsActive"]:first-of-type {
-  background: linear-gradient(135deg, #f472b6, #7c3aed) !important;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .st-key-hub_nav button:first-of-type,
-  [data-testid="stMain"] [data-testid="stButtonGroup"] button:first-of-type,
-  .st-key-hub_nav [role="radiogroup"] label:first-of-type { animation: hm-glow 2.2s ease-in-out infinite; }
-}
-/* the story cards */
-.hm-stories-title { font-size: 1.7rem; font-weight: 800; color: #ffffff; margin: .2rem 0 .1rem 0; }
-.hm-stories-sub { color: #cbd5e1; margin-bottom: .6rem; }
-[class*="st-key-story_"] {
-  position: relative; min-height: 440px; padding: 18px 16px 16px 16px; justify-content: flex-end;
-  border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,.14);
-  box-shadow: 0 10px 28px rgba(0,0,0,.45); transition: transform .2s ease, box-shadow .2s ease;
-}
-[class*="st-key-story_"]:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(124,58,237,.45); }
-.hm-story-name { font-size: 1.6rem; font-weight: 900; letter-spacing: .06em; color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
-.hm-story-title { font-size: 1.02rem; font-weight: 700; color: #f5d0fe; }
-.hm-story-tag { display: inline-block; margin: 6px 0; padding: 3px 10px; border-radius: 999px; font-size: .72rem; font-weight: 700;
-  letter-spacing: .05em; text-transform: uppercase; color: #ffffff; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.35); }
-.hm-story-hook { font-size: .92rem; font-style: italic; color: #e2e8f0; margin-bottom: 8px; }
-[class*="st-key-story_"] button { background: rgba(255,255,255,.16) !important; border: 1px solid rgba(255,255,255,.55) !important;
-  color: #ffffff !important; font-weight: 800 !important; backdrop-filter: blur(6px); }
-[class*="st-key-story_"] button:hover { background: linear-gradient(135deg, #f472b6, #7c3aed) !important; border-color: transparent !important; }
-@media (max-width: 768px) { [class*="st-key-story_"] { min-height: 400px; } }
 """
 
 # =============================================================== #CSS-ARABIC
@@ -478,6 +468,17 @@ HELPERS_CODE = """(function () {
     if (!box) { return; }
     box.querySelectorAll("textarea, button").forEach(function (el) { el.disabled = true; });
   };
+  (function () {  /* tell phone in-app browsers this page is dark, so they do not force light colors onto the input box */
+    var m = doc.querySelector('meta[name="color-scheme"]');
+    if (!m) { m = doc.createElement("meta"); m.name = "color-scheme"; doc.head.appendChild(m); }
+    m.setAttribute("content", "dark");
+  })();
+  window.hmScrollChat = function (where) {  /* top = the first message in view, bottom = the newest message in view */
+    var el = doc.querySelector('[data-testid="stMain"]') || doc.querySelector("section.main") || doc.documentElement;
+    var top = where === "top" ? 0 : (el.scrollHeight || 0);
+    try { el.scrollTo({ top: top, behavior: "auto" }); } catch (e) { el.scrollTop = top; }
+    try { window.scrollTo(0, where === "top" ? 0 : doc.body.scrollHeight); } catch (e) {}
+  };
   window.hmScrollTo = function (selector, delay) {  /* slide the screen to an element once it exists */
     setTimeout(function () {
       var tries = 0;
@@ -492,49 +493,23 @@ HELPERS_CODE = """(function () {
 })();""".replace("__VIEWPORT__", VIEWPORT_CONTENT)
 
 # ==================================================================== #PLANS
-# WHAT: the three plans: names, prices and billing periods  |  CHANGE WHEN: you change a price or add a plan (also edit stripe_webhook.py)
-# The three plans. All give exactly the same access; only the billing period differs.
-# The keys are what the Stripe webhook stores in profiles.tier.
+# WHAT: the one plan: name, price and billing period  |  CHANGE WHEN: you change the price (also change the dollar amount in the texts if you write it by hand)
+# One flat plan. The key is what the Stripe webhook stores in profiles.tier. The price below is the only place the amount is set:
+# the checkout, the paywall, the Terms and the events sent to TikTok and Meta all read it from here.
 TIERS = {
-    "weekly": {"product": "Haymaker Weekly Premium Pass", "cents": 1000, "interval": "week", "interval_count": 1,
-               "name_key": "tier1_name", "desc_key": "tier1_desc", "per_key": "per_week", "emoji": "👑", "color": "#a78bfa"},
-    "monthly": {"product": "Haymaker Monthly Premium Pass", "cents": 3000, "interval": "month", "interval_count": 1,
+    "monthly": {"product": "Haymaker Monthly Premium Pass", "cents": 1500, "interval": "month", "interval_count": 1,
                 "name_key": "plan_monthly_name", "desc_key": "plan_monthly_desc", "per_key": "per_month", "emoji": "🌙", "color": "#c084fc"},
-    "sixmonth": {"product": "Haymaker 6-Month Premium Pass", "cents": 6000, "interval": "month", "interval_count": 6,
-                 "name_key": "plan_6m_name", "desc_key": "plan_6m_desc", "per_key": "per_6months", "emoji": "💎", "color": "#f472b6"},
 }
-TIER_ORDER = ("weekly", "monthly", "sixmonth")
+TIER_ORDER = ("monthly",)
+
+
+def price_label():
+    """The monthly price as shown to people, for example $15."""
+    return f"${TIERS['monthly']['cents'] / 100:g}"
 
 # ==================================================================== #MUSIC
 # WHAT: the list of music files in the assets folder  |  CHANGE WHEN: you add or remove tracks
 PLAYLIST = ["assets/menu_theme.mp3", "assets/adventure_loop.mp3"] + [f"assets/track_{i}.mp3" for i in range(1, 9)]
-
-# ================================================================ #SCENARIOS
-# WHAT: the ready-made scenarios shown in Explore  |  CHANGE WHEN: you add a scenario
-# genre, icon, [(preset id, character name, backstory sent to the narrator)].
-# Scenario names and plot descriptions come from localization keys preset_<id>_name / preset_<id>_bio.
-PRESETS = [
-    ("Sci-Fi", "🚀", [
-        ("s1", "Pilot Vance", "A disgraced military pilot running illicit scrap metal through asteroid fields."),
-        ("s2", "Dr. Aris", "The chief technician investigating a quantum pulse that locked the terminal clock."),
-    ]),
-    ("Dark Fantasy", "🧙", [
-        ("f1", "Kaelen Voss", "An ancient rogue vampire cast out of the High Court, hunting bounty squads."),
-        ("f2", "Gideon Black", "A weathered mercenary carrying a broken crown across fields of ash."),
-    ]),
-    ("Cyberpunk", "🏙️", [
-        ("c1", "Ren Tanaka", "A street racer with a corporate data package hardwired into his skull."),
-        ("c2", "Echo", "A phantom hacker who lives inside deep mainframe server nodes."),
-    ]),
-    ("Horror", "🩸", [
-        ("h1", "Arthur Vance", "An investigative journalist locked inside an asylum wing with moving shadows."),
-        ("h2", "Sarah", "A standard hiker forced to fortify a hunting cabin before midnight strikes."),
-    ]),
-    ("Romance", "❤️", [
-        ("r1", "Leo Cruz", "A security auditor falling for the rival terminal hacker assigned to clear his deck."),
-        ("r2", "Elena", "A deep-space botanist stationed on a lonely supply node with a rogue freighter captain."),
-    ]),
-]
 
 # ============================================================ #TEXT-FALLBACK
 # WHAT: English text used when a translation is missing  |  CHANGE WHEN: you add any new button or message
@@ -543,13 +518,9 @@ DEFAULT_TEXT = {
     "paywall_title": "🔒 Your free actions are used up",
     "paywall_subtitle": "Choose a pass to keep exploring.",
     "paywall_login": "Create a free account or log in to continue and unlock a pass.",
-    "tier1_name": "Weekly Premium Pass",
-    "tier1_desc": "Full access to the story engine for one week. Renews automatically every week until you cancel.",
-    "paywall_note": "All passes include exactly the same full access. You are only choosing your billing period. Cancel anytime in your account.",
-    "per_6months": "/ 6 months",
-    "btn_activate": "Activate Pass",
+    "plan_monthly_name": "Monthly Premium Pass",
+    "per_month": "/ month",
     "legal_compliance_link": "⚖️ Terms of Service & Privacy Policy",
-    "per_week": "/ wk",
     "lbl_age_gate": "I am 18 or older and agree to the Terms of Service & Privacy Policy",
     "btn_open_stripe": "👉 Open secure Stripe Checkout",
     "msg_payment_success": "✅ Payment received! If you don't see your pass yet, refresh in a few seconds (log in again if needed).",
@@ -639,8 +610,48 @@ DEFAULT_TEXT = {
 }
 
 
+# ================================================================ #NEW-TEXTS
+# WHAT: the texts of the paywall, the message counter, restart and error messages (English, Spanish, Portuguese, Arabic; any other language shows English)  |  CHANGE WHEN: you reword them or add a language
+# {price}, {n} and {name} are filled in by the app.
+_EN, _ES, _PT, _AR = "English", "Español (Spanish)", "Português (Portuguese)", "العربية (Arabic)"
+NEW_TEXT = {
+    "gate_title": {_EN: "You've used your free messages", _ES: "Has usado tus mensajes gratis", _PT: "Você usou suas mensagens grátis", _AR: "انتهت رسائلك المجانية"},
+    "gate_body": {
+        _EN: "Unlock unlimited messages with Kade and Morrigan for {price}/month. Cancel anytime.",
+        _ES: "Desbloquea mensajes ilimitados con Kade y Morrigan por {price} al mes. Cancela cuando quieras.",
+        _PT: "Desbloqueie mensagens ilimitadas com Kade e Morrigan por {price} por mês. Cancele quando quiser.",
+        _AR: "افتح رسائل غير محدودة مع Kade و Morrigan مقابل {price} شهريًا. يمكنك الإلغاء في أي وقت."},
+    "gate_btn": {_EN: "Unlock unlimited · {price}/month", _ES: "Desbloquear ilimitado · {price}/mes", _PT: "Desbloquear ilimitado · {price}/mês", _AR: "افتح بلا حدود · {price} شهريًا"},
+    "gate_note": {
+        _EN: "Billed monthly through Stripe. Cancel anytime from the menu. 18+ only.",
+        _ES: "Se cobra cada mes a través de Stripe. Cancela cuando quieras desde el menú. Solo mayores de 18.",
+        _PT: "Cobrado mensalmente pelo Stripe. Cancele quando quiser no menu. Apenas maiores de 18.",
+        _AR: "تُدفع شهريًا عبر Stripe. يمكنك الإلغاء في أي وقت من القائمة. للبالغين 18+ فقط."},
+    "gate_pick": {
+        _EN: "Great. Create your free account above and we'll take you straight to checkout.",
+        _ES: "Genial. Crea tu cuenta gratis arriba y te llevamos directo al pago.",
+        _PT: "Ótimo. Crie sua conta grátis acima e levamos você direto ao pagamento.",
+        _AR: "رائع. أنشئ حسابك المجاني أعلاه وسننقلك مباشرة إلى الدفع."},
+    "msgs_left": {_EN: "💬 {n} free messages left", _ES: "💬 Te quedan {n} mensajes gratis", _PT: "💬 Restam {n} mensagens grátis", _AR: "💬 تبقّت {n} رسائل مجانية"},
+    "btn_restart": {_EN: "🔄 Restart this story", _ES: "🔄 Reiniciar esta historia", _PT: "🔄 Reiniciar esta história", _AR: "🔄 إعادة بدء هذه القصة"},
+    "restart_confirm": {
+        _EN: "This erases your conversation with {name}.", _ES: "Esto borra tu conversación con {name}.",
+        _PT: "Isso apaga a sua conversa com {name}.", _AR: "سيؤدي هذا إلى حذف محادثتك مع {name}."},
+    "restart_yes": {_EN: "Yes, erase and restart", _ES: "Sí, borrar y reiniciar", _PT: "Sim, apagar e reiniciar", _AR: "نعم، احذف وابدأ من جديد"},
+    "btn_retry_msg": {_EN: "↻ Try again", _ES: "↻ Intentar de nuevo", _PT: "↻ Tentar de novo", _AR: "↻ حاول مرة أخرى"},
+    "err_conn": {
+        _EN: "Connection problem. Your message wasn't sent. Please try again.",
+        _ES: "Problema de conexión. Tu mensaje no se envió. Inténtalo de nuevo.",
+        _PT: "Problema de conexão. Sua mensagem não foi enviada. Tente de novo.",
+        _AR: "مشكلة في الاتصال. لم يتم إرسال رسالتك. حاول مرة أخرى."},
+    "chat_ph_named": {_EN: "Reply to {name}…", _ES: "Responde a {name}…", _PT: "Responda a {name}…", _AR: "ردّ على {name}…"},
+}
+for _key, _by_lang in NEW_TEXT.items():  # hand them to the text lookup x(): any language without a line shows the English one
+    for _lang_name, _text in _by_lang.items():
+        LOCALIZATION_VAULT.setdefault(_lang_name, {})[_key] = _text
+
 # ================================================================== #HELPERS
-# WHAT: the text lookup x(), the browser-script runner, genre helpers, the empty game  |  CHANGE WHEN: text is missing or in the wrong language
+# WHAT: the text lookup x(), the browser-script runner, the empty game, which story is open  |  CHANGE WHEN: text is missing or in the wrong language
 def esc(value):
     return html.escape("" if value is None else str(value))
 
@@ -665,40 +676,6 @@ def run_in_page(call_js=""):
         components.html("<script>" + body + "</script>", height=0)
 
 
-def _norm(value):
-    return str(value or "").strip().casefold()
-
-
-def build_genre_lookup():
-    """Every spelling of every genre that can sit in the database -> its language-neutral code.
-    New worlds store the English name. Older worlds may hold the creator's own language, so the vault's lists are read too."""
-    lookup = {}
-    for code, english in GENRE_ENGLISH.items():
-        lookup[_norm(code)] = code
-        lookup[_norm(english)] = code
-    for vault in LOCALIZATION_VAULT.values():
-        for code in GENRE_KEYS:
-            label = vault.get(f"genre_{code}")
-            if label:
-                lookup[_norm(label)] = code
-        tabs = list(vault.get("sub_genres_lbls") or [])  # the Explore tabs are in GENRE_KEYS order
-        for i, label in enumerate(tabs[:len(GENRE_KEYS)]):
-            lookup.setdefault(_norm(label), GENRE_KEYS[i])
-        for label in vault.get("genres") or []:  # the Create form's list: placed by where the same word sits in the tabs list
-            if label in tabs and tabs.index(label) < len(GENRE_KEYS):
-                lookup.setdefault(_norm(label), GENRE_KEYS[tabs.index(label)])
-    return lookup
-
-
-GENRE_LOOKUP = build_genre_lookup()
-
-
-def genre_label(raw):
-    """A world's genre in the language of whoever is looking at it right now. Unknown text is shown as it is."""
-    code = GENRE_LOOKUP.get(_norm(raw))
-    return x(f"genre_{code}") if code else str(raw or "")
-
-
 def new_engine():
     return {
         "world_id": None, "world_name": "", "world_genre": "", "world_customization": None,
@@ -707,19 +684,18 @@ def new_engine():
     }
 
 
+def current_story_id():
+    """The id of the story that is open right now (kade, morrigan), or None."""
+    return ((ss.get("world_engine") or {}).get("world_customization") or {}).get("story_id")
+
 # ========================================================= #SESSION-DEFAULTS
 # WHAT: first-time values for each visit  |  CHANGE WHEN: you add something to remember per visit
 ss.setdefault("app_language", None)
 ss.setdefault("guest_tokens", FREE_ACTIONS)
 ss.setdefault("is_premium", False)
-ss.setdefault("world_cover_url", None)
 ss.setdefault("world_engine", new_engine())
 ss.setdefault("audio_state", {"playing": True, "track_url": "assets/menu_theme.mp3"})
-ss.setdefault("active_tab_idx", 0)  # which hub section is open: set once, never recomputed on later runs
 ss.setdefault("settings_view", 0)  # which settings sub-tab is open (0 = status, 1 = subscription management)
-if "hub_nav" not in ss:  # first run of a visit only: honour links such as ?tab=profile
-    _wanted_tab = str(st.query_params.get("tab", "")).lower()
-    ss["hub_nav"] = HUB_TAB_KEYS.index(_wanted_tab) if _wanted_tab in HUB_TAB_KEYS else ss.active_tab_idx
 
 # ================================================================== #COOKIES
 # WHAT: reading, queuing and writing browser cookies  |  CHANGE WHEN: cookies are not saving
@@ -787,7 +763,7 @@ if ss.app_language not in LOCALIZATION_VAULT:  # first load of this visit: no pi
 # ============================================================ #STYLES-INJECT
 # WHAT: puts all the style sheets on the page  |  CHANGE WHEN: styles are missing or in the wrong order
 _rtl_css = RTL_CSS if lang().startswith("العربية") else ""
-st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}\n{MOBILE_CSS}\n{LOCKED_CSS}\n{STORIES_CSS}\n{_rtl_css}</style>", unsafe_allow_html=True)
+st.markdown(f"<style>{GLOBAL_CSS}\n{CHAT_CSS}\n{MOBILE_CSS}\n{VN_CSS}\n{_rtl_css}</style>", unsafe_allow_html=True)
 if not ss.get("_viewport_set"):
     ss["_viewport_set"] = True
     run_in_page()  # installs the viewport lock, the pinch/double-tap blockers and the keyboard/scroll helpers
@@ -882,18 +858,42 @@ def guest_ledger(fn, guest_id):
         return None
 
 
+def sync_guest_storage(guest_id, had_cookie):
+    """Keep the guest id in two places: the cookie and the browser's local storage. Phone in-app browsers often wipe cookies but keep
+    local storage: then the old id is put back and the page reloads once, so the free messages and the saved conversation are found
+    again. When there is no cookie yet, this script is also what writes it."""
+    secure = "; Secure" if APP_URL.startswith("https") else ""
+    js = """(function () { try {
+  var p = window.parent, ls = p.localStorage, ses = p.sessionStorage;
+  var cur = __CUR__, had = __HAD__, saved = ls.getItem("hm_guest");
+  var ok = saved && /^[0-9a-f-]{36}$/i.test(saved);
+  var id = (!had && ok && !ses.getItem("hm_guest_reload")) ? saved : cur;
+  if (!had) { p.document.cookie = "hm_guest=" + encodeURIComponent(id) + "; Max-Age=__SECS__; path=/; SameSite=Lax__SECURE__"; }
+  if (id !== cur) { ses.setItem("hm_guest_reload", "1"); p.location.reload(); return; }
+  if (had || !ok) { ls.setItem("hm_guest", cur); }
+} catch (e) {} })();"""
+    js = (js.replace("__CUR__", json.dumps(guest_id)).replace("__HAD__", "true" if had_cookie else "false")
+          .replace("__SECS__", str(GUEST_COOKIE_DAYS * 86400)).replace("__SECURE__", secure))
+    with _scripts:
+        components.html("<script>" + js + "</script>", height=0)
+
+
 def init_guest():
-    """Recognise this browser's free-trial balance. The id lives in a long-lived cookie and the balance in the database,
-    so refreshing the page or closing the tab can never hand out fresh free actions."""
+    """Recognise this browser's free-trial balance. The id lives in a long-lived cookie (and a copy in local storage) and the balance
+    in the database, so refreshing the page or closing the tab can never hand out fresh free messages."""
     if ss.get("guest_id"):
         return
     raw = cookie_get("hm_guest")
+    had_cookie = False
     try:
         guest_id = str(uuid.UUID(raw)) if raw else str(uuid.uuid4())
+        had_cookie = bool(raw)
     except ValueError:
         guest_id = str(uuid.uuid4())
-    queue_cookie("hm_guest", guest_id, days=GUEST_COOKIE_DAYS)  # written on every visit, so it keeps being renewed
+    if had_cookie:
+        queue_cookie("hm_guest", guest_id, days=GUEST_COOKIE_DAYS)  # renewed on every visit
     ss["guest_id"] = guest_id
+    sync_guest_storage(guest_id, had_cookie)
     left = guest_ledger("guest_claim", guest_id)
     if left is not None:
         ss.guest_tokens = max(0, min(int(left), FREE_ACTIONS))
@@ -934,42 +934,71 @@ def sync_premium_via_webhook(session_id=None, timeout=20):
 
 
 # ================================================================ #SAVE-LOAD
-# WHAT: saving, loading and deleting the saved game  |  CHANGE WHEN: saves are failing
+# WHAT: saving, loading, restarting and moving a visitor's conversations (guests and accounts)  |  CHANGE WHEN: conversations do not come back
+# Every conversation is saved in the database table "conversations" (set up by conversations.sql) after each reply.
+# A guest is found again by the random id in their browser; a signed-in person by their account. When a guest signs in or
+# signs up, their conversations move into the account.
+def _conv_args(**extra):
+    return {"p_guest": ss.get("guest_id") or "", **extra}
+
+
+def clean_log(raw):
+    """A saved story log, made safe: only real messages, a sensible length, the last 60."""
+    out = []
+    for m in raw if isinstance(raw, list) else []:
+        if isinstance(m, dict) and m.get("role") in ("user", "assistant") and isinstance(m.get("content"), str):
+            item = {"role": m["role"], "content": m["content"][:2000]}
+            if m.get("hidden"):
+                item["hidden"] = True
+            out.append(item)
+    return out[-60:]
+
+
 def save_game():
-    """Keep the current adventure so a refresh or a new visit can pick it up again. True when it was saved."""
-    if not (ss.get("user") and engine["world_name"]):
+    """Keep the conversation so the visitor can come back to it. True when it was saved."""
+    story_id = current_story_id()
+    if not (story_id and engine["world_name"]):
         return False
-    snapshot = {**engine, "story_log": engine["story_log"][-60:]}
+    snapshot = {"story_log": engine["story_log"][-60:], "player_character": engine["player_character"]}
     try:
-        sb.table("game_saves").upsert({
-            "user_id": ss.user.id, "engine": snapshot,
-            "updated_at": datetime.now(timezone.utc).isoformat()}).execute()
+        sb.rpc("conv_save", _conv_args(p_story=story_id, p_engine=snapshot)).execute()
         return True
     except Exception as e:
-        print("save error:", e)
+        print("save error (is conversations.sql installed?):", repr(e)[:300])
         return False
 
 
-def load_game():
-    try:
-        rows = sb.table("game_saves").select("engine").eq("user_id", ss.user.id).limit(1).execute().data
-    except Exception as e:
-        print("load error:", e)
+def load_conversation(story_id):
+    """The saved conversation with one character, or None."""
+    data = sb.rpc("conv_load", _conv_args(p_story=story_id)).execute().data
+    return data if isinstance(data, dict) else None
+
+
+def latest_conversation():
+    """The conversation this visitor used last: {"story_id": ..., "engine": ...}, or None."""
+    data = sb.rpc("conv_latest", _conv_args()).execute().data
+    return data if isinstance(data, dict) and data.get("story_id") else None
+
+
+def delete_game(story_id=None):
+    """Erase the saved conversation with one character (the Restart button)."""
+    story_id = story_id or current_story_id()
+    if not story_id:
         return
-    if rows and rows[0].get("engine", {}).get("world_name"):
-        eng = new_engine()
-        eng.update({k: v for k, v in rows[0]["engine"].items() if k in eng})
-        ss.world_engine = eng
-        ss.world_cover_url = None
+    try:
+        sb.rpc("conv_delete", _conv_args(p_story=story_id)).execute()
+    except Exception as e:
+        print("delete save error:", repr(e)[:300])
 
 
-def delete_game():
-    if ss.get("user"):
-        try:
-            sb.table("game_saves").delete().eq("user_id", ss.user.id).execute()
-        except Exception as e:
-            print("delete save error:", e)
-
+def adopt_guest_conversations():
+    """Right after sign-in or sign-up: what the person played as a guest now belongs to their account."""
+    if not (ss.get("user") and ss.get("guest_id")):
+        return
+    try:
+        sb.rpc("conv_adopt", {"p_guest": ss["guest_id"]}).execute()
+    except Exception as e:
+        print("adopt error:", repr(e)[:300])
 
 # ============================================================ #PROFILE-CHECK
 # WHAT: reads who has paid and how many free actions are left  |  CHANGE WHEN: premium or free-action problems
@@ -1050,7 +1079,7 @@ def refresh_profile():
     if ADMIN_EMAIL and str(ss.user.email).strip().lower() == ADMIN_EMAIL:
         if ADMIN_USER_ID and str(ss.user.id) == ADMIN_USER_ID:
             ss.is_premium = True
-            ss.tier = "sixmonth"
+            ss.tier = "monthly"
         elif not ss.get("_admin_warned"):
             ss["_admin_warned"] = True
             print("SECURITY: this email matches ADMIN_EMAIL but ADMIN_USER_ID is missing or different, so admin access is OFF. "
@@ -1170,6 +1199,8 @@ def claim_pending_tier():
 def finish_signup(banner=True):
     """Right after someone is signed in: read their profile once, drop stale leftovers, then continue into the app."""
     refresh_profile()  # caches their plan and free actions in this session
+    adopt_guest_conversations()  # what they played as a guest now belongs to their account
+    ss.world_engine = new_engine()  # the next run opens their saved conversation, so nothing is lost or mixed up
     queue_cookie("hm_tier", None)  # a pass picked in an earlier visit must never fire again
     ss.pop("_checkout_inflight", None)
     ss.pop("auto_checkout", None)
@@ -1333,7 +1364,7 @@ LEGAL_EMAIL = "hmaker682@gmail.com"
 LEGAL_DSAR_URL = "https://app.termly.io/dsar/80af5b76-0993-4889-98e7-f9e26134439d"  # your Termly data request form
 LEGAL_ADDRESS = ""  # your business mailing address, for example "123 Main St, Austin, TX 78701, United States". "" = email only
 LEGAL_STATE = ""  # the US state your LLC is registered in, for example "Texas". "" = a general sentence is used instead
-LEGAL_UPDATED = "October 24, 2026"
+LEGAL_UPDATED = "November 7, 2026"
 LEGAL_META_ON = bool(ENABLE_META_PIXEL and re.sub(r"\D", "", META_PIXEL_ID))  # the Meta lines below appear only when the Meta Pixel is on
 LEGAL_AD_PARTNERS = "TikTok and Meta (Facebook and Instagram)" if LEGAL_META_ON else "TikTok"
 LEGAL_META_ROW = ("| Meta Pixel cookies (for example `_fbp`, `_fbc`) | Meta | Measure how our Facebook and Instagram ads perform and connect ad clicks to visits and purchases. "
@@ -1380,7 +1411,7 @@ Haymaker is an interactive story game. A narrator powered by artificial intellig
 New visitors get a limited number of free story actions so they can try the Service. We count them to stop abuse. You may not get around the limit, for example by creating several accounts, clearing cookies to reset the count, or using automated tools.
 
 ## 5. Premium passes and payments
-- **Plans.** We offer these passes: {plans}. All passes give the same access; only the billing period differs. Prices are in US dollars.
+- **Plan.** We offer one paid plan: {plans}. It gives unlimited messages with every character. The price is in US dollars.
 - **Payment.** Payments are handled by Stripe. When you buy a pass you authorize us, through Stripe, to charge your payment method now and at every renewal.
 - **Automatic renewal.** Each pass renews automatically at the end of its billing period, at the price shown to you at the time, until you cancel.
 - **Cancelling.** You can cancel at any time from Subscription Management in the app's menu, or through the billing portal. Cancelling stops future renewals. You keep full access until the end of the period you already paid for.
@@ -1403,12 +1434,12 @@ You agree not to use the Service to:
 
 ## 7. Your content
 - **What you write.** You keep ownership of the messages, character details and world descriptions you enter ("**Your Content**").
-- **Our permission to use it.** You give us a worldwide, non-exclusive, royalty-free license to host, copy, process and display Your Content, and to send it to our service providers (including AI providers), only as needed to run, protect and improve the Service and to show worlds you choose to post. You promise that you have the right to give us this permission and that Your Content follows these Terms.
+- **Our permission to use it.** You give us a worldwide, non-exclusive, royalty-free license to host, copy, process and display Your Content, and to send it to our service providers (including AI providers), only as needed to run, protect and improve the Service. You promise that you have the right to give us this permission and that Your Content follows these Terms.
 - **Story text.** The story text the narrator writes for you may be similar to text written for other players. You may use it for personal purposes. We do not promise that it is unique or free of anyone else's rights.
 - **Removal.** We may remove or block content that breaks these Terms or that we believe could cause harm.
 
-## 8. Community worlds
-Premium members can post a world they created to the public community. A posted world, including its name, genre and the settings you wrote, can be seen and played by other players. It does not show your email address. You can delete a world from My Creations at any time; this removes it from the community. Do not post anything you want to keep private.
+## 8. Saved conversations
+Your conversations are saved so you can continue a story where you left off, even if you do not have an account. You can restart a story at any time from the menu, which erases the saved conversation with that character. We may delete saved conversations that have not been used for a long time.
 
 ## 9. Our content
 The Service, including its software, design, characters, artwork, music and text that we created, belongs to us or our licensors and is protected by law. We give you a limited, personal, non-transferable permission to use the Service as these Terms allow. We reserve every right we do not expressly give you.
@@ -1459,7 +1490,7 @@ This Privacy Notice for **{LEGAL_COMPANY}** ("**we**," "**us**," or "**our**") d
 
 *This summary provides key points from our Privacy Notice. You can find more detail in the sections below.*
 
-- **What personal information do we process?** Depending on how you use the Services: your email address, the stories you write and the narrator's replies, your saved games, limited payment status from Stripe, and technical information such as your IP address and cookie identifiers. See Section 1.
+- **What personal information do we process?** Depending on how you use the Services: your email address, the stories you write and the narrator's replies, your saved conversations, limited payment status from Stripe, and technical information such as your IP address and cookie identifiers. See Section 1.
 - **Do we process sensitive personal information?** We do not ask for it. Stories are free-form text, so please do not type sensitive details into a story.
 - **Do we collect information from third parties?** Only a little: Stripe tells us whether your payment and plan are active, and an ad click identifier can arrive in the link if you come from an ad.
 - **How do we process your information?** To run the game, manage accounts and passes, keep the Services safe, measure our advertising, and follow the law. See Section 2.
@@ -1477,7 +1508,7 @@ This Privacy Notice for **{LEGAL_COMPANY}** ("**we**," "**us**," or "**our**") d
 We collect personal information that you voluntarily give us when you register on the Services, play, buy a pass, express an interest in our products and Services, or contact us. The personal information we collect depends on the context of your interactions with us and the Services, the choices you make, and the products and features you use. It may include:
 
 - **Account details:** your email address, your password (handled by our sign-in provider; we cannot read it), and the language you choose.
-- **Story content:** the messages you type, the narrator's replies, the character and world details you enter (such as names, backstories and descriptions), and your saved games (we keep the most recent part of your story so you can continue later).
+- **Story content:** the messages you type, the narrator's replies, and your saved conversations (we keep the most recent part of each story so you can continue later, with or without an account).
 - **Messages to us:** anything you send when you contact us.
 
 **Sensitive information.** We do not ask for sensitive information. Please do not enter sensitive details about yourself or other people into a story.
@@ -1491,8 +1522,8 @@ All personal information that you provide to us must be true, complete, and accu
 *In short: some information, such as your IP address and browser and device characteristics, is collected automatically when you visit our Services.*
 
 - **Device and usage data:** IP address, browser and device type, the pages and features you use, dates and times, and the site that sent you to us. Our hosting and security providers process this to deliver the Services and to prevent abuse.
-- **Advertising tags:** if you arrive from an ad or a link that carries tags (for example `utm_` tags or an ad click ID), we keep them for your visit and add them to your checkout record if you buy, so we can tell which ads work. Our advertising pixels also receive information about your visit and about key steps, such as opening a story, picking a plan, starting checkout, creating an account or buying a pass. See Section 4 and the Cookie Policy.
-- **Free-trial identifier:** before you have an account, a random ID in a cookie and in our database counts the free story actions used by that browser. It is not linked to your name or email until you sign up.
+- **Advertising tags:** if you arrive from an ad or a link that carries tags (for example `utm_` tags or an ad click ID), we keep them for your visit and add them to your checkout record if you buy, so we can tell which ads work. Our advertising pixels also receive information about your visit and about key steps, such as opening a story, sending a first message, picking a plan, starting checkout, creating an account or buying a pass. See Section 4 and the Cookie Policy.
+- **Free-trial identifier:** before you have an account, a random ID in a cookie (and a copy in your browser's local storage) and in our database counts the free messages used by that browser and finds your saved conversations again. It is not linked to your name or email until you sign up.
 - **Cookies and similar technologies:** see our Cookie Policy for the full list.
 
 ### Information from third parties
@@ -1506,7 +1537,7 @@ We do not buy personal information about you. We receive limited information fro
 We process your personal information for a variety of reasons, depending on how you interact with our Services, including:
 
 - **To create and manage accounts**, so you can sign up, sign in, and keep your account working.
-- **To deliver the Services**, including writing the story with AI, saving your game, and showing worlds you choose to share.
+- **To deliver the Services**, including writing the story with AI and saving your conversations so you can continue them.
 - **To manage purchases**, including starting, renewing, changing and cancelling your pass, and showing the right access.
 - **To protect the Services and people**, including screening messages with safety tools, limiting free actions, and preventing fraud and abuse.
 - **To respond to you** when you contact us.
@@ -1535,15 +1566,14 @@ We process your personal information for a variety of reasons, depending on how 
 We share your personal information with service providers that process it on our behalf under their own terms and privacy notices:
 
 - **Hosting:** Render, which runs our website and services.
-- **Database and sign-in:** Supabase, which stores accounts, saved games, worlds and free-trial counts.
+- **Database and sign-in:** Supabase, which stores accounts, saved conversations and free-trial counts.
 - **Payments:** Stripe, which processes payments and manages subscriptions.
-- **Artificial intelligence:** OpenAI, which writes the narrator's replies and screens messages for safety. Replicate may create cover pictures from a world's title and genre.
-- **Advertising measurement:** {LEGAL_AD_PARTNERS}, through advertising pixels on our website. They receive information such as the page you viewed, your IP address, your browser details, cookie identifiers, the ad click ID, and key steps in the game (opening a story, picking a plan, starting checkout, creating an account, buying a pass and its price). These companies may combine that with information they already have about you. We do not send them the text you type into stories. See the Cookie Policy.
+- **Artificial intelligence:** OpenAI, which writes the narrator's replies and screens messages for safety.
+- **Advertising measurement:** {LEGAL_AD_PARTNERS}, through advertising pixels on our website. They receive information such as the page you viewed, your IP address, your browser details, cookie identifiers, the ad click ID, and key steps in the game (opening a story, sending a first message, picking a plan, starting checkout, creating an account, buying a pass and its price). These companies may combine that with information they already have about you. We do not send them the text you type into stories. See the Cookie Policy.
 - **Privacy requests:** Termly, which hosts the form for data requests.
 
 We may also share your information in these situations:
 
-- **Worlds you post.** If you post a world to the public community, its name, genre and the settings you wrote can be seen and played by other players. Your email address is not shown.
 - **Business transfers.** We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.
 - **Legal reasons and safety.** We may share information where the law requires it or to protect people, our rights or the Services.
 
@@ -1555,7 +1585,7 @@ We do not sell your personal information for money. See Section 11 for how US st
 
 As part of our Services, we offer products, features, or tools powered by artificial intelligence, machine learning, or similar technologies (collectively, "**AI Products**"). The story narrator is an AI Product. We provide it through third-party service providers ("**AI Service Providers**"), including OpenAI.
 
-- **What is sent.** To write each reply, we send the AI Service Provider your latest messages, the recent story so far, the character and world details you chose, and our instructions to the narrator. We also send your messages and the narrator's replies for automated safety screening.
+- **What is sent.** To write each reply, we send the AI Service Provider your latest messages, the recent story so far, the character details, and our instructions to the narrator. We also send your messages and the narrator's replies for automated safety screening.
 - **How the information is handled.** Your input, output and personal information are shared with and processed by these AI Service Providers to enable your use of our AI Products, and are handled in line with this Privacy Notice and our agreements with them.
 - **Limits.** AI replies can be wrong or surprising, and we do not use them to make legal or similarly significant decisions about you.
 - **Your responsibility.** Please do not enter sensitive information about yourself or others. You must not use the AI Products in any way that violates the terms or policies of any AI Service Provider.
@@ -1567,7 +1597,7 @@ As part of our Services, we offer products, features, or tools powered by artifi
 We keep your personal information only as long as it is necessary for the purposes set out in this Privacy Notice, unless a longer period is required or permitted by law (such as tax, accounting, or other legal requirements).
 
 - **Account information** is kept while you have an account with us.
-- **Saved games** are kept until you delete them or your account is deleted.
+- **Saved conversations** are kept until you restart that story or your account is deleted. Conversations saved without an account are kept under a random ID and may be deleted after a long period of inactivity.
 - **Free-trial records** are kept for as long as needed to stop repeat abuse of the free trial.
 - **Payment records** are kept by us and by Stripe as long as the law requires.
 
@@ -1728,7 +1758,8 @@ The first five rows are needed to run the game, keep you signed in, protect the 
 
 ## Other similar technologies
 - **Ad tags in links.** If you arrive from an ad, the link may carry tags such as `utm_` values or an ad click ID. We keep them for your visit and attach them to your checkout record if you buy.
-- **Advertising pixels.** The pixels from {LEGAL_AD_PARTNERS} are small scripts on our site. They tell those companies when a page is viewed and when you take key steps, such as opening a story, picking a plan, starting checkout, creating an account or buying a pass (including the price of the pass). We do not send them the text you type into stories.
+- **Local storage.** A copy of the random free-trial ID is kept in your browser's local storage, so your free messages and saved conversations can be found again if cookies are cleared.
+- **Advertising pixels.** The pixels from {LEGAL_AD_PARTNERS} are small scripts on our site. They tell those companies when a page is viewed and when you take key steps, such as opening a story, sending a first message, picking a plan, starting checkout, creating an account or buying a pass (including the price of the pass). We do not send them the text you type into stories.
 
 ## Your choices
 - **Browser settings.** You can block or delete cookies in your browser. If you block the cookies we need, you may not be able to stay signed in or use the free trial.
@@ -1767,7 +1798,7 @@ def render_legal():
 # ================================================================ #AUTH-FORM
 # WHAT: the sign-in / sign-up form  |  CHANGE WHEN: sign-up or login problems
 def render_auth_form(prefix):
-    mode = st.radio("mode", [x("btn_signin"), x("btn_signup")], horizontal=True, index=1 if prefix == "paywall" else 0,
+    mode = st.radio("mode", [x("btn_signin"), x("btn_signup")], horizontal=True, index=1 if prefix in ("paywall", "menu") else 0,
                     key=f"{prefix}_mode", label_visibility="collapsed")
     email = st.text_input(x("lbl_email"), key=f"{prefix}_email", max_chars=254).strip()
     password = st.text_input(x("lbl_pass"), type="password", key=f"{prefix}_pw", max_chars=128)
@@ -1814,7 +1845,7 @@ def render_auth_form(prefix):
 
 
 # =========================================================== #PAYWALL-SCREEN
-# WHAT: the pricing screen: sign-up form for visitors, plan cards, Terms  |  CHANGE WHEN: you change how the paywall looks
+# WHAT: the gate after the free messages: the $15 a month offer, sign-up for visitors, Terms  |  CHANGE WHEN: you change how the paywall looks or reads
 def render_paywall():
     try:
         area = st.container(key="hm_paywall")  # becomes the CSS class st-key-hm_paywall (used by the scroll helper)
@@ -1822,52 +1853,27 @@ def render_paywall():
         area = st.container()
     with area:
         st.markdown('<div id="hm-paywall"></div>', unsafe_allow_html=True)
-        st.title(x("paywall_title"))
-        st.write(x("paywall_subtitle"))
+        price = price_label()
+        st.markdown(f'<div class="hm-gate"><div class="hm-gate-title">{esc(x("gate_title"))}</div>'
+                    f'<div class="hm-gate-body">{esc(x("gate_body").format(price=price))}</div></div>', unsafe_allow_html=True)
         logged_in = bool(ss.get("user"))
-        if not logged_in:  # no free actions left and no account: registering (or signing in) comes first
+        if not logged_in:  # a free account comes first, so the pass is tied to someone
             st.info(x("paywall_login"))
             render_auth_form("paywall")
-        for col, key in zip(st.columns(3), TIER_ORDER):
-            tier = TIERS[key]
-            with col:
-                st.markdown(
-                    f'<div style="background:rgba(16,12,31,.5);padding:20px;border-radius:12px;border:1px solid #2e234e;'
-                    f'text-align:center;min-height:250px;"><h4 style="color:{tier["color"]};margin:0;">'
-                    f'{tier["emoji"]} {esc(x(tier["name_key"]).upper())}</h4>'
-                    f'<h2 style="color:#fff;margin:10px 0;">&#36;{tier["cents"] // 100} '
-                    f'<span style="font-size:14px;color:#94a3b8;">{esc(x(tier["per_key"]))}</span></h2>'
-                    f'<p style="color:#94a3b8;font-size:12px;">{esc(x(tier["desc_key"]))}</p></div>',
-                    unsafe_allow_html=True)
-                if st.button(x("btn_activate"), key=f"buy_{key}", use_container_width=True):
-                    track_plan_event("AddToCart", key)  # a plan was picked
-                    if logged_in:
-                        go_checkout(key)
-                    else:
-                        ss.pending_tier = key  # kept in this session only, so signing up carries straight on to checkout
-        st.caption(x("paywall_note"))
+        if st.button(x("gate_btn").format(price=price), key="buy_monthly", type="primary", use_container_width=True):
+            track_plan_event("AddToCart", "monthly")  # the plan was picked
+            if logged_in:
+                ss.auto_checkout = "monthly"  # straight to Stripe: one tap, no second button
+                st.rerun()
+            ss.pending_tier = "monthly"  # kept in this session only, so signing up carries straight on to checkout
+            st.success(x("gate_pick"))
+        st.caption(x("gate_note"))
         render_legal()
 
-
 # ============================================================= #CHAT-HELPERS
-# WHAT: the world card, the chat bubble, cleaning the narrator's text  |  CHANGE WHEN: bubble or card looks
-def card(icon, title, line=""):
-    st.markdown(
-        f'<div class="premium-discovery-card"><div style="padding:20px;"><h4>{icon} {esc(title.upper())}</h4>'
-        f'<p style="color:#94a3b8;font-size:14px;">{esc(line)}</p></div></div>', unsafe_allow_html=True)
-
-
-def enter_world(world_id, name, genre, char_name, backstory, custom=None, inventory=None):
-    eng = new_engine()
-    eng.update(world_id=world_id, world_name=name, world_genre=genre, world_customization=custom)
-    eng["player_character"].update(name=char_name, backstory=backstory)
-    if inventory:  # a story may start the player with its own items; without this they carry "survival gear"
-        eng["player_character"]["inventory"] = [str(item)[:40] for item in inventory][:30]
-    ss.world_engine = eng
-    ss.world_cover_url = None
-    track_event("ViewContent", key="view_" + str(world_id), content_type="product", content_id=str(world_id),
-                content_name=(custom or {}).get("story_id") or "world")  # a story or world was opened (what players type is never sent)
-    st.rerun()
+# WHAT: the chat bubble, the dialogue styling, the typing dots  |  CHANGE WHEN: bubble looks
+TYPING_HTML = '<span class="hm-typing"><i></i><i></i><i></i></span>'  # three bouncing dots while the narrator writes
+SKELETON_HTML = '<div class="hm-skel"></div><div class="hm-skel" style="margin-left:auto;max-width:60%"></div>'  # while a saved story loads
 
 
 def bubble(role, body):
@@ -1877,12 +1883,11 @@ def bubble(role, body):
 
 
 def fmt_ai(text):
-    """Escape everything the model wrote, then restyle NPC dialogue lines safely."""
+    """Escape everything the model wrote, then style the character's spoken lines (Name: "words") safely."""
     safe = html.escape(re.sub(r"\[[^\]]*\]?", "", text).strip())  # also hides a tag that is still being typed
     safe = re.sub(r'(?m)^([^:\n]{1,40}): (&quot;.*&quot;)\s*$',
-                  r"\1: <span style='color:#FF4B4B;font-weight:bold;'>\2</span>", safe)
+                  r"<span class='hm-who'>\1:</span> <span class='hm-say'>\2</span>", safe)
     return safe.replace("\n", "<br>")
-
 
 # ========================================================== #NARRATOR-PROMPT
 # WHAT: the narrator's rulebook and the world details it is given  |  CHANGE WHEN: narrator style or rules
@@ -1920,7 +1925,7 @@ def build_system_prompt():
     data = "\n".join(lines)
     story = ("STORY MODE (stay in this role for the whole story):\n" + cust["persona"] + "\n") if cust.get("persona") else ""
     cliff = ""
-    if not ss.get("is_premium") and ss.get("guest_tokens", 1) <= 0:  # the player's last free action
+    if not ss.get("is_premium") and ss.get("guest_tokens", 1) <= 1:  # the player's last free message (it is counted after the answer)
         cliff = ("THIS IS THE PLAYER'S LAST FREE TURN. End the paragraph on a gripping cliffhanger "
                  "(a sudden danger, a reveal or an impossible choice) and leave it unresolved.\n")
     return (
@@ -1936,8 +1941,8 @@ def build_system_prompt():
         f"<world_data>\n{data}\n</world_data>\n"
         "Weave the world details into the story.\n"
         + cliff +
-        f"RULES: 1) Write entirely in {lang()}. 2) Exactly ONE short paragraph, maximum 3 sentences. "
-        "3) Never repeat the player's words; advance the plot. "
+        f"RULES: 1) Write entirely in {lang()}. 2) Keep it SHORT and punchy: at most 2 short sentences, under 40 words in total. Never write a long paragraph. "
+        "3) Never repeat the player's words; advance the plot with one concrete beat. "
         '4) If an NPC speaks, put it on its own line exactly like: Name: "Dialogue". '
         "5) At the very bottom add [LOOT: item] or [HEALTH: -15] only when something changes."
     )
@@ -1950,12 +1955,12 @@ def narrate(log, holder=None):
     window = STORY_MEMORY_TURNS
     history = [{"role": m["role"], "content": m["content"]} for m in log[-window:]]
     stream = openai_client.chat.completions.create(
-        model="gpt-4o-mini", temperature=0.7, max_tokens=220, stream=True,
+        model="gpt-4o-mini", temperature=0.7, max_tokens=150, stream=True,  # the words limit is in the rules; this is only the backstop (non-Latin scripts use more tokens per word)
         messages=[{"role": "system", "content": build_system_prompt()}] + history)
     text = ""    # everything the model has sent (kept for the story log)
     shown = ""   # what has been typed on screen so far
     if holder is not None:
-        holder.markdown(bubble("ai", "▌"), unsafe_allow_html=True)
+        holder.markdown(bubble("ai", TYPING_HTML), unsafe_allow_html=True)
     for chunk in stream:
         piece = chunk.choices[0].delta.content if chunk.choices and chunk.choices[0].delta.content else ""
         if not piece:
@@ -2074,11 +2079,13 @@ def moderate(text, keywords=True):
     return "ok"
 
 
-def guard_input(text, where=None):
+def guard_input(text, where=None, clear=None):
     """The gate in front of the narrator: text that must not reach OpenAI stops the whole run right here."""
     verdict = moderate(text)
     if verdict == "ok":
         return
+    if clear is not None:
+        clear.empty()  # the typing dots go away before the message is shown
     if where is None:
         where = st.container()
     with where:
@@ -2091,25 +2098,222 @@ def guard_input(text, where=None):
     st.stop()
 
 
-# ================================================================ #COVER-PIC
-# WHAT: AI cover pictures for worlds (needs a Replicate key)  |  CHANGE WHEN: cover pictures
-def make_cover():
-    if not (replicate and REPLICATE_TOKEN):
-        return None
-    try:
-        out = replicate.run("black-forest-labs/flux-schnell", input={
-            "prompt": f"Cinematic widescreen concept art landscape for a text adventure titled '{engine['world_name']}', "
-                      f"genre {engine['world_genre']}. Vivid colors, atmospheric light, no text, no labels.",
-            "aspect_ratio": "16:9", "output_format": "jpg"})
-        url = str(out[0] if isinstance(out, (list, tuple)) else out)
-        return url.replace("'", "") if url.startswith("https://") else None
-    except Exception as e:
-        print("cover error:", e)
-        return None
+# =========================================================== #STORY-PICTURES
+# WHAT: finds the uploaded story pictures in assets/stories  |  CHANGE WHEN: a story picture does not show
+@st.cache_data(show_spinner=False)
+def _image_data_uri(path, mtime):
+    """The picture as a data: address. Cached, and mtime makes a replaced file show up straight away."""
+    ext = path.rsplit(".", 1)[-1].lower()
+    mime = "image/jpeg" if ext in ("jpg", "jpeg") else "image/" + ext
+    with open(path, "rb") as f:
+        return f"data:{mime};base64," + base64.b64encode(f.read()).decode()
 
+
+def story_image_uri(base):
+    """The picture for a story card, found in assets/stories. Forgiving about spelling: capitals, spaces, dashes, underscores,
+    a Mac copy marker like (1) and a doubled ending like .jpg.jpg are all ignored, so "Shadow Prince.JPG" finds shadow_prince.
+    None until a matching picture is uploaded."""
+    folder = os.path.join("assets", "stories")
+    try:
+        names = sorted(os.listdir(folder))
+    except OSError:
+        names = []
+    endings = ("jpg", "jpeg", "png", "webp")
+    want = re.sub(r"[^a-z0-9]", "", base.lower())
+    for name in names:
+        if name.startswith("."):  # hidden Mac files such as ._kade.jpg
+            continue
+        stem, _, ext = name.rpartition(".")
+        if ext.lower() not in endings:
+            continue
+        while "." in stem and stem.rpartition(".")[2].lower() in endings:  # shadow_prince.jpg.jpg
+            stem = stem.rpartition(".")[0]
+        if re.sub(r"[^a-z0-9]", "", re.sub(r"\(\d+\)", "", stem).lower()) != want:
+            continue
+        path = os.path.join(folder, name)
+        if os.path.getsize(path) > 3_000_000:
+            print(f"story picture {path} is over 3 MB and was skipped: compress it (aim for under 300 KB)")
+            continue
+        return _image_data_uri(path, os.path.getmtime(path))
+    logged = ss.setdefault("_art_logged", set())
+    if base not in logged:  # one log line per story and visit, so a missing picture is easy to diagnose
+        logged.add(base)
+        print(f"no picture found for '{base}' in assets/stories (files the server can see there: {names})")
+    return None
+
+# ========================================================== #CHAT-BACKGROUND
+# WHAT: the character's picture behind the whole chat, with only a soft fade at the bottom  |  CHANGE WHEN: the art needs to be brighter or darker
+# The old solid black box and the 75% black cover are gone: the picture is fixed behind the page and the bubbles are see-through.
+STORY_BG_CSS = """
+html body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -2; pointer-events: none; background: __ART__; }
+html body::after { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to top, rgba(6, 3, 14, 0.88) 0%, rgba(6, 3, 14, 0.55) 34%, rgba(6, 3, 14, 0.12) 62%, rgba(6, 3, 14, 0) 100%); }
+"""
+
+
+def inject_story_background():
+    """Put the open character's picture behind the page (their own colors until the picture is uploaded)."""
+    story = STORY_BY_ID.get(current_story_id())
+    if not story:
+        return
+    uri = story_image_uri(story["image"])
+    if uri:
+        art = 'url("' + uri + '") center top / cover no-repeat'
+    else:
+        top, bottom = story["colors"]
+        art = "linear-gradient(160deg, " + top + ", " + bottom + ")"
+    st.markdown("<style>" + STORY_BG_CSS.replace("__ART__", art) + "</style>", unsafe_allow_html=True)
+
+# ============================================================== #STORY-START
+# WHAT: opens Kade (or the story the visitor left off in), the first message, tap-to-send replies, switching and restarting  |  CHANGE WHEN: you change a first message, a quick reply or which story opens first
+STORY_BY_ID = {s["id"]: s for s in STORIES}
+ACTIVE_IDS = [sid for sid in ACTIVE_STORIES if sid in STORY_BY_ID] or [STORIES[0]["id"]]  # the first one opens for every new visitor
+
+# The first message of each story: (what happens, who speaks, what they say). It is written text, not generated, so it is on screen
+# the instant the page opens and costs nothing. Any language not listed here shows the English one.
+GREETING = {
+    "kade": {
+        _EN: ("Rain hammers the pines. You stagger out of the dark forest, hurt and lost, straight into Ironpine territory. A man steps from the treeline, eyes glowing gold, and goes completely still the moment your scent reaches him.",
+              "Kade", "You're bleeding. And you're on my land. Tell me your name. Now."),
+        _ES: ("La lluvia golpea los pinos. Sales del bosque oscuro entre tropiezos, con el cuerpo herido y sin rumbo, directo al territorio de Ironpine. Un hombre surge entre los árboles, con los ojos brillando como oro, y se queda inmóvil en cuanto tu olor lo alcanza.",
+              "Kade", "Estás sangrando. Y estás en mi tierra. Dime tu nombre. Ahora."),
+        _PT: ("A chuva martela os pinheiros. Você sai da floresta escura aos tropeços, com o corpo ferido e sem rumo, direto para o território de Ironpine. Um homem surge entre as árvores, com os olhos brilhando em dourado, e fica completamente imóvel assim que o seu cheiro o alcança.",
+              "Kade", "Você está sangrando. E está na minha terra. Diga seu nome. Agora."),
+        _AR: ("المطر يضرب أشجار الصنوبر. تخرج من الغابة المظلمة بخطوات متعثّرة، بجسد مجروح وبلا وجهة، إلى أرض Ironpine. يخطو رجل من بين الأشجار وعيناه تتوهجان بالذهب، ويتجمّد في مكانه لحظة يصله عبيرك.",
+              "Kade", "أنت تنزف. وأنت على أرضي. قل لي اسمك. الآن."),
+    },
+    "morrigan": {
+        _EN: ("You wake on cold stone inside a chalk circle, ravens beating at the tower window. Four strange items lie beside you. Morrigan watches from the shadows, smirking.",
+              "Morrigan", "Finally. Don't touch the dagger, darling. Everything I lent you has a price. Now, who are you?"),
+        _ES: ("Despiertas sobre piedra fría dentro de un círculo de tiza, con los cuervos golpeando la ventana de la torre. Cuatro objetos extraños yacen a tu lado. Morrigan te observa desde las sombras, sonriendo con malicia.",
+              "Morrigan", "Por fin. No toques la daga, cariño. Todo lo que te presté tiene un precio. Y ahora, ¿quién eres?"),
+        _PT: ("Você acorda sobre pedra fria dentro de um círculo de giz, com os corvos batendo na janela da torre. Quatro objetos estranhos estão ao seu lado. Morrigan observa das sombras, com um sorriso malicioso.",
+              "Morrigan", "Finalmente. Não toque na adaga, meu bem. Tudo o que eu lhe emprestei tem um preço. Agora, quem é você?"),
+        _AR: ("تستيقظ على حجر بارد داخل دائرة من الطباشير، والغربان تضرب نافذة البرج. أربعة أغراض غريبة بجانبك. تراقبك Morrigan من الظلال وهي تبتسم بخبث.",
+              "Morrigan", "أخيرًا. لا تلمس الخنجر. كل ما أعرتك إياه له ثمن. والآن، من أنت؟"),
+    },
+}
+
+# Three tap-to-send first replies under the first message, so nobody has to think of what to type.
+QUICK_REPLIES = {
+    "kade": {
+        _EN: ["I'm lost. Please help me.", "Who are you?", "I'm not afraid of you."],
+        _ES: ["Me he perdido. Ayúdame, por favor.", "¿Quién eres?", "No te tengo miedo."],
+        _PT: ["Eu me perdi. Por favor, me ajude.", "Quem é você?", "Eu não tenho medo de você."],
+        _AR: ["لقد ضللت الطريق. ساعدني من فضلك.", "من أنت؟", "أنا لا أخافك."],
+    },
+    "morrigan": {
+        _EN: ["What did you lend me?", "Where am I?", "Let me out of this circle."],
+        _ES: ["¿Qué me has prestado?", "¿Dónde estoy?", "Déjame salir de este círculo."],
+        _PT: ["O que você me emprestou?", "Onde eu estou?", "Me deixe sair deste círculo."],
+        _AR: ["ماذا أعرتِني؟", "أين أنا؟", "دعيني أخرج من هذه الدائرة."],
+    },
+}
+
+
+def story_greeting(story_id):
+    """The first message of a story in the visitor's language, ready to show."""
+    by_lang = GREETING.get(story_id, {})
+    narration, who, line = by_lang.get(lang()) or by_lang.get(_EN) or ("", STORY_BY_ID[story_id]["name"], "...")
+    return f'{narration}\n{who}: "{line}"'.strip()
+
+
+def quick_replies(story_id):
+    by_lang = QUICK_REPLIES.get(story_id, {})
+    return by_lang.get(lang()) or by_lang.get(_EN) or []
+
+
+def make_story_engine(story):
+    """A new game for one premade story: the narrator already knows who it plays."""
+    custom = {"story_id": story["id"], "persona": story["persona"], "opening": story["opening"], "player_name": ""}
+    eng = new_engine()
+    eng.update(world_id="story_" + story["id"], world_name=f"{story['name']} — {x('story_' + story['id'] + '_title')}",
+               world_genre=story["genre"], world_customization=custom)
+    eng["player_character"].update(name=x("lbl_wanderer"), backstory="")
+    if story.get("inventory"):  # Morrigan lends the player four items
+        eng["player_character"]["inventory"] = [str(item)[:40] for item in story["inventory"]][:30]
+    return eng
+
+
+def open_story(story_id, saved=None):
+    """Make one story the open one: the saved conversation when there is one, otherwise the first message."""
+    story = STORY_BY_ID[story_id]
+    eng = make_story_engine(story)
+    log = clean_log((saved or {}).get("story_log"))
+    if any(m["role"] == "assistant" for m in log):  # picking up where the visitor left off
+        eng["story_log"] = log
+        pc = (saved or {}).get("player_character")
+        if isinstance(pc, dict):
+            if isinstance(pc.get("health"), int):
+                eng["player_character"]["health"] = max(0, min(100, pc["health"]))
+            if isinstance(pc.get("inventory"), list):
+                eng["player_character"]["inventory"] = [str(i)[:40] for i in pc["inventory"]][:30]
+        ss["_scroll_bottom"] = True
+    else:  # a new story: the first message is already there
+        eng["story_log"] = [{"role": "user", "content": story["opening"], "hidden": True},
+                            {"role": "assistant", "content": story_greeting(story_id)}]
+        ss["_scroll_top"] = True
+    ss.world_engine = eng
+    track_event("ViewContent", key="view_" + story_id, content_type="product", content_id="story_" + story_id, content_name=story_id)
+
+
+def start_session_story():
+    """Runs when nothing is open yet (a new visit, a switch, a restart): the visitor lands straight inside a story, no menu."""
+    want = ss.pop("want_story", None)
+    if want not in ACTIVE_IDS:
+        link = str(st.query_params.get("story", "")).lower()  # an ad link can open a character: ?story=morrigan
+        want = link if link in ACTIVE_IDS else None
+    waiting = st.empty()
+    waiting.markdown(SKELETON_HTML, unsafe_allow_html=True)  # shimmer bubbles while the saved conversation loads
+    saved = None
+    try:
+        if want:
+            saved = load_conversation(want)
+        else:
+            latest = latest_conversation()  # a returning visitor goes back to the story they used last
+            if latest and latest.get("story_id") in ACTIVE_IDS:
+                want, saved = latest["story_id"], latest.get("engine")
+    except Exception as e:
+        print("resume error:", repr(e)[:300])
+    waiting.empty()
+    open_story(want or ACTIVE_IDS[0], saved)
+
+
+def _on_char_change():
+    chosen = ss.get("char_nav")
+    now = current_story_id()
+    if chosen is None or chosen == now:
+        ss["char_nav"] = now  # tapping the selected pill again would clear it: put it back
+        return
+    ss.pop("_confirm_restart", None)
+    ss["want_story"] = chosen
+    ss.world_engine = new_engine()  # the next run opens the other character (and their saved conversation)
+
+
+def restart_story():
+    """Erase the open conversation and begin that story again from its first message."""
+    story_id = current_story_id()
+    delete_game(story_id)
+    ss["want_story"] = story_id
+    ss.world_engine = new_engine()
+
+
+def render_top_bar():
+    """The character picker and the free-message counter, above the conversation."""
+    if len(ACTIVE_IDS) > 1:
+        ss["char_nav"] = current_story_id()
+        labels = {sid: f"{STORY_BY_ID[sid]['emoji']} {STORY_BY_ID[sid]['name']}" for sid in ACTIVE_IDS}
+        if hasattr(st, "pills"):
+            st.pills("characters", ACTIVE_IDS, selection_mode="single", format_func=lambda sid: labels[sid], key="char_nav",
+                     on_change=_on_char_change, label_visibility="collapsed")
+        else:
+            st.radio("characters", ACTIVE_IDS, format_func=lambda sid: labels[sid], horizontal=True, key="char_nav",
+                     on_change=_on_char_change, label_visibility="collapsed")
+    if not ss.is_premium and 0 < ss.guest_tokens <= FREE_ACTIONS:
+        st.markdown(f'<div class="hm-left">{esc(x("msgs_left").format(n=ss.guest_tokens))}</div>', unsafe_allow_html=True)
 
 # =============================================================== #PAGE-START
-# WHAT: runs on every click: restores login, guest id, reads the account, claims a plan pick  |  CHANGE WHEN: logged out after reload, or premium problems
+# WHAT: runs on every click: restores login, guest id, reads the account, opens the story  |  CHANGE WHEN: logged out after reload, or premium problems
 if not ss.get("user") and not ss.get("_restore_tried"):  # refresh / locked phone: log back in from the cookie
     ss["_restore_tried"] = True
     saved_rt = cookie_get("hm_rt")
@@ -2124,40 +2328,26 @@ if ss.get("user"):
     refresh_profile()  # the database answers whether they have paid; nothing below is drawn before this answer is in
 else:
     ss.is_premium = False
-if ss.get("user") and not ss.get("_save_checked"):
-    ss["_save_checked"] = True
-    if not ss.world_engine["world_name"]:
-        load_game()
 if ss.get("user") and not ss.is_premium and not ss.get("_tier_claimed"):
     ss["_tier_claimed"] = True
     picked_tier = claim_pending_tier()
     if picked_tier:
         ss.auto_checkout = picked_tier  # go straight to Stripe: no second click on the pricing page
 engine = ss.world_engine
+if not engine["world_name"]:  # nothing open yet: land straight inside a story (their last one, or Kade), no landing page
+    start_session_story()
+    engine = ss.world_engine
+    flush_events()
 char = engine["player_character"]
 
 # ================================================================== #SIDEBAR
-# WHAT: the left menu: language, save, status, music, login, settings  |  CHANGE WHEN: you change the menu
+# WHAT: the menu (closed until opened): language, status, restart, sign in / out, music, subscription, legal  |  CHANGE WHEN: you change the menu
 with st.sidebar:
     st.title(x("status_control"))
     ss["lang_switch"] = lang()
     st.selectbox("🌐", list(LOCALIZATION_VAULT), key="lang_switch", on_change=_on_lang_change,
                  label_visibility="collapsed")
     st.divider()
-    if engine["world_name"]:
-        if st.button(x("btn_abandon_timeline"), key="abandon_btn", use_container_width=True):
-            delete_game()
-            ss.world_engine = new_engine()
-            ss.world_cover_url = None
-            st.rerun()
-        if st.button(x("btn_save_timeline"), key="save_timeline_btn", use_container_width=True):
-            if not ss.get("user"):
-                st.warning(x("signin_prompt"))
-            elif save_game():  # upserts the whole story (text, character state, history) into game_saves
-                st.success(x("msg_timeline_saved"))
-            else:
-                st.error(x("generic_err"))
-        st.divider()
 
     if ss.get("user") and not ss.get("profile_ok", True):
         st.warning(x("msg_profile_unverified"))
@@ -2169,49 +2359,46 @@ with st.sidebar:
         st.error(x("pool_depleted"))
     st.divider()
 
-    frame = "🎭" if engine["world_name"] else "👤"
-    shown = x("dreamer_lbl").format(esc(char["name"] or x("lbl_wanderer")))
-    st.markdown(f'<div class="sidebar-avatar-frame">{frame}</div>', unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align:center;font-size:16px;margin:0;color:white;'>"
-                f"<span style='font-weight:800;color:#a78bfa;'>{shown}</span></p>", unsafe_allow_html=True)
+    story_name = STORY_BY_ID[current_story_id()]["name"] if current_story_id() in STORY_BY_ID else ""
+    if st.button(x("btn_restart"), key="restart_btn", use_container_width=True):
+        ss["_confirm_restart"] = True
+    if ss.get("_confirm_restart"):  # erasing a conversation always asks first
+        st.warning(x("restart_confirm").format(name=story_name))
+        if st.button(x("restart_yes"), key="restart_yes", type="primary", use_container_width=True):
+            ss.pop("_confirm_restart", None)
+            restart_story()
+            st.rerun()
     if engine["world_name"]:
         st.caption(f"❤️ {char['health']}/100 · 🎒 {len(char['inventory'])}")
     st.divider()
 
-    with st.expander(x("lbl_audio_scape"), expanded=True):
-        audio = ss.audio_state
-        if not engine["world_name"]:
-            st.caption(x("music_prompt"))
-        else:
-            c1, c2 = st.columns(2)
-            with c1:
-                if st.button(x("btn_mute_audio") if audio["playing"] else x("btn_play_audio"), key="audio_toggle", use_container_width=True):
-                    audio["playing"] = not audio["playing"]
-                    st.rerun()
-            with c2:
-                if st.button(x("btn_next_track"), key="audio_next", use_container_width=True):
-                    tracks = [p for p in PLAYLIST if os.path.exists(p)]
-                    if tracks:
-                        i = tracks.index(audio["track_url"]) + 1 if audio["track_url"] in tracks else 0
-                        audio["track_url"] = tracks[i % len(tracks)]
-                    audio["playing"] = True
-                    st.rerun()
-            if audio["playing"] and os.path.exists(audio["track_url"]):
-                st.audio(audio["track_url"], format="audio/mp3", loop=True)
-                st.caption(x("cap_audio_authorize"))
-
     if ss.get("user"):
+        st.caption(str(ss.user.email))
         if st.button(x("btn_logout_sidebar"), type="primary", key="logout_sidebar", use_container_width=True):
             do_logout()
     else:
-        st.info(x("unlimited_actions"))
-        if not engine["world_name"]:
-            if st.button(f"🔑 {x('btn_signin')} / {x('btn_signup')}", key="sidebar_go_account", use_container_width=True):
-                ss["hub_nav"] = HUB_PROFILE_IDX  # set before the hub navigation is drawn in this same run
-                ss.active_tab_idx = HUB_PROFILE_IDX
-        else:
-            st.caption(x("go_profile"))
+        with st.expander(f"🔑 {x('btn_signin')} / {x('btn_signup')}"):
+            render_auth_form("menu")
     st.divider()
+
+    with st.expander(x("lbl_audio_scape")):
+        audio = ss.audio_state
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button(x("btn_mute_audio") if audio["playing"] else x("btn_play_audio"), key="audio_toggle", use_container_width=True):
+                audio["playing"] = not audio["playing"]
+                st.rerun()
+        with c2:
+            if st.button(x("btn_next_track"), key="audio_next", use_container_width=True):
+                tracks = [p for p in PLAYLIST if os.path.exists(p)]
+                if tracks:
+                    i = tracks.index(audio["track_url"]) + 1 if audio["track_url"] in tracks else 0
+                    audio["track_url"] = tracks[i % len(tracks)]
+                audio["playing"] = True
+                st.rerun()
+        if audio["playing"] and os.path.exists(audio["track_url"]):
+            st.audio(audio["track_url"], format="audio/mp3", loop=True)
+            st.caption(x("cap_audio_authorize"))
 
     with st.expander(x("settings_control").upper()):
         if settings_nav([x("settings_sub_status_title"), x("sub_mgmt_title")]) == 0:
@@ -2224,6 +2411,7 @@ with st.sidebar:
             st.caption(x("settings_footer"))
         else:
             render_subscription_management()
+    render_legal()  # Terms, Privacy and Cookie Policy are always one tap away
 
 # ============================================================= #PAYWALL-FLOW
 # WHAT: payment-return handling, the retry screen and the paywall gate  |  CHANGE WHEN: paid but still locked, or paywall behavior
@@ -2303,14 +2491,13 @@ if ss.get("user") and not ss.get("profile_ok", True):  # could not read the acco
         st.rerun()
     st.stop()
 if not (ss.is_premium or ss.guest_tokens > 0):
-    if engine["world_name"] and engine["story_log"]:  # show the cliffhanger, then the paywall under it
-        st.title(f"🎬 {engine['world_name'].upper()}")
+    inject_story_background()  # the last messages stay on screen over the character's picture, the offer sits under them
+    try:
+        gate_box = st.container(key="chat_flow")
+    except TypeError:
+        gate_box = st.container()
+    with gate_box:
         render_story_history()
-        st.divider()
-        try:
-            st.chat_input(x("paywall_title"), disabled=True)  # locked: the box stays visible but cannot be used
-        except TypeError:
-            pass
     watch_for_pass()
     render_paywall()
     flush_events()  # a plan click (AddToCart) leaves now: the run ends a few lines below
@@ -2320,516 +2507,102 @@ if not (ss.is_premium or ss.guest_tokens > 0):
     st.stop()
 ss["_paywall_scrolled"] = False
 
-
-# =========================================================== #WORLD-SETTINGS
-# WHAT: cleans world settings for the narrator and loads world lists  |  CHANGE WHEN: world limits or lists
-def clean_config(cfg):
-    """A creator's saved world settings, made safe before they reach the narrator prompt: only known options and short texts."""
-    if not isinstance(cfg, dict):
-        return None
-
-    def txt(key, limit):
-        return str(cfg.get(key) or "").strip()[:limit]
-
-    out = {}
-    if "gravity" in cfg:  # worlds made with the old sci-fi form
-        try:
-            out["gravity"] = max(0.1, min(5.0, float(cfg.get("gravity", 1.0))))
-        except (TypeError, ValueError):
-            out["gravity"] = 1.0
-        out["atmosphere"] = txt("atmosphere", 60) or "Breathable Baseline"
-    for key, limit in (("allies", 60), ("enemies", 80), ("lore", 800), ("companion_name", 40)):
-        if txt(key, limit):
-            out[key] = txt(key, limit)
-    if cfg.get("archetype") in ARCHETYPES:
-        out["archetype"] = cfg["archetype"]
-    picked = cfg.get("traits") if isinstance(cfg.get("traits"), list) else []
-    traits = [t for t in picked if t in TRAITS][:3]
-    if traits:
-        out["traits"] = traits
-    if cfg.get("companion_role") in COMPANION_ROLES:
-        out["companion_role"] = cfg["companion_role"]
-    if cfg.get("companion_vibe") in COMPANION_VIBES:
-        out["companion_vibe"] = cfg["companion_vibe"]
-    out["romance"] = cfg["romance"] if cfg.get("romance") in ROMANCE_LEVELS else "none"
-    out["action"] = cfg["action"] if cfg.get("action") in ACTION_LEVELS else "balanced"
-    return out
-
-
-def fetch_worlds(creator_id=None, public_only=False):
-    """Worlds newest first. creator_id limits it to one person's worlds, public_only to the ones posted to the community.
-    None means the lookup failed."""
-    for cols in ("id,world_name,world_genre,config,is_public", "id,world_name,world_genre,config", "id,world_name,world_genre"):
-        try:
-            q = sb.table("worlds").select(cols).order("created_at", desc=True).limit(50)
-            if creator_id:
-                q = q.eq("creator_id", creator_id)
-            if public_only and "is_public" in cols:  # (without the column, everything was public, as before)
-                q = q.eq("is_public", True)
-            return q.execute().data or []
-        except Exception as e:
-            print("worlds error:", e)
-    return None
-
-
-# =========================================================== #STORY-PICTURES
-# WHAT: finds the uploaded story pictures in assets/stories  |  CHANGE WHEN: a story picture does not show
-@st.cache_data(show_spinner=False)
-def _image_data_uri(path, mtime):
-    """The picture as a data: address. Cached, and mtime makes a replaced file show up straight away."""
-    ext = path.rsplit(".", 1)[-1].lower()
-    mime = "image/jpeg" if ext in ("jpg", "jpeg") else "image/" + ext
-    with open(path, "rb") as f:
-        return f"data:{mime};base64," + base64.b64encode(f.read()).decode()
-
-
-def story_image_uri(base):
-    """The picture for a story card, found in assets/stories. Forgiving about spelling: capitals, spaces, dashes, underscores,
-    a Mac copy marker like (1) and a doubled ending like .jpg.jpg are all ignored, so "Shadow Prince.JPG" finds shadow_prince.
-    None until a matching picture is uploaded."""
-    folder = os.path.join("assets", "stories")
-    try:
-        names = sorted(os.listdir(folder))
-    except OSError:
-        names = []
-    endings = ("jpg", "jpeg", "png", "webp")
-    want = re.sub(r"[^a-z0-9]", "", base.lower())
-    for name in names:
-        if name.startswith("."):  # hidden Mac files such as ._kade.jpg
-            continue
-        stem, _, ext = name.rpartition(".")
-        if ext.lower() not in endings:
-            continue
-        while "." in stem and stem.rpartition(".")[2].lower() in endings:  # shadow_prince.jpg.jpg
-            stem = stem.rpartition(".")[0]
-        if re.sub(r"[^a-z0-9]", "", re.sub(r"\(\d+\)", "", stem).lower()) != want:
-            continue
-        path = os.path.join(folder, name)
-        if os.path.getsize(path) > 3_000_000:
-            print(f"story picture {path} is over 3 MB and was skipped: compress it (aim for under 300 KB)")
-            continue
-        return _image_data_uri(path, os.path.getmtime(path))
-    logged = ss.setdefault("_art_logged", set())
-    if base not in logged:  # one log line per story and visit, so a missing picture is easy to diagnose
-        logged.add(base)
-        print(f"no picture found for '{base}' in assets/stories (files the server can see there: {names})")
-    return None
-
-
-def stories_art_css():
-    """One rule per card: the uploaded picture as the background, or the card's own gradient and emoji until there is one."""
-    rules = []
-    for s in STORIES:
-        uri = story_image_uri(s["image"])
-        art = ('url("' + uri + '") center top / cover no-repeat, ') if uri else ""
-        top, bottom = s["colors"]
-        sel = ".st-key-story_" + s["id"]
-        rules.append(sel + " { background: linear-gradient(to top, rgba(8,4,16,.95) 0%, rgba(8,4,16,.60) 40%, rgba(8,4,16,0) 72%), "
-                     + art + "linear-gradient(160deg, " + top + ", " + bottom + "); }")
-        if not uri:
-            rules.append(sel + '::before { content: "' + s["emoji"] + '"; position: absolute; top: 26px; left: 0; right: 0; '
-                         "text-align: center; font-size: 88px; opacity: .85; }")
-    return "\n".join(rules)
-
-
-# ============================================================== #STORY-CARDS
-# WHAT: entering a story and the card layout  |  CHANGE WHEN: story start or card problems
-def enter_story(story):
-    """Start a premade story: the narrator is already in character and the first scene is waiting."""
-    player = str(ss.get("your_name") or "").strip()[:30]
-    if player:
-        guard_input(player)  # a name goes to the narrator, so it passes the safety gate first
-    hero = story["mode"] == "hero"
-    custom = {"story_id": story["id"], "persona": story["persona"], "opening": story["opening"],
-              "player_name": "" if hero else player}
-    enter_world("story_" + story["id"], f"{story['name']} — {x('story_' + story['id'] + '_title')}", story["genre"],
-                story["name"] if hero else (player or x("lbl_wanderer")), "", custom, story.get("inventory"))
-
-
-def render_story_card(story):
-    sid = story["id"]
-    try:
-        box = st.container(key="story_" + sid)  # its CSS class is st-key-story_<id>: that is where the picture goes
-    except TypeError:  # older Streamlit has no container keys: a plain, unstyled card
-        box = st.container()
-    with box:
-        st.markdown(
-            f'<div class="hm-story-name">{esc(story["emoji"])} {esc(story["name"].upper())}</div>'
-            f'<div class="hm-story-title">{esc(x("story_" + sid + "_title"))}</div>'
-            f'<div class="hm-story-tag">{esc(x(story["tag_key"]))}</div>'
-            f'<div class="hm-story-hook">{esc(x("story_" + sid + "_hook"))}</div>', unsafe_allow_html=True)
-        if st.button(x("btn_enter_story"), key="enter_" + sid, use_container_width=True):
-            enter_story(story)
-
-
-# ========================================================== #CHAT-BACKGROUND
-# WHAT: the story picture behind the chat, under the 75% dark mask  |  CHANGE WHEN: the chat background look
-STORY_BG_CSS = """
-/* layer 1: the picture, fixed behind the whole app */
-html body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -2; pointer-events: none;
-  background: url("__URI__") center top / cover no-repeat; }
-/* layer 2: the dark mask over the picture, so white text stays readable on any picture */
-html body::after { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; pointer-events: none;
-  background: rgba(0, 0, 0, 0.75); }
-/* Streamlit's own full-page containers must be see-through, or they would cover the two layers above */
-html body .stApp, html body [data-testid="stApp"], html body [data-testid="stAppViewContainer"], html body [data-testid="stMain"],
-html body [data-testid="stMainBlockContainer"], html body [data-testid="stHeader"], html body [data-testid="stBottom"],
-html body [data-testid="stBottomBlockContainer"] { background: transparent !important; background-image: none !important; }
-/* a dark glass panel behind the conversation, with crisp white text on top */
-html body .st-key-chat_glass { background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 14px; }
-html body .glass-bubble-ai, html body .glass-bubble-user { color: #ffffff !important; backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9); }
-html body [data-testid="stMain"] h1 { color: #ffffff !important; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9); }
-"""
-
-
-def story_background_uri():
-    """The picture of the premade story being played (None for other worlds, or until the picture is uploaded)."""
-    story_id = (engine.get("world_customization") or {}).get("story_id")
-    story = next((s for s in STORIES if s["id"] == story_id), None)
-    return story_image_uri(story["image"]) if story else None
-
-
-# ============================================================== #TAB-STORIES
-# WHAT: the Stories screen  |  CHANGE WHEN: you change that screen
-def tab_stories():
-    st.markdown("<style>" + stories_art_css() + "</style>", unsafe_allow_html=True)
-    st.markdown(f'<div class="hm-stories-title">{esc(x("stories_title"))}</div>'
-                f'<div class="hm-stories-sub">{esc(x("stories_sub"))}</div>', unsafe_allow_html=True)
-    st.text_input(x("lbl_your_name"), key="your_name", max_chars=30)
-    for start in range(0, len(STORIES), 3):  # three cards per row; a short last row is centred
-        cards = STORIES[start:start + 3]
-        cols = st.columns([1, 1, 1] if len(cards) == 3 else [0.5, 1, 1, 0.5])
-        for col, story in zip(cols if len(cards) == 3 else cols[1:3], cards):
-            with col:
-                render_story_card(story)
-
-
-# ============================================================== #TAB-EXPLORE
-# WHAT: Explore: community worlds and genre scenarios  |  CHANGE WHEN: you change that screen
-def tab_explore():
-    defaults = ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"]
-    got = list(x("sub_genres_lbls") or defaults)
-    labels = [got[i] if i < len(got) else defaults[i] for i in range(6)]
-    st.markdown(x("sub_genre_title"))
-    tabs = st.tabs([x("tab_community")] + labels)
-    with tabs[0]:
-        st.markdown(f"### {x('community_timeline_title')}")
-        rows = fetch_worlds(public_only=True)
-        if rows is None:
-            st.error(x("generic_err"))
-            rows = []
-        if not rows:
-            st.info(x("msg_no_worlds"))
-        cols = st.columns(2)
-        for i, w in enumerate(rows):
-            with cols[i % 2]:
-                card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + genre_label(w["world_genre"]))
-                if st.button(x("btn_join_world"), key=f"pub_{w['id']}", use_container_width=True):
-                    # the creator's world rules (gravity, atmosphere, factions, lore) travel with the world
-                    enter_world(w["id"], w["world_name"], w["world_genre"], x("lbl_wanderer"),
-                                "A traveler dropped into an unfamiliar alternate reality.",
-                                clean_config(w.get("config")))
-    for idx, (tab, (genre, icon, items)) in enumerate(zip(tabs[1:6], PRESETS)):
-        with tab:
-            st.markdown(f"### {labels[idx]}")
-            cols = st.columns(2)
-            for i, (pid, cname, story) in enumerate(items):
-                with cols[i % 2]:
-                    name = x(f"preset_{pid}_name")
-                    card(icon, name, x(f"preset_{pid}_bio"))
-                    if st.button(x("btn_launch_scenario"), key=f"preset_{pid}", use_container_width=True):
-                        enter_world(f"pre_{pid}", name, genre, cname, story)
-    with tabs[6]:
-        st.info(x("msg_coming_soon"))
-
-
-# ============================================================ #WORLD-ACTIONS
-# WHAT: post a world to the community, or delete it  |  CHANGE WHEN: posting or deleting problems
-def post_world(world_id):
-    """Make one of my worlds public. The database is checked afterwards, so True means it really is live."""
-    try:
-        sb.table("worlds").update({"is_public": True}).eq("id", world_id).eq("creator_id", ss.user.id).execute()
-        rows = sb.table("worlds").select("is_public").eq("id", world_id).limit(1).execute().data or []
-    except Exception as e:
-        print("post world error:", e)
-        return False
-    return bool(rows and rows[0].get("is_public"))
-
-
-def delete_world(world_id):
-    """Erase one world for good. It is a single row, so it leaves My Creations and the public community together.
-    The database is checked afterwards, so True means it is really gone."""
-    try:
-        sb.table("worlds").delete().eq("id", world_id).eq("creator_id", ss.user.id).execute()
-        left = sb.table("worlds").select("id").eq("id", world_id).limit(1).execute().data or []
-    except Exception as e:
-        print("delete world error:", e)
-        return False
-    if left:
-        print("delete world: the row is still there. Is there a DELETE policy on worlds? Run worlds_sync.sql")
-        return False
-    if ss.world_engine.get("world_id") == world_id:  # they are playing (or have saved) this world: close it as well
-        ss.world_engine = new_engine()
-        ss.world_cover_url = None
-        delete_game()
-    return True
-
-
-# ================================================================= #TAB-MINE
-# WHAT: My Creations  |  CHANGE WHEN: you change that screen
-def tab_mine():
-    st.markdown("### " + x("hdr_my_universes"))
-    if not ss.get("user"):
-        st.warning(x("signin_prompt"))
-        return
-    rows = fetch_worlds(ss.user.id)
-    if rows is None:
-        st.error(x("generic_err"))
-        return
-    if not rows:
-        st.info(x("msg_no_my_worlds"))
-    for w in rows:
-        card("🪐", w["world_name"], x("lbl_genre_prefix") + " " + genre_label(w["world_genre"]))
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            if st.button(x("btn_start_timeline"), key=f"resume_{w['id']}", use_container_width=True):
-                cfg = w.get("config") if isinstance(w.get("config"), dict) else {}
-                enter_world(w["id"], w["world_name"], w["world_genre"],
-                            str(cfg.get("char_name") or x("lbl_wanderer"))[:40],
-                            str(cfg.get("char_backstory") or "A traveler stepping back into their alternate reality.")[:800],
-                            clean_config(cfg))
-        with c2:
-            if w.get("is_public"):
-                st.caption(x("msg_world_public"))
-            else:
-                if st.button(x("btn_post_community"), key=f"post_{w['id']}", use_container_width=True,
-                             disabled=not ss.is_premium, help=None if ss.is_premium else x("msg_post_premium_required")):
-                    if post_world(w["id"]):
-                        ss["_post_ok"] = True
-                        st.rerun()
-                    st.error(x("generic_err"))
-                if not ss.is_premium:  # a tooltip needs hovering: phones get the same words as plain text
-                    st.caption(x("msg_post_premium_required"))
-        with c3:
-            if st.button(x("btn_delete_world"), key=f"purge_{w['id']}", type="primary", use_container_width=True):
-                if delete_world(w["id"]):
-                    ss["_delete_ok"] = True
-                    st.rerun()
-                st.error(x("generic_err"))
-        st.divider()
-
-
-# =============================================================== #TAB-CREATE
-# WHAT: the Create-a-World form  |  CHANGE WHEN: you change the form
-def tab_create():
-    st.markdown(f"### {x('cr_title')}")
-    st.write(x("cr_subtitle"))
-
-    st.markdown(f"**{x('cr_sec_world')}**")
-    w_name = st.text_input(x("lbl_name"), placeholder=x("ph_cr_name"), max_chars=60, key="cr_name")
-    w_genre = st.selectbox(x("lbl_genre"), CREATE_GENRES, format_func=genre_label)
-    lore = st.text_area(x("lbl_world_desc"), placeholder=x("ph_cr_world"), height=80, max_chars=300, key="cr_lore")
-
-    st.markdown(f"**{x('cr_sec_hero')}**")
-    c_name = st.text_input(x("lbl_char_name"), placeholder=x("ph_cr_char"), max_chars=40, key="cr_char")
-    archetype = st.selectbox(x("lbl_archetype"), ARCHETYPES, format_func=lambda c: x("arch_" + c))
-    traits = st.multiselect(x("lbl_traits"), TRAITS, max_selections=3, format_func=lambda c: x("trait_" + c))
-    c_backstory = st.text_area(x("lbl_backstory"), placeholder=x("ph_cr_story"), height=80, max_chars=300, key="cr_story")
-
-    st.markdown(f"**{x('cr_sec_cast')}**")
-    comp_name = st.text_input(x("lbl_companion_name"), placeholder=x("ph_cr_companion"), max_chars=40, key="cr_comp_name")
-    left, right = st.columns(2)
-    with left:
-        comp_role = st.selectbox(x("lbl_companion_role"), COMPANION_ROLES, format_func=lambda c: x("role_" + c))
-    with right:
-        comp_vibe = st.selectbox(x("lbl_companion_vibe"), COMPANION_VIBES, format_func=lambda c: x("vibe_" + c))
-    enemies = st.text_input(x("lbl_threat"), placeholder=x("ph_cr_threat"), max_chars=80, key="cr_enemies")
-
-    st.markdown(f"**{x('cr_sec_tone')}**")
-    left, right = st.columns(2)
-    with left:
-        romance = st.select_slider(x("lbl_romance_level"), options=ROMANCE_LEVELS, value="slow",
-                                   format_func=lambda c: x("romance_" + c))
-    with right:
-        action = st.select_slider(x("lbl_action_level"), options=ACTION_LEVELS, value="balanced",
-                                  format_func=lambda c: x("action_" + c))
-    st.divider()
-    if st.button(x("cr_start"), type="primary", use_container_width=True):
-        if not (w_name.strip() and c_name.strip()):
-            st.warning(x("msg_fill_fields"))
-            return
-        guard_input(" ".join([w_name, c_name, c_backstory, lore, comp_name, enemies]))  # worlds are shared with other players
-        custom = clean_config({"lore": lore, "enemies": enemies, "archetype": archetype, "traits": traits,
-                               "companion_name": comp_name, "companion_role": comp_role, "companion_vibe": comp_vibe,
-                               "romance": romance, "action": action})
-        if ss.get("user"):
-            row = {"creator_id": ss.user.id, "world_name": w_name.strip(), "world_genre": str(w_genre).strip(),
-                   "config": {**custom, "char_name": c_name.strip(), "char_backstory": c_backstory.strip()}}
-            try:
-                sb.table("worlds").insert(row).execute()
-            except Exception as e:
-                print("create error:", e)
-                row.pop("config")  # older table without the config column: still save the world itself
-                try:
-                    sb.table("worlds").insert(row).execute()
-                except Exception as e2:
-                    print("create error (retry):", e2)
-                    st.error(x("generic_err"))
-                    return
-        enter_world("user_custom", w_name.strip(), w_genre, c_name.strip(), c_backstory.strip(), custom)
-
-
-# ============================================================== #TAB-AVATARS
-# WHAT: the locked Avatars message  |  CHANGE WHEN: you reopen avatars
-def tab_avatars():
-    """The avatar vault is closed for now: one sci-fi notice fills the whole section."""
-    st.markdown(f'<div class="hm-locked">{esc(x("msg_avatar_locked"))}</div>', unsafe_allow_html=True)
-
-
-# ============================================================== #TAB-PROFILE
-# WHAT: the Account section  |  CHANGE WHEN: you change that screen
-def tab_profile():
-    st.markdown(x("auth_title"))
-    st.write(x("auth_subtitle"))
-    st.divider()
-    if ss.get("user"):
-        st.success(f"{x('profile_sync_lbl')} `{ss.user.email}`")
-        billing_button("profile")
-        if st.button(x("btn_logout_main"), type="primary", key="logout_main", use_container_width=True):
-            do_logout()
-    else:
-        render_auth_form("profile")
-        render_legal()
-
-
-# ================================================================== #HUB-NAV
-# WHAT: the row of section buttons and the hub page  |  CHANGE WHEN: you add a hub section
-def _on_nav_change():
-    chosen = ss.get("hub_nav")
-    if chosen is None:  # tapping the selected pill again would clear it: put it back
-        ss["hub_nav"] = ss.active_tab_idx
-    else:
-        ss.active_tab_idx = chosen
-
-
-def render_nav(labels):
-    """Section picker. Its choice lives in session state on the server, so a rerun can never reset it."""
-    options = list(range(len(labels)))
-    if hasattr(st, "pills"):
-        choice = st.pills("nav", options, selection_mode="single", format_func=lambda i: labels[i],
-                          key="hub_nav", on_change=_on_nav_change, label_visibility="collapsed")
-    else:
-        choice = st.radio("nav", options, format_func=lambda i: labels[i], horizontal=True,
-                          key="hub_nav", on_change=_on_nav_change, label_visibility="collapsed")
-    if choice is None:
-        choice = ss.active_tab_idx
-    ss.active_tab_idx = choice
-    return choice
-
-
-def render_hub():
-    st.title(x("hub_title"))
-    st.write(x("hub_subtitle"))
-    for key in CREATE_FORM_KEYS:  # keep half-typed world details while another section is open
-        if key in ss:
-            ss[key] = ss[key]
-    labels = [x("tab_stories"), x("tab_explore"), x("tab_my_creations"), x("tab_create"), x("tab_avatars"), x("tab_profile")]
-    panels = (tab_stories, tab_explore, tab_mine, tab_create, tab_avatars, tab_profile)
-    panels[render_nav(labels)]()
-
-
 # ===================================================================== #GAME
-# WHAT: the chat loop: opening scene, safety gate, free actions, narrator reply  |  CHANGE WHEN: chat flow problems
+# WHAT: the chat screen: picture, picker, history, quick replies, the message box, the narrator's reply  |  CHANGE WHEN: chat flow problems
+def _resend(text):
+    ss["_quick_send"] = text  # the Try again button sends the same message once more
+
+
 def render_game():
-    st.title(f"🎬 {engine['world_name'].upper()}")
+    inject_story_background()
+    render_top_bar()
+    if ss.pop("_scroll_top", False):  # a new story: the first message is in view
+        run_in_page("setTimeout(function () { window.parent.hmScrollChat('top'); }, 150);")
+    elif ss.pop("_scroll_bottom", False):  # a saved or just-answered conversation: the newest message is in view
+        run_in_page("setTimeout(function () { window.parent.hmScrollChat('bottom'); }, 250);")
     if ss.pop("_blur_after", False):  # the page was just redrawn after a reply: make sure the keyboard stays closed
         run_in_page("setTimeout(function () { window.parent.hmBlur(); }, 150);")
-    story_art = story_background_uri()  # a premade story shows its own picture behind the chat
-    chat_art = story_art or ss.get("world_cover_url")  # other worlds may have an AI cover picture instead
-    if chat_art:
-        st.markdown("<style>" + STORY_BG_CSS.replace("__URI__", str(chat_art).replace('"', "")) + "</style>", unsafe_allow_html=True)
 
-    if not engine["story_log"]:  # opening scene
-        if not story_art and not ss.get("world_cover_url"):
-            with st.spinner("⏳"):
-                ss.world_cover_url = make_cover()
-        opening_prompt = ((engine.get("world_customization") or {}).get("opening")
-                          or "Begin the story now: open with the first dramatic moment of this world.")
-        holder = st.empty()
-        try:
-            opening = narrate([{"role": "user", "content": opening_prompt}], holder)
-        except Exception as e:
-            print("opening error:", e)
-            holder.error(x("narrator_down"))
-            st.stop()
-        apply_tags(opening)
-        engine["story_log"] += [{"role": "user", "content": opening_prompt, "hidden": True},
-                                {"role": "assistant", "content": opening}]
-        save_game()
-        st.rerun()
+    story = STORY_BY_ID.get(current_story_id()) or {}
+    action = st.chat_input(x("chat_ph_named").format(name=story.get("name", "")))  # answered by typing...
+    typed = (action or "").strip()[:500]
+    text = typed or str(ss.pop("_quick_send", "") or "").strip()[:500]  # ...or by tapping a quick reply
 
     try:
-        box = st.container(key="chat_glass")  # its CSS class is st-key-chat_glass: the dark glass panel
+        box = st.container(key="chat_flow")  # its CSS class is st-key-chat_flow: no box, the picture shows through
     except TypeError:  # older Streamlit has no container keys: a plain container
         box = st.container()
     with box:
         render_story_history()
-
-    action = st.chat_input(x("chat_placeholder"))
-    if not action:
-        return
-    text = action.strip()[:500]
+        if not text and not any(m["role"] == "user" and not m.get("hidden") for m in engine["story_log"]):
+            try:
+                chips = st.container(key="hm_chips")
+            except TypeError:
+                chips = st.container()
+            with chips:
+                for i, reply in enumerate(quick_replies(current_story_id())):
+                    if st.button(reply, key=f"qr_{i}", use_container_width=True):
+                        ss["_quick_send"] = reply
+                        st.rerun()
     if not text:
         return
     run_in_page("window.parent.hmBlur();")  # phones: close the keyboard right away
 
-    guard_input(text, box)  # nothing below runs, and nothing is sent to OpenAI, unless this passes
-
-    if not ss.is_premium:  # spend one free action (counted server-side for accounts)
-        if ss.get("user"):
-            try:
-                left = sb.rpc("consume_token").execute().data
-            except Exception as e:
-                print("token error:", e)
-                st.error(x("generic_err"))
-                st.stop()
-            if left is None or int(left) < 0:
-                st.rerun()
-            ss.guest_tokens = int(left)
-        elif not spend_guest_action():  # this browser has nothing left: the paywall (with sign-up) takes over
-            st.rerun()
-        if ss.guest_tokens <= 0:  # that was the last free action: lock the chat box right now
-            run_in_page("window.parent.hmLockChat();")
-
-    engine["story_log"].append({"role": "user", "content": text})
-    with box:
+    with box:  # the visitor's message and the typing dots show at once, before anything slow happens
         st.markdown(bubble("user", esc(text).replace("\n", "<br>")), unsafe_allow_html=True)
         holder = st.empty()
-        try:
-            reply = narrate(engine["story_log"], holder)
-        except Exception as e:
-            print("openai error:", e)
-            engine["story_log"].pop()
-            holder.error(x("narrator_down"))
-            st.stop()
+        holder.markdown(bubble("ai", TYPING_HTML), unsafe_allow_html=True)
+    guard_input(text, box, clear=holder)  # nothing below runs, and nothing is sent to OpenAI, unless this passes
+    if not ss.is_premium and ss.guest_tokens <= 0:  # no free messages left (for example spent in another tab)
+        st.rerun()
+    track_event("FirstMessage", key="first_message")  # the visitor really started talking
+
+    engine["story_log"].append({"role": "user", "content": text})
+    try:
+        reply = narrate(engine["story_log"], holder)
+    except Exception as e:
+        print("openai error:", repr(e)[:300])
+        engine["story_log"].pop()  # the message was not answered, so it is not kept and no free message is used
+        holder.empty()
+        with box:
+            st.error(x("err_conn"))
+            st.button(x("btn_retry_msg"), key="retry_msg", on_click=_resend, args=(text,))
+        st.stop()
     if MODERATE_REPLIES and moderate(reply, keywords=False) == "block":  # the narrator's own text is checked as well
         engine["story_log"].pop()  # forget the player's message that led here
         holder.error(x("msg_policy_block"))
         st.stop()
+
+    if not ss.is_premium:  # a free message is used only now that the answer exists
+        if ss.get("user"):
+            try:
+                left = sb.rpc("consume_token").execute().data
+            except Exception as e:
+                print("token error:", repr(e)[:300])
+                left = max(0, ss.guest_tokens - 1)  # the counter could not be reached: count inside this visit
+            if left is None or int(left) < 0:  # nothing was left after all
+                engine["story_log"].pop()
+                st.rerun()
+            ss.guest_tokens = int(left)
+        elif not spend_guest_action():
+            engine["story_log"].pop()
+            st.rerun()
     apply_tags(reply)
     engine["story_log"].append({"role": "assistant", "content": reply})
     save_game()
     ss["_blur_after"] = True
+    ss["_scroll_bottom"] = True
     st.rerun()
 
-
 # ==================================================================== #START
-# WHAT: the last lines: show the game or the hub  |  CHANGE WHEN: navigation problems
-if engine["world_name"]:
+# WHAT: the last lines: show the chat; if anything unexpected breaks, show a friendly message and a Retry button instead of a crash  |  CHANGE WHEN: navigation problems
+try:
     render_game()
-else:
-    render_hub()
+except Exception as e:
+    if type(e).__module__.startswith("streamlit"):  # st.stop() and st.rerun() travel as exceptions: let them through
+        raise
+    print("render_game crashed:", repr(e)[:400])
+    st.error(x("generic_err"))
+    st.button(x("btn_retry"), key="crash_retry")  # pressing any button redraws the page
 
 # ---- END OF web_app.py: if you can see this line, your paste is complete ----
