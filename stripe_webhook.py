@@ -9,15 +9,16 @@ Environment variables (this service only; the service key must never be put in t
   STRIPE_WEBHOOK_SECRET   the signing secret (whsec_...) of THIS endpoint in Stripe, test or live to match
   SUPABASE_URL            your project URL
   SUPABASE_SERVICE_KEY    the service_role / secret key
-  STRIPE_SECRET_KEY       sk_test_... / sk_live_... (needed by Cancel Subscription and by sync; webhooks work without it)
+  STRIPE_SECRET_KEY       sk_test_... / sk_live_... (needed by the Cancel Subscription button; webhooks work without it)
 
-Plans (all three give the same access; only the billing period differs)
-  weekly    Weekly Premium Pass            $10 / week
-  explorer  6-Month Explorer Pass          $50 / 6 months
-  legend    1-Year Ultimate Legend Pass    $100 / year
+Plans (all give the same access; only the billing period differs)
+  weekly     Weekly Pass                 $5 / week
+  monthly    Monthly Premium Pass        $15 / month
+  quarterly  3-Month Pass                $30 / 3 months
+  (sixmonth $60 / 6 months, explorer $50 / 6 months and legend $100 / year are old plans, still recognised)
 
 What it writes (table public.profiles)
-  is_premium, tier (weekly / explorer / legend), subscription_status ("active", "past_due", "cancelled", ...),
+  is_premium, tier (weekly / monthly / quarterly), subscription_status ("active", "past_due", "cancelled", ...),
   stripe_customer_id, stripe_subscription_id and premium_until (the end of the period that has been paid for).
 
 Endpoints
@@ -54,10 +55,10 @@ db = create_client(_require("SUPABASE_URL"), _require("SUPABASE_SERVICE_KEY"))
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "").strip() or None
 app = FastAPI()
 
-# monthly / sixmonth are the current plans; explorer / legend are the old plans, kept so older subscriptions are still understood
-PLANS = ("weekly", "monthly", "sixmonth", "explorer", "legend")
-PLAN_BY_INTERVAL = {("week", 1): "weekly", ("month", 1): "monthly", ("month", 6): "sixmonth", ("year", 1): "legend"}
-PLAN_BY_CENTS = {1000: "weekly", 3000: "monthly", 6000: "sixmonth", 5000: "explorer", 10000: "legend"}
+# weekly ($5 / week), monthly ($15 / month) and quarterly ($30 / 3 months) are the current plans; sixmonth, explorer and legend are old plans, kept so older subscriptions are still understood
+PLANS = ("weekly", "monthly", "quarterly", "sixmonth", "explorer", "legend")
+PLAN_BY_INTERVAL = {("week", 1): "weekly", ("month", 1): "monthly", ("month", 3): "quarterly", ("month", 6): "sixmonth", ("year", 1): "legend"}
+PLAN_BY_CENTS = {500: "weekly", 1500: "monthly", 3000: "quarterly", 6000: "sixmonth", 5000: "explorer", 10000: "legend"}  # (only a fallback: the billing interval above is read first)
 
 # past_due keeps access while Stripe retries the card (grace period).
 # Access is revoked when Stripe gives up (unpaid / canceled / incomplete_expired).

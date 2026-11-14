@@ -9,7 +9,7 @@ HOW TO FIND THINGS
   Press Cmd+F, type the tag, and press Enter twice (the first match is the list below).
   A block runs from its banner down to the next banner. To change one block, replace only those lines.
   Needs these files beside it: localization.py, styles.py, stories.py.
-  One-time setup in Supabase: run conversations.sql, then images_and_community.sql. In Render add SUPABASE_SERVICE_KEY (see the setup steps).
+  One-time setup in Supabase: run conversations.sql, images_and_community.sql, then update_nov14.sql. In Render add SUPABASE_SERVICE_KEY (see the setup steps).
 
 THE BLOCKS, IN ORDER
   #IMPORTS              the libraries the app uses, plus your stories.py texts
@@ -25,13 +25,13 @@ THE BLOCKS, IN ORDER
   #GENRES               the genre list and its order in the Create form
   #CSS-MOBILE           phone rules: no zoom, 16px input text, stacked columns
   #CSS-VISUAL-NOVEL     the chat look (art behind it, see-through bubbles, readable input box) + the rules added only while chatting
-  #CSS-POLISH           the fantasy heading font on titles, menus, buttons and names; 2-per-row card grid; press feel; community cards; the romance bar
+  #CSS-POLISH           the fantasy heading font, 2-per-row card grid, plans, tour and welcome styles, the bond bar animation, a bigger menu button
   #CSS-LOCKED           the glowing box of the locked Avatars section
   #CSS-STORIES          the glowing Stories button and the look of the story cards
   #CSS-ARABIC           right-to-left rules for Arabic, including the sidebar
   #FONTS                the heading font (Cinzel): your own file in assets/fonts, or Google Fonts
   #PAGE-SCRIPTS         small JavaScript: stops zoom, forces dark mode, closes the phone keyboard, scrolls the chat
-  #PLANS                the one plan: $15 a month
+  #PLANS                the three plans: $5 a week, $15 a month, $30 for 3 months (name, price, billing period)
   #MUSIC                the list of music files in the assets folder
   #SCENARIOS            the ready-made scenarios shown in Explore
   #TEXT-FALLBACK        English text used when a translation is missing
@@ -55,12 +55,12 @@ THE BLOCKS, IN ORDER
   #LEGAL-DOCS           the Terms of Use, Privacy Policy and Cookie Policy texts + your company details
   #LEGAL-TEXT           the box that shows them (three tabs)
   #AUTH-FORM            the sign-in / sign-up form
-  #PAYWALL-SCREEN       the $15 a month offer after the free messages
+  #PAYWALL-SCREEN       the plans pop-up: guests sign up first, then everyone picks a plan
   #CHAT-HELPERS         the world card, entering a world, the chat bubble, the typing dots
   #NARRATOR-PROMPT      the narrator's rulebook (short replies) and the story details it is given
   #NARRATOR-STREAM      calls OpenAI and types the reply out; applies loot and health tags
   #SAFETY-GATE          blocks unsafe messages before they reach OpenAI
-  #ROMANCE              Romance Tracking: the switch, the bond bar, how the bond moves (only at critical moments)
+  #ROMANCE              Romance Tracking: the switch, the animated bond bar, how the bond moves (only at critical moments)
   #PERSONAS             the player's own characters (subscribers): list, save, the one being played, what the narrator is told
   #ART                  making pictures with OpenAI: checks, server-side credit limits, storing them in Supabase
   #COMMUNITY            the community wall: feed, likes, reports, publishing, admin moderation
@@ -69,9 +69,10 @@ THE BLOCKS, IN ORDER
   #STORY-START          opens Kade (or the story left off in), first messages, quick replies, the Menu button, switching, restarting
   #WORLD-SETTINGS       cleans world settings for the narrator and loads world lists
   #STORY-CARDS          entering a story from the full app and the card layout
+  #ONBOARDING           the welcome pop-up, guided tour, intro card, chat tip and TikTok browser hint
   #PAGE-START           runs on every click: login, guest id, account, opens the story
   #SIDEBAR              the side menu: full app / back to story, language, status, restart, sign in / out, music, subscription, legal
-  #PAYWALL-FLOW         payment-return handling, the retry screen and the paywall gate
+  #PAYWALL-FLOW         payment-return handling, the retry screen and the paywall gate (opens the plans pop-up)
   #TAB-STORIES          the full app: the Stories screen, two cards per row on a phone
   #TAB-EXPLORE          the full app: the community wall (characters and worlds) and the genre scenarios
   #WORLD-ACTIONS        delete a world
@@ -79,7 +80,7 @@ THE BLOCKS, IN ORDER
   #TAB-CREATE           the full app: the Create-a-World form (with an optional painted background)
   #TAB-AVATARS          the full app: My Characters (create, paint a portrait, play as, publish)
   #TAB-PROFILE          the full app: Account (free messages left, plan, sign in / out, admin moderation)
-  #HUB-NAV              the full app: the row of section buttons and the way back into the story
+  #HUB-NAV              the full app: section buttons, the tour and intro card, the way back into the story
   #GAME                 the chat screen: Menu button, picker, history, quick replies, message box, reply
   #START                the last lines: chat or full app, with a friendly crash handler
 """
@@ -524,6 +525,61 @@ html body .hm-bond-delta { font-weight: 800; animation: hm-rise 0.6s var(--hm-ea
 html body .hm-bond-delta.up { color: #86efac; }
 html body .hm-bond-delta.down { color: #fca5a5; }
 html body .st-key-romance_toggle label p { font-family: var(--hm-display) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-size: 0.82rem; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
+
+/* ===== Nov 14: pop-ups, plans, tour, discovery, bigger menu buttons, animated bond bar ===== */
+html body div[role="dialog"] { background: #140d26 !important; border: 1px solid rgba(255, 255, 255, 0.16) !important; border-radius: 22px !important; max-height: 92vh; overflow-y: auto; max-width: min(96vw, 620px); }
+html body div[role="dialog"] * { overflow-wrap: anywhere; }
+html body .hm-wel-title { font-family: var(--hm-display); font-size: 1.45rem; font-weight: 800; color: #ffffff; line-height: 1.25; text-align: center; }
+html body .hm-wel-body { color: #e9d5ff; text-align: center; font-size: 1.02rem; margin: 0.4rem 0 0.3rem 0; }
+html body .hm-wel-sub { color: #cbd5e1; text-align: center; font-size: 0.88rem; margin-bottom: 0.6rem; }
+html body .hm-plan { border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; padding: 0.8rem 0.9rem; margin: 0.7rem 0 0.2rem 0; background: rgba(255, 255, 255, 0.05); position: relative; }
+html body .hm-plan-hot { border-color: #f472b6; background: linear-gradient(135deg, rgba(244, 114, 182, 0.16), rgba(124, 58, 237, 0.16)); box-shadow: 0 0 22px rgba(244, 114, 182, 0.28); }
+html body .hm-plan-badge { position: absolute; top: -0.68rem; right: 0.8rem; background: linear-gradient(135deg, #f472b6, #7c3aed); color: #ffffff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.6rem; border-radius: 99px; }
+html body .hm-plan-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+html body .hm-plan-name { font-family: var(--hm-display); font-weight: 800; color: #ffffff; }
+html body .hm-plan-price { font-size: 1.5rem; font-weight: 800; color: #ffffff; }
+html body .hm-plan-price small { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; }
+html body .hm-plan-tag { color: #f5d0fe; font-size: 0.9rem; margin: 0.3rem 0 0.15rem 0; }
+html body .hm-plan-bill { color: #94a3b8; font-size: 0.76rem; }
+html body .hm-benefits { background: rgba(255, 255, 255, 0.06); border-radius: 16px; padding: 0.6rem 0.9rem; margin: 0.4rem 0 0.6rem 0; }
+html body .hm-benefits-title { font-weight: 800; color: #ffffff; font-size: 0.9rem; margin-bottom: 0.2rem; }
+html body .hm-benefits ul { margin: 0; padding-left: 1.1rem; color: #e2e8f0; font-size: 0.88rem; line-height: 1.45; }
+html body .st-key-hm_tour, html body .st-key-hm_intro { position: sticky; top: 0.4rem; z-index: 30; background: rgba(20, 13, 38, 0.96); border: 1px solid rgba(244, 114, 182, 0.55); border-radius: 18px; padding: 0.7rem 0.8rem 0.5rem 0.8rem; box-shadow: 0 10px 34px rgba(0, 0, 0, 0.55); margin-bottom: 0.6rem; }
+html body .hm-tour-step { font-size: 0.72rem; color: #f9a8d4; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+html body .hm-tour-title { font-family: var(--hm-display); font-size: 1.12rem; font-weight: 800; color: #ffffff; margin: 0.1rem 0; }
+html body .hm-tour-text { color: #e2e8f0; font-size: 0.9rem; line-height: 1.45; }
+html body .hm-tour-dots { display: flex; gap: 0.35rem; margin: 0.5rem 0 0.2rem 0; }
+html body .hm-tour-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.25); display: inline-block; }
+html body .hm-tour-dots i.on { background: #f472b6; box-shadow: 0 0 8px #f472b6; }
+@keyframes hm-spot { 0%, 100% { box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.9), 0 0 18px 6px rgba(244, 114, 182, 0.55); } 50% { box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.95), 0 0 30px 12px rgba(168, 85, 247, 0.6); } }
+html body .hm-spot { animation: hm-spot 1.4s ease-in-out infinite; border-radius: 14px; position: relative; z-index: 5; }
+html body .hm-disc { margin: 0.2rem 0 0.6rem 0; }
+html body .hm-disc-title { font-weight: 800; color: #ffffff; font-size: 0.9rem; }
+html body .hm-disc-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.3rem; }
+html body .hm-disc-chip { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 99px; padding: 0.2rem 0.7rem; font-size: 0.82rem; color: #f5d0fe; }
+html body .st-key-hm_tip, html body .st-key-hm_ttb { flex-direction: row !important; align-items: flex-start; gap: 0.4rem; background: rgba(12, 8, 24, 0.72); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 14px; padding: 0.45rem 0.6rem; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); margin-bottom: 0.4rem; }
+html body .st-key-hm_tip > div:first-child, html body .st-key-hm_ttb > div:first-child { flex: 1 1 auto; min-width: 0; }
+html body .st-key-hm_tip > div:last-child, html body .st-key-hm_ttb > div:last-child { flex: 0 0 auto; width: auto !important; }
+html body .st-key-hm_tip button, html body .st-key-hm_ttb button { min-height: 32px !important; padding: 0 0.7rem !important; }
+html body .hm-tip { color: #f5d0fe; font-size: 0.85rem; line-height: 1.4; }
+html body .hm-ttb-title { font-weight: 800; color: #ffffff; font-size: 0.9rem; }
+html body .hm-ttb-body { color: #e2e8f0; font-size: 0.8rem; line-height: 1.4; margin: 0.15rem 0; }
+html body .hm-ttb-how { color: #f9a8d4; font-size: 0.8rem; font-weight: 700; }
+html body .st-key-open_hub button { padding: 0.5rem 1.2rem !important; font-size: 0.95rem !important; min-height: 44px !important; border-color: rgba(244, 114, 182, 0.75) !important; box-shadow: 0 0 16px rgba(244, 114, 182, 0.35); }
+html body div[data-testid="stSidebarCollapsedControl"], html body button[data-testid="stExpandSidebarButton"] { z-index: 1002 !important; }
+html body div[data-testid="stSidebarCollapsedControl"] button, html body button[data-testid="stExpandSidebarButton"] { min-width: 48px !important; min-height: 48px !important; background: linear-gradient(135deg, #f472b6, #7c3aed) !important;
+  border: 0 !important; border-radius: 14px !important; box-shadow: 0 6px 22px rgba(124, 58, 237, 0.6) !important; color: #ffffff !important; }
+html body div[data-testid="stSidebarCollapsedControl"] svg, html body button[data-testid="stExpandSidebarButton"] svg { width: 26px !important; height: 26px !important; color: #ffffff !important; fill: #ffffff !important; }
+@keyframes hm-fill { from { width: var(--from); } to { width: var(--to); } }
+html body .hm-bond-fill.hm-anim { animation: hm-fill 1.3s var(--hm-ease) both; }
+html body .hm-bond-track { position: relative; overflow: visible; }
+@keyframes hm-float { 0% { opacity: 0; transform: translateY(6px) scale(0.6); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px) scale(1.15); } }
+html body .hm-heart { position: absolute; top: -6px; color: #fb7185; font-size: 0.9rem; animation: hm-float 1.7s ease-out both; pointer-events: none; }
+html body .hm-heart.h1 { left: 30%; }
+html body .hm-heart.h2 { left: 55%; animation-delay: 0.25s; }
+html body .hm-heart.h3 { left: 78%; animation-delay: 0.5s; }
+html body .hm-bond-badge { position: absolute; top: calc(100% + 6px); right: 0.8rem; white-space: nowrap; font-weight: 800; color: #ffffff; background: linear-gradient(135deg, #f472b6, #7c3aed); border-radius: 99px; padding: 0.15rem 0.7rem; font-size: 0.74rem; animation: hm-rise 0.6s var(--hm-ease) both; box-shadow: 0 6px 18px rgba(124, 58, 237, 0.5); }
+@media (prefers-reduced-motion: reduce) { html body .hm-spot, html body .hm-heart, html body .hm-bond-fill.hm-anim { animation: none; } }
 """
 
 # =============================================================== #CSS-LOCKED
@@ -716,19 +772,28 @@ HELPERS_CODE = """(function () {
 })();""".replace("__VIEWPORT__", VIEWPORT_CONTENT)
 
 # ==================================================================== #PLANS
-# WHAT: the one plan: name, price and billing period  |  CHANGE WHEN: you change the price (also change the dollar amount in the texts if you write it by hand)
-# One flat plan. The key is what the Stripe webhook stores in profiles.tier. The price below is the only place the amount is set:
-# the checkout, the paywall, the Terms and the events sent to TikTok and Meta all read it from here.
+# WHAT: the three plans: name, price and billing period  |  CHANGE WHEN: you change a price (the checkout, the paywall, the Terms and the pixel events all read it from here)
+# The key is what the Stripe webhook stores in profiles.tier. stripe_webhook.py must know the same three keys (weekly, monthly, quarterly).
+# All three plans give exactly the same access: only the length of the billing period differs.
 TIERS = {
+    "weekly": {"product": "Haymaker Weekly Pass", "cents": 500, "interval": "week", "interval_count": 1,
+               "name_key": "plan2_weekly_name", "desc_key": "plan2_weekly_tag", "per_key": "per2_week", "emoji": "💫", "color": "#f9a8d4"},
     "monthly": {"product": "Haymaker Monthly Premium Pass", "cents": 1500, "interval": "month", "interval_count": 1,
-                "name_key": "plan_monthly_name", "desc_key": "plan_monthly_desc", "per_key": "per_month", "emoji": "🌙", "color": "#c084fc"},
+                "name_key": "plan2_monthly_name", "desc_key": "plan2_monthly_tag", "per_key": "per2_month", "emoji": "🌙", "color": "#c084fc"},
+    "quarterly": {"product": "Haymaker 3-Month Pass", "cents": 3000, "interval": "month", "interval_count": 3,
+                  "name_key": "plan2_quarterly_name", "desc_key": "plan2_quarterly_tag", "per_key": "per2_quarter", "emoji": "💎", "color": "#e879f9"},
 }
-TIER_ORDER = ("monthly",)
+TIER_ORDER = ("weekly", "monthly", "quarterly")
+
+
+def plan_price(key):
+    """One plan's price as shown to people, for example $15."""
+    return f"${TIERS[key]['cents'] / 100:g}"
 
 
 def price_label():
-    """The monthly price as shown to people, for example $15."""
-    return f"${TIERS['monthly']['cents'] / 100:g}"
+    """The monthly price (kept for older texts)."""
+    return plan_price("monthly")
 
 # ==================================================================== #MUSIC
 # WHAT: the list of music files in the assets folder  |  CHANGE WHEN: you add or remove tracks
@@ -894,7 +959,7 @@ NEW_TEXT = {
         _PT: "Problema de conexão. Sua mensagem não foi enviada. Tente de novo.",
         _AR: "مشكلة في الاتصال. لم يتم إرسال رسالتك. حاول مرة أخرى."},
     "chat_ph_named": {_EN: "Reply to {name}…", _ES: "Responde a {name}…", _PT: "Responda a {name}…", _AR: "ردّ على {name}…"},
-    "btn_menu": {_EN: "☰ Menu", _ES: "☰ Menú", _PT: "☰ Menu", _AR: "☰ القائمة"},
+    "btn_menu": {_EN: "🏠 Explore Haymaker", _ES: "🏠 Explora Haymaker", _PT: "🏠 Explore o Haymaker", _AR: "🏠 استكشف هايميكر"},
     "btn_menu_full": {_EN: "🏠 All stories & settings", _ES: "🏠 Todas las historias y ajustes", _PT: "🏠 Todas as histórias e ajustes", _AR: "🏠 كل القصص والإعدادات"},
     "btn_continue": {_EN: "▶ Back to {name}", _ES: "▶ Volver con {name}", _PT: "▶ Voltar para {name}", _AR: "▶ العودة إلى {name}"},
     "romance_toggle": {_EN: '💗 Romance', _ES: '💗 Romance', _PT: '💗 Romance', _AR: '💗 الرومانسية'},
@@ -906,8 +971,8 @@ NEW_TEXT = {
     "bond_s4": {_EN: 'Devoted', _ES: 'Devoción', _PT: 'Devotos', _AR: 'وفاء'},
     "av_title": {_EN: 'My Characters'},
     "av_sub": {_EN: 'Create your own character, paint a portrait with AI, and play as them in any story.'},
-    "av_locked": {_EN: 'Creating characters and pictures is part of the {price}/month plan.'},
-    "av_unlock_btn": {_EN: 'Unlock for {price}/month'},
+    "av_locked": {_EN: "Creating characters and pictures is part of every paid plan, pookie 💕"},
+    "av_unlock_btn": {_EN: "💎 See plans"},
     "av_new": {_EN: '➕ Create a character'},
     "av_name": {_EN: 'Name'},
     "av_look": {_EN: 'Looks (hair, eyes, build, clothes)'},
@@ -932,7 +997,7 @@ NEW_TEXT = {
     "art_credits": {_EN: 'Pictures left: {day} today · {week} this week', _ES: 'Imágenes disponibles: {day} hoy · {week} esta semana', _PT: 'Imagens restantes: {day} hoje · {week} nesta semana', _AR: 'الصور المتبقية: {day} اليوم · {week} هذا الأسبوع'},
     "art_painting": {_EN: 'Painting… this can take up to a minute.', _ES: 'Pintando… puede tardar hasta un minuto.', _PT: 'Pintando… pode levar até um minuto.', _AR: 'جارٍ الرسم… قد يستغرق حتى دقيقة.'},
     "art_off": {_EN: 'Picture creation is switched off right now.'},
-    "art_err_subscribe": {_EN: 'Pictures are part of the monthly plan.'},
+    "art_err_subscribe": {_EN: "Pictures are part of every paid plan."},
     "art_err_daily": {_EN: "You've used today's picture credits. Try again tomorrow.", _ES: 'Ya usaste los créditos de imagen de hoy. Inténtalo mañana.', _PT: 'Você usou os créditos de imagem de hoje. Tente amanhã.', _AR: 'استخدمتَ رصيد صور اليوم. حاول غدًا.'},
     "art_err_weekly": {_EN: "You've used this week's picture credits."},
     "art_err_busy": {_EN: 'Picture creation is busy right now. Please try again later.'},
@@ -959,12 +1024,80 @@ NEW_TEXT = {
     "comm_report_thanks": {_EN: "Thanks. We'll review it.", _ES: 'Gracias. Lo revisaremos.', _PT: 'Obrigado. Vamos analisar.', _AR: 'شكرًا. سنراجعه.'},
     "comm_signin_like": {_EN: 'Sign in to like.'},
     "comm_signin_report": {_EN: 'Sign in to report.'},
-    "pub_subscribe": {_EN: 'Publishing is part of the monthly plan.'},
+    "pub_subscribe": {_EN: "Publishing is part of every paid plan."},
     "pub_removed": {_EN: "This was removed after reports and can't be published."},
     "mod_title": {_EN: 'Moderation (admin)'},
     "mod_empty": {_EN: 'Nothing flagged.'},
     "mod_restore": {_EN: 'Restore'},
     "mod_remove": {_EN: 'Keep removed'},
+    "plan2_weekly_name": {_EN: 'Weekly Pass'},
+    "plan2_monthly_name": {_EN: 'Monthly Premium Pass'},
+    "plan2_quarterly_name": {_EN: '3-Month Pass'},
+    "per2_week": {_EN: '/ week'},
+    "per2_month": {_EN: '/ month'},
+    "per2_quarter": {_EN: '/ 3 months'},
+    "period2_weekly": {_EN: 'week'},
+    "period2_monthly": {_EN: 'month'},
+    "period2_quarterly": {_EN: '3 months'},
+    "plan2_weekly_tag": {_EN: 'Just testing the waters, pookie? 😘 Your adventure starts here!'},
+    "plan2_monthly_tag": {_EN: 'Stay a little longer, pookie! 💕 More time for romance, adventures, and your own little world!'},
+    "plan2_quarterly_tag": {_EN: "Oh, you're staying staying? 🥹💖 Three whole months of adventures together!"},
+    "pw_title_guest": {_EN: "Let's make it official, pookie 💕"},
+    "pw_sub_guest": {_EN: 'Make your free account first, so your chat and progress stay saved. Then you pick a plan.'},
+    "pw_title_plans": {_EN: 'Pick your plan, pookie 💕'},
+    "pw_all_include": {_EN: 'Every plan includes:'},
+    "pw_b_chat": {_EN: 'Unlimited messages with every character and story'},
+    "pw_b_chars": {_EN: 'Create up to {n} characters of your own and play as them'},
+    "pw_b_pics": {_EN: 'AI portraits for your characters and painted backgrounds for your worlds (up to {day} a day, {week} a week)'},
+    "pw_b_pics_plain": {_EN: 'AI portraits for your characters and painted backgrounds for your worlds (daily and weekly limits apply)'},
+    "pw_b_share": {_EN: 'Publish your characters and worlds on the community wall'},
+    "pw_free_line": {_EN: 'Free for everyone: {n} messages, every story, building worlds, the romance bond and saved chats.'},
+    "pw_billing_line": {_EN: '{price} every {period}, renews automatically'},
+    "pw_billing_note": {_EN: 'Renews automatically at the price shown until you cancel. Cancel any time in Account → Manage subscription; you keep access until the period you paid for ends. Payments by Stripe, in US dollars. 18+ only.'},
+    "pw_choose": {_EN: 'Choose {name}'},
+    "pw_popular": {_EN: '⭐ Most popular'},
+    "pw_value": {_EN: '💎 Best value · {per} a month'},
+    "pw_terms": {_EN: 'Terms & Privacy'},
+    "pw_see_plans": {_EN: '💎 See plans'},
+    "gate2_title": {_EN: "That's your free messages, pookie 💕"},
+    "gate2_body": {_EN: 'Pick a plan to keep going. Your chat and progress are saved.'},
+    "wel_title": {_EN: 'Heyyyy pookie! 🥹💕'},
+    "wel_body": {_EN: 'Welcome to Haymaker! Ready to make a little magic?'},
+    "wel_sub": {_EN: 'Swoony AI companions who talk back, plus adventures you steer. {n} free messages, no card needed.'},
+    "wel_tour": {_EN: '💕 Show me around!'},
+    "wel_go": {_EN: '{emoji} Take me to {name}!'},
+    "wel_skip": {_EN: '✨ Skip for now!'},
+    "tour_progress": {_EN: '{n} of {total}'},
+    "tour_next": {_EN: 'Next ▶'},
+    "tour_back": {_EN: '◀ Back'},
+    "tour_skip": {_EN: 'Skip tour'},
+    "tour_done": {_EN: '💕 Take me to {name}!'},
+    "tour_replay": {_EN: '💕 Replay the tour'},
+    "tour1_title": {_EN: 'Make your own character 💕'},
+    "tour1_text": {_EN: 'Pick their look, personality and story, then we paint their portrait ✨ and you play as them in any story. Part of every paid plan, pookie!'},
+    "tour2_title": {_EN: 'Stories & characters 🐺'},
+    "tour2_text": {_EN: 'Every story comes with someone who remembers you. Pick one here, or switch between Kade and Morrigan at the top of any chat.'},
+    "tour3_title": {_EN: 'Build a whole world 🌍'},
+    "tour3_text": {_EN: 'Dream up your own universe, then have a background painted for it ✨ (paid plans). Share it on the community wall or keep it private.'},
+    "tour4_title": {_EN: 'Your map 🧭'},
+    "tour4_text": {_EN: 'These tabs are everything: stories, the community wall, your creations, your characters and your account. Tap 🏠 Explore Haymaker any time. Your chat waits for you!'},
+    "intro_title": {_EN: 'Start here, pookie ✨'},
+    "intro_text": {_EN: 'Create your own character: choose their look and story, we paint their portrait, and you play as them anywhere. Free: your first messages, every story and building worlds. Paid plans: unlimited chat, characters and AI pictures.'},
+    "intro_btn": {_EN: '✨ Create my character'},
+    "intro_close": {_EN: 'Got it'},
+    "tip_text": {_EN: 'Type below to talk, pookie 💬 Tap 🏠 Explore Haymaker to find stories, characters and worlds.'},
+    "tip_close": {_EN: '✕'},
+    "disc_title": {_EN: "What's inside, pookie 💕"},
+    "disc_stories": {_EN: '📖 Stories'},
+    "disc_chars": {_EN: '🎭 Characters'},
+    "disc_worlds": {_EN: '🌍 Worlds'},
+    "disc_pics": {_EN: '🖼️ AI pictures'},
+    "ttb_title": {_EN: "Pookie, I don't wanna lose you! 🥹💕"},
+    "ttb_body": {_EN: "For the best experience, open Haymaker in your phone's browser! It's optional: everything works here too, and your chats are saved either way."},
+    "ttb_ios": {_EN: 'Tap the ••• or share icon in the corner, then choose Open in Safari.'},
+    "ttb_android": {_EN: 'Tap the ••• (or ⋮) icon in the corner, then choose Open in browser.'},
+    "ttb_generic": {_EN: 'Tap the ••• or share icon in the corner, then choose Open in your browser.'},
+    "stage_up": {_EN: '✨ New stage: {stage}!'},
 }
 for _key, _by_lang in NEW_TEXT.items():  # hand them to the text lookup x(): any language without a line shows the English one
     for _lang_name, _text in _by_lang.items():
@@ -1571,6 +1704,7 @@ def finish_signup(banner=True):
     ss.pop("_checkout_inflight", None)
     ss.pop("auto_checkout", None)
     ss["_tier_claimed"] = False  # the pass picked in this visit (if any) is claimed exactly once, on the next run
+    ss["_open_plans"] = True  # signed up at the paywall: the plans pop-up opens next, nothing to click
     if banner:
         ss["_just_signed_up"] = True
         track_event("CompleteRegistration", key="signup", content_name="account")
@@ -1774,7 +1908,7 @@ Haymaker is an interactive story game. A narrator powered by artificial intellig
 New visitors get a limited number of free story actions so they can try the Service. We count them to stop abuse. You may not get around the limit, for example by creating several accounts, clearing cookies to reset the count, or using automated tools.
 
 ## 5. Premium passes and payments
-- **Plan.** We offer one paid plan: {plans}. It gives unlimited messages with every character. The price is in US dollars.
+- **Plans.** We offer these paid plans: {plans}. Every plan gives unlimited messages with every character, plus the character and picture features described in the app. The plans differ only in how long each billing period lasts. Prices are in US dollars.
 - **Payment.** Payments are handled by Stripe. When you buy a pass you authorize us, through Stripe, to charge your payment method now and at every renewal.
 - **Automatic renewal.** Each pass renews automatically at the end of its billing period, at the price shown to you at the time, until you cancel.
 - **Cancelling.** You can cancel at any time from Subscription Management in the app's menu, or through the billing portal. Cancelling stops future renewals. You keep full access until the end of the period you already paid for.
@@ -2215,30 +2349,83 @@ def render_auth_form(prefix):
                     st.success(x("msg_recovery_sent"))  # same message either way (no account probing)
 
 # =========================================================== #PAYWALL-SCREEN
-# WHAT: the gate after the free messages: the $15 a month offer, sign-up for visitors, Terms  |  CHANGE WHEN: you change how the paywall looks or reads
+# WHAT: the plans pop-up: guests make a free account first, then everyone picks a plan; plus the plain on-page fallback  |  CHANGE WHEN: you change how the paywall looks or reads
+# The benefits listed are only what the app really enforces. The picture limits are read from the database (public_limits), so they can never be out of date.
+def pic_limits():
+    """(pictures per day, per week) from the database, or None if they cannot be read (the text then says "limits apply")."""
+    if "_pic_limits" not in ss:
+        value = None
+        try:
+            data = sb.rpc("public_limits").execute().data
+            if isinstance(data, dict) and data.get("daily") and data.get("weekly"):
+                value = (int(data["daily"]), int(data["weekly"]))
+        except Exception as e:
+            print("public_limits error (is update_nov14.sql installed?):", repr(e)[:200])
+        ss["_pic_limits"] = value
+    return ss["_pic_limits"]
+
+
+def plan_benefits():
+    limits = pic_limits()
+    pics = x("pw_b_pics").format(day=limits[0], week=limits[1]) if limits else x("pw_b_pics_plain")
+    return [x("pw_b_chat"), x("pw_b_chars").format(n=MAX_PERSONAS), pics, x("pw_b_share")]
+
+
+def render_plan_card(key):
+    tier = TIERS[key]
+    price = plan_price(key)
+    badge = x("pw_popular") if key == "monthly" else (x("pw_value").format(per=f"${tier['cents'] / 300:g}") if key == "quarterly" else "")
+    st.markdown(
+        f'<div class="hm-plan{" hm-plan-hot" if key == "monthly" else ""}">'
+        + (f'<div class="hm-plan-badge">{esc(badge)}</div>' if badge else "")
+        + f'<div class="hm-plan-top"><span class="hm-plan-name">{tier["emoji"]} {esc(x(tier["name_key"]))}</span>'
+        f'<span class="hm-plan-price">{esc(price)}<small> {esc(x(tier["per_key"]))}</small></span></div>'
+        f'<div class="hm-plan-tag">{esc(x(tier["desc_key"]))}</div>'
+        f'<div class="hm-plan-bill">{esc(x("pw_billing_line").format(price=price, period=x("period2_" + key)))}</div></div>', unsafe_allow_html=True)
+    if st.button(x("pw_choose").format(name=x(tier["name_key"])), key=f"plan_{key}", type="primary" if key == "monthly" else "secondary", use_container_width=True):
+        track_plan_event("AddToCart", key)  # the plan was picked
+        ss.auto_checkout = key  # straight to Stripe on the next run (the pop-up closes)
+        st.rerun()
+
+
+def render_plan_picker():
+    """What the pop-up holds. Guests: sign up first (the plans follow automatically). Signed in: the plans."""
+    if not ss.get("user"):
+        st.markdown(f'<div class="hm-wel-title">{esc(x("pw_title_guest"))}</div><div class="hm-wel-body">{esc(x("pw_sub_guest"))}</div>', unsafe_allow_html=True)
+        render_auth_form("paywall")
+    else:
+        st.markdown(f'<div class="hm-wel-title">{esc(x("pw_title_plans"))}</div>', unsafe_allow_html=True)
+        items = "".join(f"<li>{esc(b)}</li>" for b in plan_benefits())
+        st.markdown(f'<div class="hm-benefits"><div class="hm-benefits-title">{esc(x("pw_all_include"))}</div><ul>{items}</ul></div>', unsafe_allow_html=True)
+        for key in TIER_ORDER:
+            render_plan_card(key)
+        st.caption(x("pw_free_line").format(n=FREE_ACTIONS))
+        st.caption(x("pw_billing_note"))
+    with st.expander(x("pw_terms")):
+        render_legal()
+
+
+if hasattr(st, "dialog"):
+    def _plans_body():
+        track_event("PaywallView", key="paywall_view")
+        render_plan_picker()
+
+    paywall_dialog = st.dialog("💎 Haymaker", width="large")(_plans_body)  # a centered pop-up with its own close button
+else:  # an older Streamlit has no pop-ups: the same content, drawn on the page
+    def paywall_dialog():
+        render_paywall()
+
+
 def render_paywall():
+    """The plans drawn on the page itself (the fallback, and what older Streamlit versions use)."""
     try:
         area = st.container(key="hm_paywall")  # becomes the CSS class st-key-hm_paywall (used by the scroll helper)
-    except TypeError:  # older Streamlit has no container keys: the anchor below is used instead
+    except TypeError:
         area = st.container()
     with area:
         st.markdown('<div id="hm-paywall"></div>', unsafe_allow_html=True)
-        price = price_label()
-        st.markdown(f'<div class="hm-gate"><div class="hm-gate-title">{esc(x("gate_title"))}</div>'
-                    f'<div class="hm-gate-body">{esc(x("gate_body").format(price=price))}</div></div>', unsafe_allow_html=True)
-        logged_in = bool(ss.get("user"))
-        if not logged_in:  # a free account comes first, so the pass is tied to someone
-            st.info(x("paywall_login"))
-            render_auth_form("paywall")
-        if st.button(x("gate_btn").format(price=price), key="buy_monthly", type="primary", use_container_width=True):
-            track_plan_event("AddToCart", "monthly")  # the plan was picked
-            if logged_in:
-                ss.auto_checkout = "monthly"  # straight to Stripe: one tap, no second button
-                st.rerun()
-            ss.pending_tier = "monthly"  # kept in this session only, so signing up carries straight on to checkout
-            st.success(x("gate_pick"))
-        st.caption(x("gate_note"))
-        render_legal()
+        track_event("PaywallView", key="paywall_view")
+        render_plan_picker()
 
 # ============================================================= #CHAT-HELPERS
 # WHAT: the chat bubble, the dialogue styling, the typing dots  |  CHANGE WHEN: bubble looks
@@ -2507,12 +2694,13 @@ def guard_input(text, where=None, clear=None):
     st.stop()
 
 # ================================================================== #ROMANCE
-# WHAT: the optional Romance Tracking switch and the bond bar: how the bond starts, how it changes, how it is shown  |  CHANGE WHEN: you change the stages or how fast the bond moves
+# WHAT: the optional Romance Tracking switch and the bond bar: how the bond starts, how it changes, how it is shown  |  CHANGE WHEN: you change the stages, the pacing or the animation
 # The bond (0 to 100) is NOT counted in messages. The narrator moves it only at critical moments (a meaningful choice, behavior that matches or clashes
 # with the character, a heavy story turn) by adding a [BOND: +N] / [BOND: -N] tag. The switch only shows or hides the bar and tells the narrator to keep
 # the romance going or to keep it platonic: the saved bond and the story are never erased by it.
 BOND_STAGES = (0, 15, 35, 55, 75)  # a stage begins at this bond value
 BOND_STAGE_EN = ("Strangers", "Curious", "Drawn", "Close", "Devoted")
+BOND_MAX_STEP = 8  # the most one moment can move the bond (before the pacing rules below)
 
 
 def default_romance(story=None, config=None):
@@ -2525,7 +2713,7 @@ def default_romance(story=None, config=None):
 
 
 def clean_romance(raw, fallback):
-    """A saved romance state, made safe (a true/false switch and a bond from 0 to 100)."""
+    """A saved romance state, made safe (a true/false switch and a bond from 0 to 100). Saved bonds are always kept as they are."""
     if not isinstance(raw, dict):
         return dict(fallback)
     on = raw.get("on") if isinstance(raw.get("on"), bool) else fallback["on"]
@@ -2558,39 +2746,62 @@ def romance_prompt(eng):
         return ("ROMANCE TRACKING IS OFF. Keep this story free of romance: no flirting and no romantic tension (trust, rivalry and friendship are fine). "
                 "Do not add any [BOND] tag.\n")
     partner = romance_partner(eng)
-    return (f"ROMANCE TRACKING IS ON. The player's romantic bond with {partner} is {r['bond']}/100 (stage: {BOND_STAGE_EN[bond_stage(r['bond'])]}). "
-            "The bond changes ONLY at critical moments: a meaningful choice the player makes, behavior that clearly matches or clashes with who "
-            f"{partner} is, or a heavy story turn with real emotional stakes. Never change it just because messages were exchanged: most replies must NOT "
-            "change it (about 1 reply in 5). When it does change, add exactly one tag at the very bottom of the reply: [BOND: +N] or [BOND: -N], N from 1 to 10 "
-            "(1-3 for small moments, 4-7 for important ones, 8-10 only for pivotal ones). Let the current stage color how they speak and act toward the player. "
+    text = (f"ROMANCE TRACKING IS ON. The player's romantic bond with {partner} is {r['bond']}/100 (stage: {BOND_STAGE_EN[bond_stage(r['bond'])]}). "
+            "The bond changes ONLY at critical romantic or emotional moments: a meaningful choice the player makes, behavior that clearly matches or clashes with who "
+            f"{partner} is (protecting, trusting, opening up, flirting, betrayal, a heavy confession), or a story turn with real emotional stakes. "
+            "Plain small talk, travel and fights that are not about the relationship never change it. Never change it just because messages were exchanged: most replies "
+            "must NOT change it (about 1 reply in 5). When it does change, add exactly one tag at the very bottom of the reply: [BOND: +N] or [BOND: -N], N from 1 to 8 "
+            "(1-2 for a sweet or small moment, 3-5 for a meaningful one, 6-8 only for a pivotal one). Let the current stage color how they speak and act toward the player. "
             "Romance stays non-explicit.\n")
+    up = ss.pop("_stage_up", None)  # the bond just crossed into a new stage: the character reacts to it, in their own voice
+    if up is not None:
+        text += (f"The bond with {partner} has just reached a new stage ({BOND_STAGE_EN[up]}). In this reply let {partner} react to that shift in a brief, "
+                 "natural moment, in their own voice.\n")
+    return text
 
 
 def apply_bond_tags(text):
-    """Apply the narrator's [BOND: +N] tag (only while tracking is on). Returns how much the bond really moved."""
+    """Apply the narrator's [BOND: +N] tag (only while tracking is on). Returns how much the bond really moved.
+    Pacing: gains are smaller near the top, and a gain that comes right after another change is halved, so the bond cannot spike."""
     r = engine.get("romance")
     found = re.findall(r"\[BOND:\s*([+-]\d{1,2})\]", text or "")
+    ss["_since_bond"] = int(ss.get("_since_bond", 9)) + 1  # replies since the bond last moved
     if not (r and r.get("on") and found):
         return 0
-    delta = max(-10, min(10, int(found[0])))
-    if delta > 0:  # harder to climb near the top: the same moment moves a close bond less than a new one
-        delta = max(1, round(delta * (1.25 - r["bond"] / 100)))
-    new = max(0, min(100, r["bond"] + delta))
-    change = new - r["bond"]
-    r["bond"] = new
+    delta = max(-BOND_MAX_STEP, min(BOND_MAX_STEP, int(found[0])))
+    if delta > 0:
+        delta = max(1, round(delta * (1.25 - r["bond"] / 100)))  # harder to climb near the top
+        if ss["_since_bond"] <= 2:
+            delta = max(1, delta // 2)
+    old = r["bond"]
+    new = max(0, min(100, old + delta))
+    change = new - old
+    if change:
+        r["bond"] = new
+        ss["_since_bond"] = 0
+        ss["_bond_from"] = old  # where the bar starts when it animates
+        if bond_stage(new) > bond_stage(old):
+            ss["_stage_up"] = bond_stage(new)  # next reply: the character reacts
+            ss["_stage_badge"] = bond_stage(new)  # now: the bar celebrates
     return change
 
 
 def render_bond_bar(delta=0):
     """The status bar at the top of the chat. Hidden (not erased) when tracking is off."""
     r = engine.get("romance") or {}
+    frm = ss.pop("_bond_from", None) if delta else None
+    badge = ss.pop("_stage_badge", None) if delta else None
     if not r.get("on"):
         return
+    bond = int(r["bond"])
     chip = f'<span class="hm-bond-delta {"up" if delta > 0 else "down"}">{delta:+d}</span>' if delta else ""
+    hearts = '<span class="hm-heart h1">♥</span><span class="hm-heart h2">♥</span><span class="hm-heart h3">♥</span>' if delta > 0 else ""
+    star = f'<span class="hm-bond-badge">{esc(x("stage_up").format(stage=bond_stage_name(bond)))}</span>' if badge is not None else ""
+    anim = f' hm-anim" style="width:{bond}%;--from:{int(frm)}%;--to:{bond}%' if frm is not None else f'" style="width:{bond}%'
     st.markdown('<style>html body .st-key-hm_top { margin-top: 3rem !important; }</style>'
                 f'<div class="hm-bond"><span class="hm-bond-name">💗 {esc(romance_partner(engine))}</span>'
-                f'<span class="hm-bond-stage">{esc(bond_stage_name(r["bond"]))}</span>'
-                f'<div class="hm-bond-track"><div class="hm-bond-fill" style="width:{int(r["bond"])}%"></div></div>{chip}</div>', unsafe_allow_html=True)
+                f'<span class="hm-bond-stage">{esc(bond_stage_name(bond))}</span>'
+                f'<div class="hm-bond-track"><div class="hm-bond-fill{anim}"></div>{hearts}</div>{chip}{star}</div>', unsafe_allow_html=True)
 
 
 def _on_romance_toggle():
@@ -3115,7 +3326,7 @@ def start_session_story():
     """Runs when nothing is open yet (a new visit, a switch, a restart): the visitor lands straight inside a story, no menu."""
     want = ss.pop("want_story", None)
     if want not in STORY_BY_ID:
-        link = str(st.query_params.get("story", "")).lower()  # an ad link can open a character: ?story=morrigan
+        link = str(st.query_params.get("character") or st.query_params.get("story") or "").lower()  # an ad link can open a character: ?story=morrigan
         want = link if link in STORY_BY_ID else None
     waiting = st.empty()
     waiting.markdown(SKELETON_HTML, unsafe_allow_html=True)  # shimmer bubbles while the saved conversation loads
@@ -3283,6 +3494,250 @@ def render_story_card(story):
         if st.button(x("btn_enter_story"), key="enter_" + sid, use_container_width=True):
             enter_story(story)
 
+# ============================================================== #ONBOARDING
+# WHAT: the welcome pop-up for first-time visitors, the guided tour, the intro card, the chat tip, the TikTok browser hint  |  CHANGE WHEN: you change any of those
+# Turn the welcome off without a code change: set WELCOME_ENABLED=0 in Render. Test links: ?welcome=1 forces it, ?welcome=0 hides it.
+WELCOME_ENABLED = os.getenv("WELCOME_ENABLED", "1").strip() != "0"
+WELCOME_EMOJI = {"kade": "🐺", "morrigan": "💜"}
+# the guided tour: each step opens one section of the full app, glows its tab and explains it (tab = which section; sel = what to glow)
+TOUR_STEPS = (
+    {"tab": 4, "label": "tab_avatars", "sel": None, "title": "tour1_title", "text": "tour1_text"},
+    {"tab": 0, "label": "tab_stories", "sel": ".st-key-hm_cards", "title": "tour2_title", "text": "tour2_text"},
+    {"tab": 3, "label": "tab_create", "sel": None, "title": "tour3_title", "text": "tour3_text"},
+    {"tab": 0, "label": None, "sel": ".st-key-hub_nav", "title": "tour4_title", "text": "tour4_text"},
+)
+
+
+def spotlight(selector=None, label=None):
+    """Make one real element of the page glow (found by CSS selector, else by its button text). With nothing given, it clears every glow."""
+    js = ("d.querySelectorAll('.hm-spot').forEach(function (e) { e.classList.remove('hm-spot'); });"  # (run_in_page already provides d, the page document)
+          f"const sel = {json.dumps(selector)}, label = {json.dumps(label)};"
+          "if (sel || label) { let tries = 0; const t = setInterval(function () { let el = sel ? d.querySelector(sel) : null;"
+          "if (!el && label) { const bs = d.querySelectorAll('button'); for (let i = 0; i < bs.length; i++) { if ((bs[i].textContent || '').indexOf(label) >= 0) { el = bs[i]; break; } } }"
+          "if (el) { el.classList.add('hm-spot'); try { el.scrollIntoView({block: 'center', behavior: 'smooth'}); } catch (e) {} clearInterval(t); }"
+          "else if (++tries > 25) { clearInterval(t); } }, 160); }")
+    run_in_page(js)
+
+
+def onb_link_story():
+    """The character an ad or bio link was made for (?character=morrigan or ?story=morrigan), or None for a general link."""
+    for k in ("character", "story"):
+        value = str(st.query_params.get(k, "")).lower()
+        if value in STORY_BY_ID:
+            return value
+    return None
+
+
+def is_new_visitor():
+    """True only for a genuinely new visitor: no account, never saw the welcome, has not chatted before."""
+    flag = str(st.query_params.get("welcome", "")).lower()
+    if flag == "0" or not WELCOME_ENABLED:
+        return False
+    if flag == "1":
+        return True
+    if ss.get("user") or ss.get("_welcome_done") or cookie_get("hm_welcome"):
+        return False
+    if st.query_params.get("tab") or st.query_params.get("checkout"):
+        return False
+    return not any(m["role"] == "user" and not m.get("hidden") for m in engine["story_log"])
+
+
+def check_welcome():
+    """Once per visit, right after the story is open: decide whether the welcome pop-up appears."""
+    if "_welcome_checked" in ss:
+        return
+    ss["_welcome_checked"] = True
+    if is_new_visitor():
+        ss["_show_welcome"] = True
+
+
+def start_tour():
+    ss["tour"] = 1
+    ss["onb"] = None
+    ss["view"] = "hub"
+
+
+def end_tour():
+    ss["tour"] = None
+    ss["view"] = "chat"  # the tour ends (or is skipped) right in the chat with their character
+    spotlight()
+
+
+def _onb_go(story_id):
+    """Path A: straight into the chat (switching character if the link was for a different one)."""
+    track_event("WelcomeChoice", key="welcome_choice", choice="chat")
+    if story_id != current_story_id():
+        ss["want_story"] = story_id
+        ss.world_engine = new_engine()
+    ss["onb"] = "tip"
+    ss["view"] = "chat"
+    st.rerun()
+
+
+def _onb_tour():
+    track_event("WelcomeChoice", key="welcome_choice", choice="tour")
+    start_tour()
+    st.rerun()
+
+
+def _onb_skip():
+    """Path C: stay on the main page (the full app) with 'Create your character' suggested first."""
+    track_event("WelcomeChoice", key="welcome_choice", choice="skip")
+    ss["onb"] = "intro"
+    ss["view"] = "hub"
+    ss["hub_nav"] = 0
+    ss.active_tab_idx = 0
+    st.rerun()
+
+
+def _welcome_body():
+    link = onb_link_story()
+    st.markdown(f'<div class="hm-wel-title">{esc(x("wel_title"))}</div><div class="hm-wel-body">{esc(x("wel_body"))}</div>'
+                f'<div class="hm-wel-sub">{esc(x("wel_sub").format(n=FREE_ACTIONS))}</div>', unsafe_allow_html=True)
+    if st.button(x("wel_tour"), key="wel_tour", use_container_width=True):
+        _onb_tour()
+    for sid in ([link] if link else ["kade", "morrigan"]):  # a link for one character names it; a general link offers a choice
+        story = STORY_BY_ID[sid]
+        if st.button(x("wel_go").format(emoji=WELCOME_EMOJI.get(sid, story["emoji"]), name=story["name"]), key=f"wel_go_{sid}", type="primary", use_container_width=True):
+            _onb_go(sid)
+    if st.button(x("wel_skip"), key="wel_skip", use_container_width=True):
+        _onb_skip()
+
+
+if hasattr(st, "dialog"):
+    _welcome_dialog = st.dialog("💕 Haymaker")(_welcome_body)
+else:
+    _welcome_dialog = None
+
+
+def show_welcome():
+    """The welcome pop-up, drawn once. They are marked as seen right now, so it never comes back for this browser."""
+    queue_cookie("hm_welcome", "1", days=365)
+    flush_cookies()
+    ss["_welcome_done"] = True
+    track_event("WelcomeView", key="welcome_view")
+    if _welcome_dialog:
+        _welcome_dialog()
+    else:  # an older Streamlit: the same card on the page
+        try:
+            box = st.container(key="hm_welcome")
+        except TypeError:
+            box = st.container()
+        with box:
+            _welcome_body()
+
+
+def render_tour():
+    """The tour bubble at the top of the full app. Each step opens its section and makes its tab glow."""
+    step = int(ss.get("tour") or 0)
+    if not 1 <= step <= len(TOUR_STEPS):
+        ss["tour"] = None
+        return
+    cfg = TOUR_STEPS[step - 1]
+    ss["hub_nav"] = cfg["tab"]
+    ss.active_tab_idx = cfg["tab"]
+    spotlight(cfg["sel"], x(cfg["label"]) if cfg["label"] else None)
+    dots = "".join('<i class="on"></i>' if i + 1 == step else "<i></i>" for i in range(len(TOUR_STEPS)))
+    try:
+        box = st.container(key="hm_tour")
+    except TypeError:
+        box = st.container()
+    with box:
+        st.markdown(f'<div class="hm-tour"><div class="hm-tour-step">{esc(x("tour_progress").format(n=step, total=len(TOUR_STEPS)))}</div>'
+                    f'<div class="hm-tour-title">{esc(x(cfg["title"]))}</div><div class="hm-tour-text">{esc(x(cfg["text"]))}</div>'
+                    f'<div class="hm-tour-dots">{dots}</div></div>', unsafe_allow_html=True)
+        last = step == len(TOUR_STEPS)
+        if st.button(x("tour_done").format(name=open_name() or "Kade") if last else x("tour_next"), key="tour_next", type="primary", use_container_width=True):
+            if last:
+                track_event("TourDone", key="tour_done")
+                end_tour()
+            else:
+                ss["tour"] = step + 1
+            st.rerun()
+        if step > 1 and st.button(x("tour_back"), key="tour_back", use_container_width=True):
+            ss["tour"] = step - 1
+            st.rerun()
+        if not last and st.button(x("tour_skip"), key="tour_skip", use_container_width=True):  # skipping goes straight back to the chat
+            track_event("TourSkipped", key="tour_skipped")
+            end_tour()
+            st.rerun()
+
+
+def render_intro_card():
+    """Path C: a compact card that suggests creating a character first, with that tab glowing."""
+    spotlight(None, x("tab_avatars"))
+    try:
+        box = st.container(key="hm_intro")
+    except TypeError:
+        box = st.container()
+    with box:
+        st.markdown(f'<div class="hm-tour"><div class="hm-tour-title">{esc(x("intro_title"))}</div><div class="hm-tour-text">{esc(x("intro_text"))}</div></div>', unsafe_allow_html=True)
+        if st.button(x("intro_btn"), key="intro_go", type="primary", use_container_width=True):
+            ss["onb"] = None
+            ss["hub_nav"] = 4
+            ss.active_tab_idx = 4
+            spotlight()
+            st.rerun()
+        if st.button(x("intro_close"), key="intro_close", use_container_width=True):
+            ss["onb"] = None
+            spotlight()
+            st.rerun()
+
+
+def render_onb_tip():
+    """Path A: a small, closable hint in the chat. It never covers the message box and goes away by itself once they send a message."""
+    if ss.get("onb") != "tip":
+        return
+    if any(m["role"] == "user" and not m.get("hidden") for m in engine["story_log"]):
+        ss["onb"] = None
+        return
+    try:
+        box = st.container(key="hm_tip")
+    except TypeError:
+        box = st.container()
+    with box:
+        st.markdown(f'<div class="hm-tip">💬 {esc(x("tip_text"))}</div>', unsafe_allow_html=True)
+        if st.button(x("tip_close"), key="tip_close"):
+            ss["onb"] = None
+            st.rerun()
+
+
+def browser_info():
+    """What kind of browser this is, once per visit: TikTok's built-in browser, and iPhone or Android."""
+    if "_ua_info" not in ss:
+        ua = ""
+        try:
+            ua = str(st.context.headers.get("User-Agent") or "")
+        except Exception:
+            pass
+        low = ua.lower()
+        ss["_ua_info"] = {"tiktok": any(k in low for k in ("musical_ly", "bytedancewebview", "tiktok", "trill")),
+                          "ios": any(k in low for k in ("iphone", "ipad", "ipod")), "android": "android" in low}
+    return ss["_ua_info"]
+
+
+def render_tiktok_banner():
+    """A friendly, optional hint inside TikTok's built-in browser. Only after their first message (never mid-typing, never at checkout),
+    and never again once closed. Everything works inside TikTok too, and chats are saved either way."""
+    info = browser_info()
+    if not info["tiktok"] or ss.get("_ttb_off") or cookie_get("hm_ttb") or ss.get("onb") == "tip":
+        return
+    if not any(m["role"] == "user" and not m.get("hidden") for m in engine["story_log"]):
+        return
+    how = x("ttb_ios") if info["ios"] else x("ttb_android") if info["android"] else x("ttb_generic")
+    try:
+        box = st.container(key="hm_ttb")
+    except TypeError:
+        box = st.container()
+    with box:
+        st.markdown(f'<div class="hm-ttb"><div class="hm-ttb-title">{esc(x("ttb_title"))}</div><div class="hm-ttb-body">{esc(x("ttb_body"))}</div>'
+                    f'<div class="hm-ttb-how">{esc(how)}</div></div>', unsafe_allow_html=True)
+        if st.button(x("tip_close"), key="ttb_close"):
+            queue_cookie("hm_ttb", "1", days=365)
+            flush_cookies()
+            ss["_ttb_off"] = True
+            st.rerun()
+
 # =============================================================== #PAGE-START
 # WHAT: runs on every click: restores login, guest id, reads the account, opens the story  |  CHANGE WHEN: logged out after reload, or premium problems
 if not ss.get("user") and not ss.get("_restore_tried"):  # refresh / locked phone: log back in from the cookie
@@ -3310,6 +3765,7 @@ if not engine["world_name"]:  # nothing open yet: land straight inside a story (
     engine = ss.world_engine
     flush_events()
 char = engine["player_character"]
+check_welcome()  # first-time visitors get the welcome pop-up (see #ONBOARDING)
 
 # ================================================================== #SIDEBAR
 # WHAT: the menu (closed until opened): language, status, restart, sign in / out, music, subscription, legal  |  CHANGE WHEN: you change the menu
@@ -3324,6 +3780,9 @@ with st.sidebar:
             st.rerun()
     elif st.button(x("btn_menu_full"), key="side_hub", use_container_width=True):  # in a story: a way out to the full app
         ss["view"] = "hub"
+        st.rerun()
+    if st.button(x("tour_replay"), key="side_tour", use_container_width=True):
+        start_tour()
         st.rerun()
     st.divider()
 
@@ -3485,13 +3944,23 @@ if not (ss.is_premium or ss.guest_tokens > 0) and ss.get("view") != "hub":  # (i
     with gate_box:
         render_story_history()
     watch_for_pass()
-    render_paywall()
+    if hasattr(st, "dialog"):
+        open_plans = ss.pop("_open_plans", False) or not ss.get("_gate_dialog_shown")  # opens by itself once, then only when asked
+        ss["_gate_dialog_shown"] = True
+        st.markdown(f'<div class="hm-gate"><div class="hm-gate-title">{esc(x("gate2_title"))}</div><div class="hm-gate-body">{esc(x("gate2_body"))}</div></div>', unsafe_allow_html=True)
+        if st.button(x("pw_see_plans"), key="see_plans", type="primary", use_container_width=True):  # still here after they close the pop-up
+            open_plans = True
+        if open_plans:
+            paywall_dialog()
+    else:  # an older Streamlit has no pop-ups: the plans are drawn on the page, as before
+        render_paywall()
+        if not ss.get("_paywall_scrolled"):  # once per appearance, not on every click inside the paywall
+            ss["_paywall_scrolled"] = True
+            run_in_page("window.parent.hmScrollTo('.st-key-hm_paywall, #hm-paywall', 1200);")
     flush_events()  # a plan click (AddToCart) leaves now: the run ends a few lines below
-    if not ss.get("_paywall_scrolled"):  # once per appearance, not on every click inside the paywall
-        ss["_paywall_scrolled"] = True
-        run_in_page("window.parent.hmScrollTo('.st-key-hm_paywall, #hm-paywall', 1200);")
     st.stop()
 ss["_paywall_scrolled"] = False
+ss["_gate_dialog_shown"] = False
 
 # ============================================================== #TAB-STORIES
 # WHAT: the Stories screen in the full app: all the stories, two cards per row on a phone  |  CHANGE WHEN: you change that screen
@@ -3804,10 +4273,9 @@ def tab_avatars():
         st.info(x("signin_prompt"))
         return
     if not ss.is_premium:  # characters and pictures are part of the plan
-        st.markdown(f'<div class="hm-gate"><div class="hm-gate-body">{esc(x("av_locked").format(price=price_label()))}</div></div>', unsafe_allow_html=True)
-        if st.button(x("av_unlock_btn").format(price=price_label()), key="av_unlock", type="primary", use_container_width=True):
-            ss.auto_checkout = "monthly"
-            st.rerun()
+        st.markdown(f'<div class="hm-gate"><div class="hm-gate-body">{esc(x("av_locked"))}</div></div>', unsafe_allow_html=True)
+        if st.button(x("av_unlock_btn"), key="av_unlock", type="primary", use_container_width=True):
+            paywall_dialog()
         return
     if not IMAGES_ENABLED:
         st.caption(x("art_off"))
@@ -3922,7 +4390,7 @@ def tab_profile():
         render_legal()
 
 # ================================================================== #HUB-NAV
-# WHAT: the full app: the row of section buttons, the way back into the story  |  CHANGE WHEN: you add a section
+# WHAT: the full app: the row of section buttons, the tour and intro card, the way back into the story  |  CHANGE WHEN: you add a section
 def _on_nav_change():
     chosen = ss.get("hub_nav")
     if chosen is None:  # tapping the selected pill again would clear it: put it back
@@ -3946,13 +4414,30 @@ def render_nav(labels):
     return choice
 
 
+def render_discovery():
+    """One short strip so nobody mistakes Haymaker for a single chatbot."""
+    chips = "".join(f'<span class="hm-disc-chip">{esc(x(key))}</span>' for key in ("disc_stories", "disc_chars", "disc_worlds", "disc_pics"))
+    st.markdown(f'<div class="hm-disc"><div class="hm-disc-title">{esc(x("disc_title"))}</div><div class="hm-disc-row">{chips}</div></div>', unsafe_allow_html=True)
+
+
 def render_hub():
     st.title(x("hub_title"))
     st.write(x("hub_subtitle"))
-    if engine["world_name"]:  # something is open: one tap and the visitor is back in it
+    touring = bool(ss.get("tour"))
+    if touring:
+        render_tour()
+    elif ss.get("onb") == "intro":
+        render_intro_card()
+    if engine["world_name"] and not touring:  # something is open: one tap and the visitor is back in it
         if st.button(x("btn_continue").format(name=open_name()), key="back_to_chat", type="primary", use_container_width=True):
             ss["view"] = "chat"
+            spotlight()
             st.rerun()
+    if not touring:
+        if st.button(x("tour_replay"), key="hub_tour", use_container_width=True):
+            start_tour()
+            st.rerun()
+        render_discovery()
     for key in CREATE_FORM_KEYS:  # keep half-typed world details while another section is open
         if key in ss:
             ss[key] = ss[key]
@@ -3970,6 +4455,10 @@ def render_game():
     inject_story_background()
     render_bond_bar(ss.pop("_bond_delta", 0))  # the romance bar (only while tracking is on)
     render_top_bar()
+    render_onb_tip()  # a small closable hint after "Take me to ..."
+    render_tiktok_banner()  # only inside TikTok's browser, after their first message
+    if ss.pop("_show_welcome", False):
+        show_welcome()  # first-time visitors: the welcome pop-up
     if ss.pop("_scroll_top", False):  # a new story: the first message is in view
         run_in_page("setTimeout(function () { window.parent.hmScrollChat('top'); }, 150);")
     elif ss.pop("_scroll_bottom", False):  # a saved or just-answered conversation: the newest message is in view
