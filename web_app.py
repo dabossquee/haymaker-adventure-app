@@ -2,14 +2,14 @@
 
 HOW THE APP WORKS
   Every visit starts inside a story (Kade by default), so people from an ad can jump straight in.
-  The tab row at the top (in the chat and in the full app) opens everything: Create a Companion, Stories, Explore, My Creations, My Characters, Account.
+  The tab row at the top (in the chat and in the full app) opens everything: Create a Companion, My Chats, Stories, Search, Explore, My Creations, My Characters, Account.
 
 HOW TO FIND THINGS
   Every block starts with a banner line that ends in a #TAG, for example  #SIDEBAR.
   Press Cmd+F, type the tag, and press Enter twice (the first match is the list below).
   A block runs from its banner down to the next banner. To change one block, replace only those lines.
   Needs these files beside it: localization.py, styles.py, stories.py.
-  One-time setup in Supabase: run conversations.sql, images_and_community.sql, update_nov14.sql, companions.sql, then community_companions.sql. In Render add SUPABASE_SERVICE_KEY (see the setup steps).
+  One-time setup in Supabase: run conversations.sql, images_and_community.sql, update_nov14.sql, companions.sql, community_companions.sql, then chat_history.sql. In Render add SUPABASE_SERVICE_KEY (see the setup steps).
 
 THE BLOCKS, IN ORDER
   #IMPORTS              the libraries the app uses, plus your stories.py texts
@@ -65,6 +65,7 @@ THE BLOCKS, IN ORDER
   #ART                  making pictures with OpenAI: checks, server-side credit limits, storing them in Supabase
   #COMMUNITY            the community wall: companions, worlds and characters; likes, reports, sharing, admin moderation
   #COMPANION            Create a Companion: the builder, portrait, sharing, chat with your companion (or one from the wall)
+  #CHATS                My Chats (every chat, pins, delete one by one) and Search (keywords for stories, companions, worlds)
   #STORY-PICTURES       finds the uploaded story pictures in assets/stories
   #CHAT-BACKGROUND      switches the page to its chat look: the character's picture behind everything
   #STORY-START          opens Kade (or the story left off in), first messages, quick replies, the Menu button, switching, restarting
@@ -76,7 +77,7 @@ THE BLOCKS, IN ORDER
   #SIDEBAR              the side menu: explore, replay the tour, plan status, restart, sign in / out, music, my plan and settings, terms
   #PAYWALL-FLOW         payment-return handling, the retry screen and the paywall gate (opens the plans pop-up)
   #TAB-STORIES          the full app: the Stories screen, two cards per row on a phone
-  #TAB-EXPLORE          the full app: the community wall (characters and worlds) and the genre scenarios
+  #TAB-EXPLORE          Explore: the community wall in categories (Sci-Fi, Dark Fantasy, Cyberpunk, Horror, Romance, Other)
   #WORLD-ACTIONS        delete a world
   #TAB-MINE             the full app: My Creations (publish or make private, paint a background)
   #TAB-CREATE           the Create-a-World form (inside Create a Companion)
@@ -322,8 +323,9 @@ CHECKOUT_LOCALES = {"en": "en", "es": "es", "pt": "pt", "zh": "zh", "ru": "ru", 
 
 # ================================================================= #NAV-KEYS
 # WHAT: names of the hub sections and the form boxes that keep their text  |  CHANGE WHEN: you add a hub section
-HUB_TAB_KEYS = ["companion", "stories", "explore", "mine", "avatars", "profile"]  # the order of the top tabs; first = Create a Companion; ?tab=profile opens a section directly
-HUB_TAB_ALIASES = {"create": "companion", "world": "companion", "chars": "avatars", "characters": "avatars", "account": "profile"}  # older and friendlier link names
+HUB_TAB_KEYS = ["companion", "stories", "explore", "mine", "avatars", "profile", "chats", "search"]  # one place per section; new sections go at the END so older numbers keep working; ?tab=profile opens a section directly
+HUB_TAB_ORDER = ["companion", "chats", "stories", "search", "explore", "mine", "avatars", "profile"]  # the order they are SHOWN in the row at the top
+HUB_TAB_ALIASES = {"create": "companion", "world": "companion", "chars": "avatars", "characters": "avatars", "account": "profile", "chat": "chats", "history": "chats", "find": "search"}  # older and friendlier link names
 
 
 def tab_index(key):
@@ -654,6 +656,28 @@ html body [data-testid="stDecoration"], html body [data-testid="stStatusWidget"]
 html body [data-stale="true"] { opacity: 1 !important; transition: none !important; }
 html body .hm-pop-arrow { transition: left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1); }
 html body .stButton > button { transition: transform 0.12s ease, background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+
+/* ===== Nov 14 (4): My Chats cards, Search chips, scrolling category row ===== */
+html body .hm-hist { display: flex; gap: 0.7rem; align-items: flex-start; }
+html body .hm-hist img { width: 54px; height: 72px; object-fit: cover; border-radius: 12px; flex: 0 0 auto; }
+html body .hm-hist-emoji { width: 54px; height: 72px; border-radius: 12px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; background: linear-gradient(135deg, rgba(244, 114, 182, 0.28), rgba(124, 58, 237, 0.35)); }
+html body .hm-hist-body { min-width: 0; flex: 1 1 auto; }
+html body .hm-hist-title { font-family: var(--hm-display); font-weight: 800; color: #ffffff; font-size: 0.98rem; overflow-wrap: anywhere; }
+html body .hm-hist-kind { font-size: 0.68rem; color: #f9a8d4; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+html body .hm-hist-line { font-size: 0.82rem; color: #cbd5e1; margin-top: 0.15rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+html body .hm-hist-meta { font-size: 0.7rem; color: #94a3b8; margin-top: 0.15rem; }
+html body [class*="st-key-hist_"] { background: rgba(16, 12, 31, 0.62); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 16px; padding: 0.6rem; }
+html body [class*="st-key-hbtn_"] { flex-direction: row !important; gap: 0.4rem !important; }
+html body [class*="st-key-hbtn_"] > div { flex: 1 1 0 !important; min-width: 0; width: auto !important; }
+html body [class*="st-key-hbtn_"] button { min-height: 34px !important; padding: 0 0.4rem !important; font-size: 0.8rem !important; }
+html body .st-key-srch_chips { flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto !important; gap: 0.35rem !important; scrollbar-width: none; padding-bottom: 0.2rem; }
+html body .st-key-srch_chips::-webkit-scrollbar { display: none; }
+html body .st-key-srch_chips > div { width: auto !important; flex: 0 0 auto !important; }
+html body .st-key-srch_chips button { min-height: 30px !important; border-radius: 999px !important; padding: 0 0.7rem !important; font-size: 0.78rem !important; }
+html body [class*="st-key-srch_story_box_"] { background: rgba(16, 12, 31, 0.62); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 16px; padding: 0.6rem; }
+html body .st-key-explore_cat [data-baseweb="button-group"], html body .st-key-explore_cat [role="radiogroup"], html body .st-key-explore_cat [data-testid="stButtonGroup"] { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none; }
+html body .st-key-explore_cat [data-baseweb="button-group"]::-webkit-scrollbar, html body .st-key-explore_cat [data-testid="stButtonGroup"]::-webkit-scrollbar { display: none; }
+html body .st-key-explore_cat button { white-space: nowrap; flex: 0 0 auto; }
 """
 
 # =============================================================== #CSS-LOCKED
@@ -1171,8 +1195,6 @@ NEW_TEXT = {
     "tour3_text": {_EN: 'Want a whole world? 🌍 Dream up your own universe and adventure here. Paid plans can add a painted background ✨'},
     "tour4_title": {_EN: 'Explore'},
     "tour4_text": {_EN: 'See the companions and worlds other pookies made, and give your favorites a ❤️'},
-    "tour5_title": {_EN: 'Back to your chat'},
-    "tour5_text": {_EN: 'Tap here any time to hop back into your chat 💬 Everything is saved, pookie!'},
     "tour_finish": {_EN: 'Done 💕'},
     "intro_text": {_EN: 'Create your own companion: pick their look, personality and who they are to you. Free accounts can create and chat; paid plans add AI portraits. Then explore the stories and worlds, too!'},
     "tip_text": {_EN: "Hey pookie! 💕 Just so you know, there's a whole world waiting for you here! Create your own companion, explore stories, design characters, and make your own adventures. Tap the tabs above whenever you're ready! ✨"},
@@ -1264,6 +1286,53 @@ NEW_TEXT = {
     "msg_already_cancelled": {_EN: "Your plan won't renew. You keep access until the end of the period you paid for.", _ES: 'Tu plan no se renovará. Conservas el acceso hasta el final del periodo pagado.', _PT: 'Seu plano não será renovado. Você mantém o acesso até o fim do período pago.', _AR: 'لن تُجدَّد خطتك. تحتفظ بالوصول حتى نهاية الفترة المدفوعة.'},
     "msg_cancel_fail": {_EN: "We couldn't cancel just now. Please try again, or use 'Manage my subscription'.", _ES: 'No pudimos cancelar ahora. Inténtalo de nuevo o usa «Gestionar mi suscripción».', _PT: 'Não conseguimos cancelar agora. Tente novamente ou use «Gerenciar minha assinatura».', _AR: 'تعذّر الإلغاء الآن. حاول مرة أخرى أو استخدم «إدارة اشتراكي».'},
     "legal_compliance_link": {_EN: '📜 Terms & Privacy', _ES: '📜 Términos y privacidad', _PT: '📜 Termos e privacidade', _AR: '📜 الشروط والخصوصية'},
+    "tab2_chats": {_EN: '💬 My Chats', _ES: '💬 Mis chats', _PT: '💬 Meus chats', _AR: '💬 محادثاتي'},
+    "tab2_search": {_EN: '🔎 Search', _ES: '🔎 Buscar', _PT: '🔎 Buscar', _AR: '🔎 بحث'},
+    "ch_title": {_EN: 'Your chats 💬', _ES: 'Tus chats 💬', _PT: 'Seus chats 💬', _AR: 'محادثاتك 💬'},
+    "ch_sub": {_EN: "Every chat you've started, pookie. Pick up right where you left off."},
+    "ch_pinned": {_EN: '📌 Pinned ({n}/{max})'},
+    "ch_recent": {_EN: 'Recent'},
+    "ch_continue": {_EN: '▶ Continue', _ES: '▶ Continuar', _PT: '▶ Continuar', _AR: '▶ متابعة'},
+    "ch_pin": {_EN: '📌 Pin', _ES: '📌 Fijar', _PT: '📌 Fixar', _AR: '📌 تثبيت'},
+    "ch_unpin": {_EN: '📍 Unpin', _ES: '📍 Quitar', _PT: '📍 Desafixar', _AR: '📍 إلغاء التثبيت'},
+    "ch_delete": {_EN: '🗑 Delete', _ES: '🗑 Borrar', _PT: '🗑 Apagar', _AR: '🗑 حذف'},
+    "ch_delete_ask": {_EN: "Delete this chat and its whole history, pookie? This can't be undone."},
+    "ch_delete_yes": {_EN: 'Yes, delete it'},
+    "ch_keep": {_EN: 'Keep it'},
+    "ch_pin_limit": {_EN: 'You can pin up to 5 chats. Unpin one first 💕'},
+    "ch_empty": {_EN: 'No chats yet, pookie! Start one from Stories, or create a companion 💕'},
+    "ch_gone": {_EN: "That one isn't available any more."},
+    "ch_kind_story": {_EN: '📖 Story'},
+    "ch_kind_companion": {_EN: '💕 Companion'},
+    "ch_kind_world": {_EN: '🌍 World'},
+    "ch_kind_other": {_EN: '💬 Chat'},
+    "ch_open_now": {_EN: 'open now'},
+    "ch_msgs": {_EN: '{n} messages'},
+    "ch_ago_now": {_EN: 'just now'},
+    "ch_ago_min": {_EN: '{n} min ago'},
+    "ch_ago_h": {_EN: '{n} h ago'},
+    "ch_ago_d": {_EN: '{n} d ago'},
+    "ch_guest_note": {_EN: 'Make a free account to keep your chats safe on every device 💕'},
+    "ch_companion_default": {_EN: 'A companion'},
+    "ch_world_default": {_EN: 'A world'},
+    "sr_title": {_EN: 'Find your perfect match 🔎', _ES: 'Encuentra tu match perfecto 🔎', _PT: 'Encontre seu match perfeito 🔎', _AR: 'اعثر على ما يناسبك 🔎'},
+    "sr_sub": {_EN: "Tell us what you're in the mood for: a feeling, a creature, a vibe."},
+    "sr_ph": {_EN: 'e.g. romance, werewolf, mystery, best friend…'},
+    "sr_hint": {_EN: 'Type a word or tap an idea above, pookie ✨'},
+    "sr_stories": {_EN: '📖 Stories'},
+    "sr_companions": {_EN: '💕 Companions'},
+    "sr_worlds": {_EN: '🌍 Worlds'},
+    "sr_none": {_EN: 'Nothing matched “{q}”, pookie 😢 Try a mood or a creature, or make your own!'},
+    "sr_make": {_EN: '💕 Create it yourself'},
+    "sr_start": {_EN: '▶ Start'},
+    "cat_all": {_EN: '🌟 All', _ES: '🌟 Todo', _PT: '🌟 Tudo', _AR: '🌟 الكل'},
+    "cat_empty": {_EN: 'Nothing here yet, pookie! Be the first to share something in this category 💕'},
+    "cat_companions": {_EN: '💕 Companions'},
+    "cat_worlds": {_EN: '🌍 Worlds'},
+    "tour5_title": {_EN: 'My Chats'},
+    "tour5_text": {_EN: 'Every chat you start lives here 💬 Pick up where you left off, and pin your favorites 📌'},
+    "tour6_title": {_EN: 'Search'},
+    "tour6_text": {_EN: "In the mood for something? 🔎 Type a vibe or a creature and we'll find stories, companions and worlds to match!"},
 }
 for _key, _by_lang in NEW_TEXT.items():  # hand them to the text lookup x(): any language without a line shows the English one
     for _lang_name, _text in _by_lang.items():
@@ -1622,12 +1691,23 @@ def conv_key():
     return ("w_" + str(world_id))[:60] if world_id else None
 
 
+def conv_meta():
+    """A small note saved with every chat: what it is and what it is called (for the My Chats list, and to reopen it)."""
+    if current_story_id():
+        return {"kind": "story"}
+    cust = engine.get("world_customization") or {}
+    if cust.get("companion_id"):
+        return {"kind": "companion", "name": str(engine.get("world_name") or "")[:60], "cid": str(cust["companion_id"]), "image": cust.get("bg_path")}
+    return {"kind": "world", "name": str(engine.get("world_name") or "")[:60], "genre": str(engine.get("world_genre") or ""), "char_name": str(engine["player_character"].get("name") or "")[:40],
+            "backstory": str(engine["player_character"].get("backstory") or "")[:300], "custom": clean_config(cust), "image": cust.get("bg_path")}
+
+
 def save_game():
     """Keep the conversation so the visitor can come back to it. True when it was saved."""
     key = conv_key()
     if not (key and engine["world_name"]):
         return False
-    snapshot = {"story_log": engine["story_log"][-60:], "player_character": engine["player_character"], "romance": engine.get("romance")}
+    snapshot = {"story_log": engine["story_log"][-60:], "player_character": engine["player_character"], "romance": engine.get("romance"), "meta": conv_meta()}
     try:
         sb.rpc("conv_save", _conv_args(p_story=key, p_engine=snapshot)).execute()
         return True
@@ -3271,10 +3351,13 @@ def publish_message(result):
     return x("pub_subscribe") if reason == "subscribe" else x("pub_removed") if reason == "removed" else x("generic_err")
 
 
-def render_community(kind):
-    """The wall: published characters or worlds as cards, two per row on a phone, with a like button and a report button."""
-    st.markdown(f"### {x('comm_title')}")
-    rows = community_feed(kind)
+def render_community(kind, rows=None, heading=True):
+    """The wall: published companions, characters or worlds as cards, two per row on a phone, with a like button and a report button.
+    It draws the whole wall for a kind, or just the rows it is given (a category, or search results)."""
+    if heading:
+        st.markdown(f"### {x('comm_title')}")
+    if rows is None:
+        rows = community_feed(kind)
     if not rows:
         st.info(x("comm_empty"))
         return
@@ -3634,6 +3717,285 @@ def tab_companion():
     else:
         render_companion_builder()
 
+# ===================================================================== #CHATS
+# WHAT: My Chats (every chat they started, pinned favorites, delete one by one) and Search (find a story, companion or world by keywords)  |  CHANGE WHEN: you change either screen
+# The list comes from the saved conversations (conv_list in chat_history.sql). Each saved chat also carries a small "meta" note (what it is and what it is called),
+# written by save_game, so a chat can be shown with its name and picture and re-entered later, even someone else's world or companion.
+MAX_PINS = 5  # the database enforces the same limit
+SEARCH_IDEAS = ("romance", "werewolf", "vampire", "fantasy", "adventure", "mystery", "best friend", "superhero")
+SEARCH_SYNONYMS = {
+    "romance": ("love", "romantic", "flirty", "crush"), "romantic": ("romance", "love"), "love": ("romance", "romantic"), "boyfriend": ("romance", "romantic"), "girlfriend": ("romance", "romantic"),
+    "wolf": ("werewolf", "alpha"), "werewolf": ("wolf", "alpha"), "vampire": ("blood", "fang", "immortal"), "fantasy": ("magic", "fae", "dragon", "kingdom"), "magic": ("witch", "spell", "fantasy"),
+    "friend": ("friendship", "platonic", "buddy"), "scary": ("horror", "haunted", "ghost"), "horror": ("haunted", "ghost", "scary"), "space": ("sci", "starship", "alien"),
+    "hero": ("superhero", "powers"), "superhero": ("hero", "powers"), "dark": ("gothic", "shadow"), "mystery": ("detective", "secret", "clue"), "adventure": ("quest", "explore", "journey"),
+    "cyberpunk": ("neon", "hacker", "chrome"), "fae": ("fairy", "elf", "fantasy"), "dragon": ("fantasy", "fire"),
+}
+STORY_MODE_WORDS = {"love_interest": "romance love romantic companion boyfriend crush", "hero": "superhero hero powers action", "system": "system progression level action game"}
+
+
+def list_chats():
+    try:
+        data = sb.rpc("conv_list", _conv_args()).execute().data
+        return data if isinstance(data, list) else []
+    except Exception as e:
+        print("conv_list error (is chat_history.sql installed?):", repr(e)[:300])
+        return []
+
+
+def pin_chat(story_id, pin):
+    try:
+        data = sb.rpc("conv_pin", _conv_args(p_story=story_id, p_pin=bool(pin))).execute().data
+        return data if isinstance(data, dict) else {"ok": False, "reason": "failed"}
+    except Exception as e:
+        print("conv_pin error:", repr(e)[:300])
+        return {"ok": False, "reason": "failed"}
+
+
+def find_preset(world_id):
+    """An older ready-made scenario (they are no longer offered, but chats started in them can still be reopened)."""
+    if not str(world_id).startswith("pre_"):
+        return None
+    pid = str(world_id)[4:]
+    for genre, _icon, items in PRESETS:
+        for p, cname, story in items:
+            if p == pid:
+                return (x(f"preset_{pid}_name") or pid, genre, cname, story)
+    return None
+
+
+def time_ago(iso):
+    try:
+        t = datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+    except ValueError:
+        try:
+            t = datetime.strptime(str(iso)[:19], "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            return ""
+    secs = max(0, (datetime.now(timezone.utc) - (t if t.tzinfo else t.replace(tzinfo=timezone.utc))).total_seconds())
+    if secs < 90:
+        return x("ch_ago_now")
+    if secs < 3600:
+        return x("ch_ago_min").format(n=int(secs // 60))
+    if secs < 86400:
+        return x("ch_ago_h").format(n=int(secs // 3600))
+    return x("ch_ago_d").format(n=int(secs // 86400))
+
+
+def chat_info(row):
+    """What to show for one saved chat: its name, kind, a small picture, and whether it can be reopened."""
+    sid = str(row.get("story_id") or "")
+    meta = row.get("meta") if isinstance(row.get("meta"), dict) else {}
+    info = {"title": "", "kind": "other", "emoji": "💬", "image": art_url(meta.get("image"))}
+    if sid in STORY_BY_ID:
+        s = STORY_BY_ID[sid]
+        info.update(title=f"{s['name']} · {x('story_' + sid + '_title')}", kind="story", emoji=s["emoji"], image=None)
+    elif sid.startswith("w_c_"):
+        info.update(kind="companion", emoji="💕", title=str(meta.get("name") or "")[:60])
+        if not info["title"] and ss.get("_hist_lookups", 0) < 8:  # an older chat without a name: look it up (a few at a time)
+            ss["_hist_lookups"] = ss.get("_hist_lookups", 0) + 1
+            comp = fetch_companion(sid[4:]) or community_companion_card(sid[4:])
+            if comp:
+                info.update(title=str(comp.get("name") or "")[:60], image=art_url(comp.get("image_path")))
+        info["title"] = info["title"] or x("ch_companion_default")
+    elif sid.startswith("w_"):
+        preset = find_preset(sid[2:])
+        info.update(kind="world", emoji="🌍", title=str(meta.get("name") or (preset[0] if preset else ""))[:60] or x("ch_world_default"))
+    else:
+        info["title"] = x("ch_kind_other")
+    return info
+
+
+def fetch_world_row(world_id):
+    try:
+        rows = sb.table("worlds").select("id,world_name,world_genre,config").eq("id", world_id).limit(1).execute().data or []
+        return rows[0] if rows else None
+    except Exception as e:
+        print("world lookup error:", repr(e)[:200])
+        return None
+
+
+def resume_chat(row):
+    """Reopen a saved chat exactly where it was left. Returns only when it cannot be reopened (the call otherwise redraws the page)."""
+    sid = str(row.get("story_id") or "")
+    meta = row.get("meta") if isinstance(row.get("meta"), dict) else {}
+    if sid in STORY_BY_ID:
+        ss["want_story"] = sid
+        ss.world_engine = new_engine()
+        ss["view"] = "chat"
+        st.rerun()
+    if sid.startswith("w_c_"):
+        comp = fetch_companion(sid[4:]) or community_companion_card(sid[4:])  # theirs, or one shared on the wall
+        if comp:
+            enter_companion(comp)
+        return False
+    if sid.startswith("w_"):
+        wid = sid[2:]
+        preset = find_preset(wid)
+        if preset:
+            enter_world(wid, preset[0], preset[1], preset[2], preset[3])
+        if meta.get("kind") == "world" and meta.get("name"):
+            enter_world(wid, str(meta["name"])[:60], str(meta.get("genre") or ""), str(meta.get("char_name") or x("lbl_wanderer"))[:40],
+                        str(meta.get("backstory") or "")[:800], clean_config(meta.get("custom") or {}))
+        w = fetch_world_row(wid)  # an older chat without details: the world itself is read if it is theirs or shared
+        if w:
+            cfg = w.get("config") if isinstance(w.get("config"), dict) else {}
+            enter_world(wid, w["world_name"], w["world_genre"], str(cfg.get("char_name") or x("lbl_wanderer"))[:40], str(cfg.get("char_backstory") or "")[:800], clean_config(cfg))
+    return False
+
+
+def render_chat_row(row, pin_count):
+    sid = str(row["story_id"])
+    k = re.sub(r"[^A-Za-z0-9_-]", "", sid)[:64]
+    info = chat_info(row)
+    pinned = bool(row.get("pinned_at"))
+    thumb = f'<img src="{info["image"]}" alt="">' if info["image"] else f'<div class="hm-hist-emoji">{esc(info["emoji"])}</div>'
+    now_open = " · " + esc(x("ch_open_now")) if sid == conv_key() else ""
+    try:
+        box = st.container(key=f"hist_{k}")
+    except TypeError:
+        box = st.container()
+    with box:
+        st.markdown(f'<div class="hm-hist">{thumb}<div class="hm-hist-body"><div class="hm-hist-title">{esc(info["title"])}</div>'
+                    f'<div class="hm-hist-kind">{esc(x("ch_kind_" + info["kind"]))}{now_open}</div><div class="hm-hist-line">{esc(row.get("last_line") or "")}</div>'
+                    f'<div class="hm-hist-meta">{esc(x("ch_msgs").format(n=int(row.get("turns") or 0)))} · {esc(time_ago(row.get("updated_at")))}</div></div></div>', unsafe_allow_html=True)
+        try:
+            btns = st.container(key=f"hbtn_{k}")
+        except TypeError:
+            btns = st.container()
+        with btns:
+            if st.button(x("ch_continue"), key=f"chcont_{k}", type="primary"):
+                resume_chat(row)
+                st.error(x("ch_gone"))
+            if st.button(x("ch_unpin") if pinned else x("ch_pin"), key=f"chpin_{k}"):
+                result = pin_chat(sid, not pinned)
+                if result.get("ok"):
+                    st.rerun()
+                st.warning(x("ch_pin_limit") if result.get("reason") == "limit" else x("generic_err"))
+            if st.button(x("ch_delete"), key=f"chdel_{k}"):
+                ss["chat_delete"] = sid
+                st.rerun()
+        if ss.get("chat_delete") == sid:  # deleting always asks first, and removes exactly this one chat
+            st.warning(x("ch_delete_ask"))
+            if st.button(x("ch_delete_yes"), key=f"chdelyes_{k}", type="primary", use_container_width=True):
+                delete_game(sid)
+                if sid == conv_key():  # the chat that is open right now: start fresh instead of jumping back into it
+                    ss.world_engine = new_engine()
+                    ss["_no_resume"] = True
+                ss.pop("chat_delete", None)
+                st.rerun()
+            if st.button(x("ch_keep"), key=f"chkeep_{k}", use_container_width=True):
+                ss.pop("chat_delete", None)
+                st.rerun()
+
+
+def tab_chats():
+    """💬 My Chats: every chat they started, pinned favorites first. Tapping Continue picks up exactly where they left off."""
+    st.markdown(f'<div class="hm-cp-head"><div class="hm-cp-title">{esc(x("ch_title"))}</div><div class="hm-cp-sub">{esc(x("ch_sub"))}</div></div>', unsafe_allow_html=True)
+    ss["_hist_lookups"] = 0
+    rows = list_chats()
+    if not rows:
+        st.info(x("ch_empty"))
+        if st.button(x("tab2_stories"), key="chats_to_stories", use_container_width=True):
+            go_tab("stories")
+            st.rerun()
+        if st.button(x("tab2_companion"), key="chats_to_companion", type="primary", use_container_width=True):
+            go_tab("companion")
+            st.rerun()
+        return
+    pinned = [r for r in rows if r.get("pinned_at")]
+    recent = [r for r in rows if not r.get("pinned_at")]
+    if pinned:
+        st.markdown(f"##### {x('ch_pinned').format(n=len(pinned), max=MAX_PINS)}")
+        for r in pinned:
+            render_chat_row(r, len(pinned))
+    if recent:
+        st.markdown(f"##### {x('ch_recent')}")
+        for r in recent:
+            render_chat_row(r, len(pinned))
+    if not ss.get("user"):
+        st.caption(x("ch_guest_note"))
+
+
+def search_terms(q):
+    """The words they typed (up to 6) and, for matching, a few related words (love -> romance...)."""
+    words = []
+    for w in re.findall(r"[^\W_]{2,}", str(q).lower()):
+        if w not in words:
+            words.append(w)
+    words = words[:6]
+    related = []
+    for w in words:
+        for s_ in SEARCH_SYNONYMS.get(w, ()):
+            if s_ not in words and s_ not in related:
+                related.append(s_)
+    return words, related
+
+
+def search_stories(words, related):
+    """The premade stories that fit the words (their name, title, tagline, genre and kind), best first."""
+    scored = []
+    for story in STORIES:
+        sid = story["id"]
+        text = " ".join([story["name"], x(f"story_{sid}_title"), x(f"story_{sid}_hook"), x(story["tag_key"]), genre_label(story["genre"]), STORY_MODE_WORDS.get(story["mode"], "")]).lower()
+        score = sum(2 for w in words if w in text) + sum(1 for w in related if w in text)
+        if score:
+            scored.append((score, story))
+    return [s_ for _, s_ in sorted(scored, key=lambda p: -p[0])]
+
+
+def community_search(q):
+    data = _rpc("community_search", {"p_q": q, "p_limit": 30}, [])
+    return data if isinstance(data, list) else []
+
+
+def _set_search(q):
+    ss["srch_q"] = q
+
+
+def tab_search():
+    """🔎 Search: type a mood, a creature or a vibe; stories, companions and worlds that fit come up."""
+    st.markdown(f'<div class="hm-cp-head"><div class="hm-cp-title">{esc(x("sr_title"))}</div><div class="hm-cp-sub">{esc(x("sr_sub"))}</div></div>', unsafe_allow_html=True)
+    q = (st.text_input(x("sr_title"), key="srch_q", max_chars=60, placeholder=x("sr_ph"), label_visibility="collapsed") or "").strip()
+    try:
+        chips = st.container(key="srch_chips")
+    except TypeError:
+        chips = st.container()
+    with chips:
+        for i, idea in enumerate(SEARCH_IDEAS):
+            st.button(idea, key=f"srch_chip_{i}", on_click=_set_search, args=(idea,))
+    words, related = search_terms(q)
+    if not words:
+        st.caption(x("sr_hint"))
+        return
+    stories = search_stories(words, related)
+    found = community_search(" ".join((words + related)[:6]))
+    comps = [r for r in found if r.get("kind") == "companion"]
+    worlds = [r for r in found if r.get("kind") == "world"]
+    if not (stories or comps or worlds):
+        st.info(x("sr_none").format(q=q))
+        if st.button(x("sr_make"), key="srch_make", type="primary", use_container_width=True):
+            go_tab("companion")
+            st.rerun()
+        return
+    if stories:
+        st.markdown(f"#### {x('sr_stories')} ({len(stories)})")
+        for story in stories:
+            sid = story["id"]
+            try:
+                box = st.container(key=f"srch_story_box_{sid}")
+            except TypeError:
+                box = st.container()
+            with box:
+                st.markdown(f'<div class="hm-comm-name">{esc(story["emoji"])} {esc(story["name"])} · {esc(x("story_" + sid + "_title"))}</div><div class="hm-comm-text">{esc(x("story_" + sid + "_hook"))}</div>', unsafe_allow_html=True)
+                if st.button(x("sr_start"), key=f"srch_story_{sid}", use_container_width=True):
+                    enter_story(story)
+    if comps:
+        st.markdown(f"#### {x('sr_companions')} ({len(comps)})")
+        render_community("companion", rows=comps, heading=False)
+    if worlds:
+        st.markdown(f"#### {x('sr_worlds')} ({len(worlds)})")
+        render_community("world", rows=worlds, heading=False)
+
 # =========================================================== #STORY-PICTURES
 # WHAT: finds the uploaded story pictures in assets/stories  |  CHANGE WHEN: a story picture does not show
 @st.cache_data(show_spinner=False)
@@ -3843,7 +4205,7 @@ def start_session_story():
         if want:
             saved = load_conversation(want)
         else:
-            latest = latest_conversation()  # a returning visitor goes back to the story they used last
+            latest = None if ss.pop("_no_resume", False) else latest_conversation()  # a returning visitor goes back to the story they used last (not right after they deleted a chat)
             if latest and latest.get("story_id") in STORY_BY_ID:
                 want, saved = latest["story_id"], latest.get("engine")
             elif latest and str(latest.get("story_id") or "").startswith("w_c_"):  # a companion is where they left off (theirs, or one from the wall)
@@ -4008,8 +4370,9 @@ TOURS = {
         {"tab": "companion", "mode": "companion", "target": ".st-key-tab_companion button", "title": "tour1_title", "text": "tour1_text"},
         {"tab": "stories", "mode": None, "target": ".st-key-tab_stories button", "title": "tour2_title", "text": "tour2_text"},
         {"tab": "companion", "mode": "world", "target": ".st-key-mk_world button", "title": "tour3_title", "text": "tour3_text"},
+        {"tab": "search", "mode": None, "target": ".st-key-tab_search button", "title": "tour6_title", "text": "tour6_text"},
         {"tab": "explore", "mode": None, "target": ".st-key-tab_explore button", "title": "tour4_title", "text": "tour4_text"},
-        {"tab": None, "mode": None, "target": ".st-key-tab_chat button", "title": "tour5_title", "text": "tour5_text"},
+        {"tab": "chats", "mode": None, "target": ".st-key-tab_chats button", "title": "tour5_title", "text": "tour5_text"},
     ),
     "chat": (
         {"tab": None, "mode": None, "target": '[data-testid="stChatInput"]', "title": "ctour1_title", "text": "ctour1_text"},
@@ -4365,7 +4728,7 @@ def render_browser_banner():
 
 # ==================================================================== #TABS
 # WHAT: the compact tab row (in the chat and in the full app) and moving between sections  |  CHANGE WHEN: you add a section
-HUB_TAB_TEXT = {"companion": "tab2_companion", "stories": "tab2_stories", "explore": "tab2_explore", "mine": "tab2_mine", "avatars": "tab2_chars", "profile": "tab2_account"}
+HUB_TAB_TEXT = {"companion": "tab2_companion", "chats": "tab2_chats", "stories": "tab2_stories", "search": "tab2_search", "explore": "tab2_explore", "mine": "tab2_mine", "avatars": "tab2_chars", "profile": "tab2_account"}
 
 
 def go_tab(key):
@@ -4378,7 +4741,7 @@ def go_tab(key):
 
 def render_tabs(active=None):
     """One compact row of tabs at the very top, in the chat and in the full app. It scrolls sideways on a small screen.
-    'Create a Companion' comes first and glows. The small ? replays the tour."""
+    'Create a Companion' comes first and glows; My Chats (every chat, to reopen) and Search follow. The small ? replays the tour."""
     if ss.pop("_clear_spot", False):  # a tour just ended: make sure no glow or pop-up is left on the page
         spotlight()
     if ss.get("tour") and (ss.get("tour_kind", "app") == "app") != (ss.get("view") == "hub"):  # they left the tour's page (for example by tapping Chat): its pop-up goes away
@@ -4390,12 +4753,7 @@ def render_tabs(active=None):
     except TypeError:
         bar = st.container()
     with bar:
-        if engine["world_name"] and st.button(x("tab2_chat"), key="tab_chat", type="primary" if active == "chat" else "secondary"):
-            if ss.get("view") != "chat":
-                ss["view"] = "chat"
-                spotlight()
-                st.rerun()
-        for key in HUB_TAB_KEYS:
+        for key in HUB_TAB_ORDER:
             if st.button(x(HUB_TAB_TEXT[key]), key=f"tab_{key}", type="primary" if active == key else "secondary"):
                 go_tab(key)
                 st.rerun()
@@ -4643,33 +5001,77 @@ def tab_stories():
             render_story_card(story)
 
 # ============================================================== #TAB-EXPLORE
-# WHAT: Explore: the community wall (characters and worlds) and the genre scenarios  |  CHANGE WHEN: you change that screen
+# WHAT: Explore: the community wall, in categories (Sci-Fi, Dark Fantasy, Cyberpunk, Horror, Romance, Other). Shared worlds and companions land in their category  |  CHANGE WHEN: you change that screen
+CAT_CODES = GENRE_KEYS[:6]  # sci_fi, dark_fantasy, cyberpunk, horror, romance, other
+CAT_ICON = {"sci_fi": "🚀", "dark_fantasy": "🐉", "cyberpunk": "🌆", "horror": "👻", "romance": "💕", "other": "✨"}
+CAT_WORDS = {"horror": ("ghost", "haunt", "zombie", "undead", "cursed", "nightmare"), "cyberpunk": ("cyber", "neon", "hacker", "chrome", "implant"),
+             "sci_fi": ("space", "alien", "starship", "robot", "android", "galaxy"), "dark_fantasy": ("vampire", "werewolf", "witch", "dragon", "curse", "throne", "kingdom")}
+
+
+def cat_label(code):
+    name = x(f"genre_{code}")
+    if not name or name == f"genre_{code}":
+        name = GENRE_ENGLISH[code]
+    return f"{CAT_ICON[code]} {name}"
+
+
+def world_category(row):
+    """A shared world's category: its genre (superhero and action worlds count as Other)."""
+    code = GENRE_LOOKUP.get(_norm(row.get("genre")))
+    return code if code in CAT_CODES else "other"
+
+
+def companion_categories(row):
+    """The categories a shared companion belongs to (it may be in more than one): from its type, relationship and what its text mentions."""
+    cats = set()
+    species = str(row.get("species") or "").lower()
+    if row.get("relationship") == "romantic":
+        cats.add("romance")
+    if species in ("vampire", "werewolf", "demon", "fae", "angel", "dragon"):
+        cats.add("dark_fantasy")
+    if species == "android":
+        cats.update(("sci_fi", "cyberpunk"))
+    text = " ".join(str(row.get(k) or "") for k in ("species", "backstory", "appearance")).lower()
+    for code, words in CAT_WORDS.items():
+        if any(w in text for w in words):
+            cats.add(code)
+    return cats or {"other"}
+
+
+def render_category(code):
+    comps = [r for r in community_feed("companion") if code in companion_categories(r)]
+    worlds = [r for r in community_feed("world") if world_category(r) == code]
+    if not comps and not worlds:
+        st.info(x("cat_empty"))
+        if st.button(x("tab2_companion"), key="cat_make", type="primary", use_container_width=True):
+            go_tab("companion")
+            st.rerun()
+        return
+    if comps:
+        st.markdown(f"#### {x('cat_companions')} ({len(comps)})")
+        render_community("companion", rows=comps, heading=False)
+    if worlds:
+        st.markdown(f"#### {x('cat_worlds')} ({len(worlds)})")
+        render_community("world", rows=worlds, heading=False)
+
+
 def tab_explore():
-    defaults = ["Sci-Fi", "Dark Fantasy", "Cyberpunk", "Horror", "Romance", "Other"]
-    got = list(x("sub_genres_lbls") or defaults)
-    labels = [got[i] if i < len(got) else defaults[i] for i in range(6)]
-    st.markdown(x("sub_genre_title"))
-    tabs = st.tabs([x("tab_community")] + labels)
-    with tabs[0]:
-        kinds = ["companion", "world", "avatar"]
-        names = {"companion": x("comm_companions"), "avatar": x("comm_avatars"), "world": x("comm_worlds")}
-        if hasattr(st, "pills"):
-            kind = st.pills("community", kinds, selection_mode="single", default="companion", format_func=lambda k: names[k], key="comm_kind", label_visibility="collapsed")
-        else:
-            kind = st.radio("community", kinds, format_func=lambda k: names[k], horizontal=True, key="comm_kind", label_visibility="collapsed")
-        render_community(kind or "companion")
-    for idx, (tab, (genre, icon, items)) in enumerate(zip(tabs[1:6], PRESETS)):
-        with tab:
-            st.markdown(f"### {labels[idx]}")
-            cols = st.columns(2)
-            for i, (pid, cname, story) in enumerate(items):
-                with cols[i % 2]:
-                    name = x(f"preset_{pid}_name")
-                    card(icon, name, x(f"preset_{pid}_bio"))
-                    if st.button(x("btn_launch_scenario"), key=f"preset_{pid}", use_container_width=True):
-                        enter_world(f"pre_{pid}", name, genre, cname, story)
-    with tabs[6]:
-        st.info(x("msg_coming_soon"))
+    cats = ["all"] + list(CAT_CODES)
+    names = {"all": x("cat_all"), **{c: cat_label(c) for c in CAT_CODES}}
+    if hasattr(st, "pills"):
+        cat = st.pills("category", cats, selection_mode="single", default="all", format_func=lambda c: names[c], key="explore_cat", label_visibility="collapsed")
+    else:
+        cat = st.radio("category", cats, format_func=lambda c: names[c], horizontal=True, key="explore_cat", label_visibility="collapsed")
+    if (cat or "all") != "all":
+        render_category(cat)
+        return
+    kinds = ["companion", "world", "avatar"]
+    kind_names = {"companion": x("comm_companions"), "avatar": x("comm_avatars"), "world": x("comm_worlds")}
+    if hasattr(st, "pills"):
+        kind = st.pills("community", kinds, selection_mode="single", default="companion", format_func=lambda k: kind_names[k], key="comm_kind", label_visibility="collapsed")
+    else:
+        kind = st.radio("community", kinds, format_func=lambda k: kind_names[k], horizontal=True, key="comm_kind", label_visibility="collapsed")
+    render_community(kind or "companion")
 
 # ============================================================ #WORLD-ACTIONS
 # WHAT: delete a world (publishing and making private is handled by the database: see publish_item)  |  CHANGE WHEN: deleting problems
@@ -4829,6 +5231,7 @@ def tab_create_world():  # shown inside Create a Companion, one tap away
         custom = clean_config({"lore": lore, "enemies": enemies, "archetype": archetype, "traits": traits,
                                "companion_name": comp_name, "companion_role": comp_role, "companion_vibe": comp_vibe,
                                "romance": romance, "action": action})
+        new_id = None
         if ss.get("user"):
             row = {"creator_id": ss.user.id, "world_name": w_name.strip(), "world_genre": str(w_genre).strip(),
                    "config": {**custom, "char_name": c_name.strip(), "char_backstory": c_backstory.strip()}}
@@ -4859,7 +5262,7 @@ def tab_create_world():  # shown inside Create a Companion, one tap away
                         art_delete(info["path"], str(ss.user.id))
                 else:
                     st.warning(art_error_text(status))  # the world was still created
-        enter_world("user_custom", w_name.strip(), w_genre, c_name.strip(), c_backstory.strip(), custom)
+        enter_world(str(new_id) if new_id else "user_custom", w_name.strip(), w_genre, c_name.strip(), c_backstory.strip(), custom)
 
 # ============================================================== #TAB-AVATARS
 # WHAT: My Characters (subscribers): create, edit, paint a portrait, play as, publish or keep private, delete  |  CHANGE WHEN: you change that screen
@@ -5071,7 +5474,7 @@ def render_hub():
             ss[key] = ss[key]
         except Exception as e:
             print("could not keep", key, repr(e)[:100])
-    panels = (tab_companion, tab_stories, tab_explore, tab_mine, tab_avatars, tab_profile)
+    panels = (tab_companion, tab_stories, tab_explore, tab_mine, tab_avatars, tab_profile, tab_chats, tab_search)  # same order as HUB_TAB_KEYS
     panels[idx]()
 
 # ===================================================================== #GAME
