@@ -9,7 +9,7 @@ HOW TO FIND THINGS
   Press Cmd+F, type the tag, and press Enter twice (the first match is the list below).
   A block runs from its banner down to the next banner. To change one block, replace only those lines.
   Needs these files beside it: localization.py, styles.py, stories.py.
-  One-time setup in Supabase: run conversations.sql, images_and_community.sql, update_nov14.sql, then companions.sql. In Render add SUPABASE_SERVICE_KEY (see the setup steps).
+  One-time setup in Supabase: run conversations.sql, images_and_community.sql, update_nov14.sql, companions.sql, then community_companions.sql. In Render add SUPABASE_SERVICE_KEY (see the setup steps).
 
 THE BLOCKS, IN ORDER
   #IMPORTS              the libraries the app uses, plus your stories.py texts
@@ -63,14 +63,14 @@ THE BLOCKS, IN ORDER
   #ROMANCE              Romance Tracking: the switch, the animated bond bar, how the bond moves (only at critical moments)
   #PERSONAS             the player's own characters (subscribers): list, save, the one being played, what the narrator is told
   #ART                  making pictures with OpenAI: checks, server-side credit limits, storing them in Supabase
-  #COMMUNITY            the community wall: feed, likes, reports, publishing, admin moderation
-  #COMPANION            Create a Companion: the builder, portrait, chat with your companion, returning to it later
+  #COMMUNITY            the community wall: companions, worlds and characters; likes, reports, sharing, admin moderation
+  #COMPANION            Create a Companion: the builder, portrait, sharing, chat with your companion (or one from the wall)
   #STORY-PICTURES       finds the uploaded story pictures in assets/stories
   #CHAT-BACKGROUND      switches the page to its chat look: the character's picture behind everything
   #STORY-START          opens Kade (or the story left off in), first messages, quick replies, the Menu button, switching, restarting
   #WORLD-SETTINGS       cleans world settings for the narrator and loads world lists
   #STORY-CARDS          entering a story from the full app and the card layout
-  #ONBOARDING           the welcome pop-up, the guided tour (pop-ups beside real buttons), the discovery message, the TikTok / Instagram / Facebook browser hint
+  #ONBOARDING           the welcome pop-up, the guided tours (full app and a short chat tour), the discovery message, the TikTok / Instagram / Facebook browser hint
   #TABS                 the compact tab row (in the chat and in the full app), moving between sections
   #PAGE-START           runs on every click: login, guest id, account, opens the story
   #SIDEBAR              the side menu: full app / back to story, language, status, restart, sign in / out, music, subscription, legal
@@ -306,8 +306,8 @@ ACTIVE_STORIES = ("kade", "morrigan")  # the characters visitors can pick; the f
 PREMIUM_GRACE_DAYS = 3  # a paid period that ran out this long ago no longer counts, even if a webhook was missed
 STORY_MEMORY_TURNS = 20  # how many past messages the narrator sees: the same for everyone
 GUEST_COOKIE_DAYS = 365  # how long a browser keeps the id that its free-trial balance is stored under
-TYPEWRITER_DELAY = 0.012  # seconds per character: replies type out fast, about 80 characters a second
-TYPEWRITER_FRAME_CHARS = 2  # characters drawn per screen update (keeps the page smooth)
+TYPEWRITER_DELAY = 0.006  # seconds per character: replies type out fast, about 160 characters a second
+TYPEWRITER_FRAME_CHARS = 3  # characters drawn per screen update (keeps the page smooth)
 ENABLE_PASSWORD_RESET = False  # hidden at launch: the reset link has no page to set a new password yet
 
 # ================================================================ #LANGUAGES
@@ -458,7 +458,7 @@ html body [data-testid="stToolbarActions"], html body [data-testid="stMainMenu"]
 html body [data-testid="stSidebarCollapsedControl"], html body [data-testid="stExpandSidebarButton"] { display: flex !important; visibility: visible !important; opacity: 1 !important; z-index: 1001 !important; }
 html body [data-testid="stSidebarCollapsedControl"] button, html body [data-testid="stExpandSidebarButton"] { background: rgba(15, 10, 30, 0.75) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; border-radius: 999px !important; color: #ffffff !important; }
 html body [data-testid="stSidebarCollapsedControl"] svg, html body [data-testid="stExpandSidebarButton"] svg { color: #ffffff !important; fill: #ffffff !important; }
-html body .block-container, html body [data-testid="stMainBlockContainer"] { max-width: 720px !important; padding: 0.4rem 0.9rem 7.5rem 0.9rem !important; }
+html body .block-container, html body [data-testid="stMainBlockContainer"] { max-width: 720px !important; padding: 3rem 0.9rem 7.5rem 0.9rem !important; }
 html body [data-testid="stVerticalBlock"] { gap: 0.55rem; }
 html body [data-testid="stBaseButton-primary"] { background: linear-gradient(135deg, #f472b6, #7c3aed) !important; border: 0 !important; color: #ffffff !important; font-weight: 800 !important; border-radius: 16px !important; min-height: 50px !important; }
 @media (max-width: 768px) { html body .block-container, html body [data-testid="stMainBlockContainer"] { padding-left: 0.7rem !important; padding-right: 0.7rem !important; } html body h1 { font-size: 1.5rem !important; } }
@@ -587,7 +587,7 @@ html body .hm-bond-badge { position: absolute; top: calc(100% + 6px); right: 0.8
 
 /* ===== Nov 14 (2): a compact, app-like layout: tab row, smaller type and spacing, tour pop-ups ===== */
 html { font-size: 15px !important; }
-html body .block-container { padding-top: 0.5rem !important; padding-bottom: 5rem !important; }
+html body .block-container { padding-top: 3rem !important; padding-bottom: 5rem !important; }
 html body h1 { font-size: 1.3rem !important; margin: 0 0 0.2rem 0 !important; padding: 0 !important; }
 html body h2 { font-size: 1.15rem !important; margin: 0 0 0.2rem 0 !important; padding: 0 !important; }
 html body h3 { font-size: 1.02rem !important; margin: 0 0 0.2rem 0 !important; padding: 0.2rem 0 !important; }
@@ -615,7 +615,7 @@ html body .st-key-hm_cards .hm-story-hook { font-size: 0.82rem !important; }
 
 /* the tab row: one compact line at the very top, scrolls sideways on a small screen */
 html body .st-key-hm_tabs { flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 0.3rem !important; align-items: center;
-  padding: 0.1rem 0 0.25rem 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; position: sticky; top: 0; z-index: 35; margin-bottom: 0.15rem; }
+  padding: 0.1rem 0 0.25rem 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; position: sticky; top: 2.7rem; z-index: 35; margin-bottom: 0.15rem; }
 html body .st-key-hm_tabs::-webkit-scrollbar { display: none; }
 html body .st-key-hm_tabs > div { width: auto !important; flex: 0 0 auto !important; min-width: 0; }
 html body .st-key-hm_tabs button { min-height: 32px !important; height: 32px; padding: 0 0.7rem !important; border-radius: 999px !important; white-space: nowrap; background: rgba(15, 10, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.22) !important; }
@@ -632,7 +632,8 @@ html body .hm-cp-sub { font-size: 0.8rem; color: #cbd5e1; margin: 0.1rem 0 0.4re
 html body .st-key-hm_tour { position: fixed !important; left: -9999px !important; top: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; opacity: 0; pointer-events: none; }
 /* the small tour pop-up that sits beside the real button */
 html body .hm-pop { position: fixed; z-index: 2147483000; background: #1c1236; border: 1px solid rgba(244, 114, 182, 0.75); border-radius: 16px; padding: 0.65rem 0.8rem 0.7rem 0.8rem;
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6); color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 0.86rem; line-height: 1.4; box-sizing: border-box; max-width: calc(100vw - 24px); }
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6); color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 0.86rem; line-height: 1.4; box-sizing: border-box; max-width: calc(100vw - 24px);
+  transition: left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s; will-change: left, top; }
 html body .hm-pop.busy { opacity: 0.55; pointer-events: none; }
 html body .hm-pop-arrow { position: absolute; width: 14px; height: 14px; background: #1c1236; border: 1px solid rgba(244, 114, 182, 0.75); transform: rotate(45deg); }
 html body .hm-pop-arrow.up { top: -8px; border-right: 0; border-bottom: 0; }
@@ -644,6 +645,15 @@ html body .hm-pop-actions { display: flex; gap: 0.4rem; justify-content: flex-en
 html body .hm-pop-btn { border: 0; border-radius: 12px; padding: 0.38rem 0.8rem; font-weight: 800; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
 html body .hm-pop-btn.main { background: linear-gradient(135deg, #f472b6, #7c3aed); color: #ffffff; }
 html body .hm-pop-btn.ghost { background: transparent; color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.25); }
+
+/* ===== Nov 14 (3): the top bar no longer sits on the tabs; no dimming flashes; quieter chrome ===== */
+html body [data-testid="stHeader"] { background: transparent !important; height: 2.6rem !important; min-height: 2.6rem !important; box-shadow: none !important; }
+html body [data-testid="stHeader"], html body [data-testid="stHeader"] * { pointer-events: none !important; }
+html body [data-testid="stSidebarCollapsedControl"], html body [data-testid="stSidebarCollapsedControl"] *, html body [data-testid="stExpandSidebarButton"], html body [data-testid="stExpandSidebarButton"] * { pointer-events: auto !important; }
+html body [data-testid="stDecoration"], html body [data-testid="stStatusWidget"] { display: none !important; }
+html body [data-stale="true"] { opacity: 1 !important; transition: none !important; }
+html body .hm-pop-arrow { transition: left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1); }
+html body .stButton > button { transition: transform 0.12s ease, background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
 """
 
 # =============================================================== #CSS-LOCKED
@@ -1073,7 +1083,6 @@ NEW_TEXT = {
     "world_bg_desc": {_EN: 'Describe how your world looks'},
     "world_bg_btn": {_EN: 'Paint background ✨'},
     "world_bg_create": {_EN: 'Paint a background picture when I create this world'},
-    "comm_title": {_EN: 'Community Avatars & Worlds', _ES: 'Avatares y mundos de la comunidad', _PT: 'Avatares e mundos da comunidade', _AR: 'شخصيات وعوالم المجتمع'},
     "comm_avatars": {_EN: 'Avatars', _ES: 'Avatares', _PT: 'Avatares', _AR: 'الشخصيات'},
     "comm_worlds": {_EN: 'Worlds', _ES: 'Mundos', _PT: 'Mundos', _AR: 'العوالم'},
     "comm_empty": {_EN: 'Nothing here yet. Be the first to publish!'},
@@ -1215,6 +1224,18 @@ NEW_TEXT = {
     "cp_saved_nopic": {_EN: 'Saved 💕 (the portrait was not made)'},
     "cp_saved_plans": {_EN: 'Saved 💕 Portraits are part of every paid plan.'},
     "cp_adults": {_EN: 'Companions must be adults (18+).'},
+    "comm_companions": {_EN: '💕 Companions', _ES: '💕 Compañeros', _PT: '💕 Companheiros', _AR: '💕 الرفاق'},
+    "comm_title": {_EN: 'Community Wall 💕', _ES: 'Comunidad 💕', _PT: 'Comunidade 💕', _AR: 'المجتمع 💕'},
+    "cp_publish": {_EN: '🌐 Share on the wall'},
+    "cp_unpublish": {_EN: '🔒 Make private'},
+    "cp_on_wall": {_EN: '🌐 On the community wall'},
+    "cm_gone": {_EN: "That companion isn't on the wall any more."},
+    "ctour1_title": {_EN: 'Say something'},
+    "ctour1_text": {_EN: 'Type here to chat, pookie 💬 Or tap a quick reply to break the ice!'},
+    "ctour2_title": {_EN: 'Romance bar'},
+    "ctour2_text": {_EN: 'Flip this on to watch your 💗 bond grow. It only moves when something meaningful happens!'},
+    "ctour3_title": {_EN: "There's more!"},
+    "ctour3_text": {_EN: "Create your own companion, explore stories and worlds, all up here ✨ Tap a tab whenever you're ready!"},
 }
 for _key, _by_lang in NEW_TEXT.items():  # hand them to the text lookup x(): any language without a line shows the English one
     for _lang_name, _text in _by_lang.items():
@@ -2058,7 +2079,7 @@ You agree not to use the Service to:
 ## 8. Community, pictures and saved conversations
 Premium members can post a world they created to the public community. A posted world, including its name, genre and the settings you wrote, can be seen and played by other players. It does not show your email address. You can delete a world from My Creations at any time; this removes it from the community. Do not post anything you want to keep private.
 
-Anyone with an account can create AI companions (adult characters only) and chat with them; your companions are private to you. Subscribers can create characters and have AI paint pictures for their characters and worlds, within daily and weekly limits. The descriptions you write are sent to our AI provider to make the picture, and the pictures are stored by us. Characters must be adults. Published characters and worlds, with their pictures and descriptions, are visible to everyone and can be liked and reported by signed-in members. We may hide or remove anything that is reported or that breaks these Terms, and a removed item cannot be published again unless we restore it.
+Anyone with an account can create AI companions (adult characters only) and chat with them. Companions are private until you choose to share them on the community wall. A shared companion, with its name, picture and the details you wrote, can be liked and reported, and other people can chat with it in their own private conversations (you cannot read their chats and they cannot read yours). We may hide or remove anything that is reported or that breaks these Terms. Subscribers can create characters and have AI paint pictures for their characters and worlds, within daily and weekly limits. The descriptions you write are sent to our AI provider to make the picture, and the pictures are stored by us. Characters must be adults. Published characters and worlds, with their pictures and descriptions, are visible to everyone and can be liked and reported by signed-in members. We may hide or remove anything that is reported or that breaks these Terms, and a removed item cannot be published again unless we restore it.
 
 Your conversations are saved so you can continue a story where you left off, even if you do not have an account. You can restart a story at any time from the menu, which erases the saved conversation with that character. We may delete saved conversations that have not been used for a long time.
 
@@ -2197,6 +2218,7 @@ We share your personal information with service providers that process it on our
 We may also share your information in these situations:
 
 - **Worlds you post.** If you post a world to the public community, its name, genre and the settings you wrote can be seen and played by other players. Your email address is not shown.
+- **Companions you share.** If you share a companion on the community wall, its name, picture, type and the details you wrote (looks, personality, backstory, how it should behave) are used to run chats with other people. Your email address is not shown, and you cannot read their conversations.
 - **Business transfers.** We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.
 - **Legal reasons and safety.** We may share information where the law requires it or to protect people, our rights or the Services.
 
@@ -3087,6 +3109,7 @@ def openai_image(prompt, user_id):
 
 
 def quota_take(kind):
+    ss.pop("_credits_line", None)  # the number is about to change
     try:
         data = sb.rpc("image_quota_take", {"p_kind": kind}).execute().data
         return data if isinstance(data, dict) else {"ok": False, "reason": "failed"}
@@ -3096,6 +3119,7 @@ def quota_take(kind):
 
 
 def quota_finish(credit_id, ok):
+    ss.pop("_credits_line", None)
     try:
         sb.rpc("image_quota_finish", {"p_id": credit_id, "p_ok": bool(ok)}).execute()
     except Exception as e:
@@ -3116,8 +3140,14 @@ def art_error_text(reason):
 
 
 def credits_line():
+    """The picture credits left. Remembered for 20 seconds so opening a screen does not call the database every time."""
+    cached = ss.get("_credits_line")
+    if cached and time.time() - cached[0] < 20:
+        return cached[1]
     q = quota_status()
-    return x("art_credits").format(day=int(q.get("day_left") or 0), week=int(q.get("week_left") or 0)) if q else ""
+    text = x("art_credits").format(day=int(q.get("day_left") or 0), week=int(q.get("week_left") or 0)) if q else ""
+    ss["_credits_line"] = (time.time(), text)
+    return text
 
 
 def make_art(kind, user_text, prompt, stem):
@@ -3235,7 +3265,9 @@ def render_community(kind):
                 url = art_url(row.get("image_path"))
                 if url:
                     st.image(url, use_container_width=True)
-                st.markdown(f'<div class="hm-comm-name">{esc(row.get("name"))}</div><div class="hm-comm-text">{esc(row.get("backstory"))}</div>', unsafe_allow_html=True)
+                sub = (f'<div class="hm-comm-text">{esc(COMP_REL_LABEL.get(row.get("relationship"), ""))} · {esc(COMP_TYPE_NAME.get(row.get("species"), str(row.get("species") or "")))}</div>'
+                       if kind == "companion" else "")
+                st.markdown(f'<div class="hm-comm-name">{esc(row.get("name"))}</div>{sub}<div class="hm-comm-text">{esc(row.get("backstory"))}</div>', unsafe_allow_html=True)
                 liked, likes = bool(row.get("liked")), int(row.get("likes") or 0)
                 if st.button(("❤️ " if liked else "🤍 ") + str(likes), key=f"like_{kind}_{rid}", use_container_width=True):
                     if not ss.get("user"):
@@ -3243,6 +3275,11 @@ def render_community(kind):
                     else:
                         community_like(kind, rid)
                         st.rerun()
+                if kind == "companion" and st.button(x("cp_chat"), key=f"cmchat_{rid}", type="primary", use_container_width=True):
+                    shared = community_companion_card(rid)  # their own private conversation with it, saved like any chat
+                    if shared:
+                        enter_companion(shared)
+                    st.error(x("cm_gone"))
                 if kind == "world" and st.button(x("btn_join_world"), key=f"pub_{rid}", use_container_width=True):
                     enter_world(rid, row.get("name") or "", row.get("genre") or "", x("lbl_wanderer"),
                                 "A traveler dropped into an unfamiliar alternate reality.", clean_config(row.get("config")))
@@ -3280,7 +3317,7 @@ COMP_REL_RULE = {
     "rival": "{n} is the player's playful rival: competitive, teasing and secretly invested in the player. No romance.",
     "mentor": "{n} is the player's wise mentor: encouraging, patient and sometimes tough. No romance.",
 }
-COMP_COLS = "id,name,gender,age,species,appearance,style,personality,comm_style,backstory,interests,dynamics,instructions,relationship,image_path"
+COMP_COLS = "id,name,gender,age,species,appearance,style,personality,comm_style,backstory,interests,dynamics,instructions,relationship,image_path,is_public"
 
 
 def comp_type_text(c):
@@ -3336,6 +3373,16 @@ def fetch_companion(companion_id):
         return rows[0] if rows else None
     except Exception as e:
         print("companion fetch error:", repr(e)[:300])
+        return None
+
+
+def community_companion_card(companion_id):
+    """The full card of a companion that is on the community wall (someone else's, or yours). None if it is not there any more."""
+    try:
+        data = sb.rpc("community_companion", {"p_id": str(companion_id)}).execute().data
+        return data if isinstance(data, dict) and data.get("id") else None
+    except Exception as e:
+        print("community_companion error (is community_companions.sql installed?):", repr(e)[:300])
         return None
 
 
@@ -3430,6 +3477,16 @@ def render_companion_cards(comps):
                 st.markdown(f'<div class="hm-comm-name">{esc(c["name"])}</div><div class="hm-comm-text">{esc(COMP_REL_LABEL.get(c.get("relationship"), ""))} · {esc(comp_type_text(c))}</div>', unsafe_allow_html=True)
                 if st.button(x("cp_chat"), key=f"cchat_{cid}", type="primary", use_container_width=True):
                     enter_companion(c)
+                if c.get("is_public"):  # on the community wall: one tap back to private
+                    st.caption(x("cp_on_wall"))
+                    if st.button(x("cp_unpublish"), key=f"cunpub_{cid}", use_container_width=True):
+                        publish_item("companion", cid, False)
+                        st.rerun()
+                elif st.button(x("cp_publish"), key=f"cpub_{cid}", use_container_width=True):
+                    result = publish_item("companion", cid, True)
+                    if result.get("ok"):
+                        st.rerun()
+                    st.error(publish_message(result))
                 if st.button(x("cp_edit"), key=f"cedit_{cid}", use_container_width=True):
                     ss["comp_edit"] = cid
                     st.rerun()
@@ -3557,7 +3614,21 @@ def _image_data_uri(path, mtime):
     ext = path.rsplit(".", 1)[-1].lower()
     mime = "image/jpeg" if ext in ("jpg", "jpeg") else "image/" + ext
     with open(path, "rb") as f:
-        return f"data:{mime};base64," + base64.b64encode(f.read()).decode()
+        raw = f.read()
+    try:  # the page re-sends this picture on every tap, and a phone never needs more than about 900 px: shrink big ones once, here
+        from PIL import Image
+        import io
+        im = Image.open(io.BytesIO(raw))
+        if len(raw) > 160_000 or im.width > 1000:
+            im = im.convert("RGB")
+            im.thumbnail((900, 1500))
+            buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=74, optimize=True, progressive=True)
+            if len(buf.getvalue()) < len(raw):
+                raw, mime = buf.getvalue(), "image/jpeg"
+    except Exception as e:
+        print("could not shrink", path, repr(e)[:120])
+    return f"data:{mime};base64," + base64.b64encode(raw).decode()
 
 
 def story_image_uri(base):
@@ -3747,8 +3818,8 @@ def start_session_story():
             latest = latest_conversation()  # a returning visitor goes back to the story they used last
             if latest and latest.get("story_id") in STORY_BY_ID:
                 want, saved = latest["story_id"], latest.get("engine")
-            elif latest and str(latest.get("story_id") or "").startswith("w_c_") and ss.get("user"):  # a companion is where they left off
-                comp = fetch_companion(str(latest["story_id"])[4:])
+            elif latest and str(latest.get("story_id") or "").startswith("w_c_"):  # a companion is where they left off (theirs, or one from the wall)
+                comp = fetch_companion(str(latest["story_id"])[4:]) or community_companion_card(str(latest["story_id"])[4:])
                 if comp:
                     waiting.empty()
                     enter_companion(comp)
@@ -3898,27 +3969,40 @@ def render_story_card(story):
             enter_story(story)
 
 # ============================================================== #ONBOARDING
-# WHAT: the welcome pop-up, the guided tour (small pop-ups beside the real buttons), the intro card, the discovery message, the in-app browser hint  |  CHANGE WHEN: you change any of those
+# WHAT: the welcome pop-up, the guided tours (the full app, and a short one for the chat), the intro card, the discovery message, the in-app browser hint  |  CHANGE WHEN: you change any of those
 # Turn the welcome off without a code change: set WELCOME_ENABLED=0 in Render. Test links: ?welcome=1 forces it, ?welcome=0 hides it.
 WELCOME_ENABLED = os.getenv("WELCOME_ENABLED", "1").strip() != "0"
 WELCOME_EMOJI = {"kade": "🐺", "morrigan": "💜"}
-# The tour. Each step opens one section and points a small pop-up at the real button (found by its key: .st-key-<key> button).
-TOUR_STEPS = (
-    {"tab": "companion", "mode": "companion", "target": ".st-key-tab_companion button", "title": "tour1_title", "text": "tour1_text"},
-    {"tab": "stories", "mode": None, "target": ".st-key-tab_stories button", "title": "tour2_title", "text": "tour2_text"},
-    {"tab": "companion", "mode": "world", "target": ".st-key-mk_world button", "title": "tour3_title", "text": "tour3_text"},
-    {"tab": "explore", "mode": None, "target": ".st-key-tab_explore button", "title": "tour4_title", "text": "tour4_text"},
-    {"tab": None, "mode": None, "target": ".st-key-tab_chat button", "title": "tour5_title", "text": "tour5_text"},
-)
-# This script lives in the page itself (installed once). hmTour draws the pop-up beside the target, hmSpot only makes something glow.
+# The tours. Each step points a small pop-up at a real button (found by CSS selector). "app" walks through the full app; "chat" is the short
+# one for visitors who jump straight into a chat.
+TOURS = {
+    "app": (
+        {"tab": "companion", "mode": "companion", "target": ".st-key-tab_companion button", "title": "tour1_title", "text": "tour1_text"},
+        {"tab": "stories", "mode": None, "target": ".st-key-tab_stories button", "title": "tour2_title", "text": "tour2_text"},
+        {"tab": "companion", "mode": "world", "target": ".st-key-mk_world button", "title": "tour3_title", "text": "tour3_text"},
+        {"tab": "explore", "mode": None, "target": ".st-key-tab_explore button", "title": "tour4_title", "text": "tour4_text"},
+        {"tab": None, "mode": None, "target": ".st-key-tab_chat button", "title": "tour5_title", "text": "tour5_text"},
+    ),
+    "chat": (
+        {"tab": None, "mode": None, "target": '[data-testid="stChatInput"]', "title": "ctour1_title", "text": "ctour1_text"},
+        {"tab": None, "mode": None, "target": ".st-key-romance_toggle", "title": "ctour2_title", "text": "ctour2_text"},
+        {"tab": None, "mode": None, "target": ".st-key-tab_companion button", "title": "ctour3_title", "text": "ctour3_text"},
+    ),
+}
+# This script lives in the page itself (installed once). hmTour draws one pop-up beside the target. The pop-up is KEPT between steps and glides to
+# the next button; Next / Back change the step on screen at once and press the hidden Streamlit button in the background, so there is no waiting
+# for the page to reload. hmSpot only makes something glow.
 TOUR_JS = r"""
 (function () {
   var w = window, d = document;
+  var S = w.__hmT = w.__hmT || {};
   w.hmTourClear = function () {
-    var p = d.getElementById('hm-pop'); if (p) { p.remove(); }
+    if (S.pop && S.pop.parentNode) { S.pop.parentNode.removeChild(S.pop); }
+    var old = d.getElementById('hm-pop'); if (old && old.parentNode) { old.parentNode.removeChild(old); }
     d.querySelectorAll('.hm-spot').forEach(function (e) { e.classList.remove('hm-spot'); });
-    if (w.__hmTourTimer) { clearInterval(w.__hmTourTimer); w.__hmTourTimer = null; }
-    if (w.__hmTourPlace) { w.removeEventListener('resize', w.__hmTourPlace); w.removeEventListener('scroll', w.__hmTourPlace, true); w.__hmTourPlace = null; }
+    if (S.timer) { clearInterval(S.timer); S.timer = null; }
+    if (S.onMove) { w.removeEventListener('resize', S.onMove); w.removeEventListener('scroll', S.onMove, true); S.onMove = null; }
+    S.pop = null; S.cfg = null; S.placed = false;
   };
   w.hmSpot = function (sel) {
     w.hmTourClear();
@@ -3928,47 +4012,71 @@ TOUR_JS = r"""
     }, 150);
   };
   function press(sel) { var b = d.querySelector(sel); if (b) { b.click(); } }
+  function mk(label, cls, fn) {
+    var b = d.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = label;
+    b.addEventListener('click', function (ev) { ev.stopPropagation(); fn(); });
+    S.actions.appendChild(b);
+  }
+  function show() {  /* put step S.i on screen right now */
+    var c = S.cfg, step = c.steps[S.i], L = c.labels, last = S.i === c.steps.length - 1;
+    S.meta.textContent = L.progress.replace('{n}', S.i + 1).replace('{total}', c.steps.length);
+    S.title.textContent = step.title; S.text.textContent = step.text;
+    while (S.actions.firstChild) { S.actions.removeChild(S.actions.firstChild); }
+    if (S.i > 0) { mk(L.back, 'hm-pop-btn ghost', function () { S.i -= 1; show(); press('.st-key-tour_back button'); }); }
+    if (!last) { mk(L.skip, 'hm-pop-btn ghost', function () { w.hmTourClear(); press('.st-key-tour_skip button'); }); }
+    mk(last ? L.finish : L.next, 'hm-pop-btn main', function () {
+      if (last) { w.hmTourClear(); press('.st-key-tour_next button'); } else { S.i += 1; show(); press('.st-key-tour_next button'); }
+    });
+    d.querySelectorAll('.hm-spot').forEach(function (e) { e.classList.remove('hm-spot'); });
+    S.ticks = 0; S.scrolled = false;
+    place();
+  }
+  function place() {
+    if (!S.pop || !S.cfg) { return false; }
+    var pop = S.pop, el = d.querySelector(S.cfg.steps[S.i].target), vw = w.innerWidth, vh = w.innerHeight;
+    var pw = Math.min(290, vw - 24); pop.style.width = pw + 'px';
+    var ph = pop.offsetHeight;
+    if (!el) {  /* the target has not appeared yet (the page is still changing): stay where we are, or wait at the bottom */
+      if (!S.placed) { pop.style.left = ((vw - pw) / 2) + 'px'; pop.style.top = Math.max(8, vh - ph - 16) + 'px'; S.arrow.style.display = 'none'; S.placed = true; }
+      return false;
+    }
+    el.classList.add('hm-spot');
+    var r = el.getBoundingClientRect(); S.arrow.style.display = '';
+    var left = Math.max(12, Math.min(vw - pw - 12, r.left + r.width / 2 - pw / 2));
+    var top = r.bottom + 14, above = false;
+    if (top + ph > vh - 10) { top = r.top - ph - 14; above = true; }
+    if (top < 8) { top = Math.max(8, Math.min(vh - ph - 10, r.bottom + 14)); }
+    if (!S.placed) { pop.style.transition = 'none'; }
+    pop.style.left = left + 'px'; pop.style.top = top + 'px';
+    S.arrow.className = 'hm-pop-arrow ' + (above ? 'down' : 'up');
+    S.arrow.style.left = Math.max(16, Math.min(pw - 30, r.left + r.width / 2 - left - 8)) + 'px';
+    if (!S.placed) { S.placed = true; void pop.offsetWidth; pop.style.transition = ''; }
+    if (!S.scrolled) { S.scrolled = true; try { el.scrollIntoView({block: 'nearest', inline: 'center', behavior: 'smooth'}); } catch (e) {} }
+    return true;
+  }
   w.hmTour = function (cfg) {
-    w.hmTourClear();
-    var pop = d.createElement('div'); pop.id = 'hm-pop'; pop.className = 'hm-pop';
-    var arrow = d.createElement('div'); arrow.className = 'hm-pop-arrow';
-    var meta = d.createElement('div'); meta.className = 'hm-pop-step'; meta.textContent = cfg.progress;
-    var title = d.createElement('div'); title.className = 'hm-pop-title'; title.textContent = cfg.title;
-    var text = d.createElement('div'); text.className = 'hm-pop-text'; text.textContent = cfg.text;
-    var actions = d.createElement('div'); actions.className = 'hm-pop-actions';
-    function mk(label, cls, sel) {
-      var b = d.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = label;
-      b.addEventListener('click', function (ev) { ev.stopPropagation(); pop.classList.add('busy'); press(sel); });
-      actions.appendChild(b);
+    var fresh = !S.pop || !S.pop.parentNode || !S.cfg || S.cfg.kind !== cfg.kind || S.cfg.steps.length !== cfg.steps.length;
+    if (fresh) {
+      w.hmTourClear();
+      S.cfg = cfg; S.i = cfg.index;
+      var pop = d.createElement('div'); pop.id = 'hm-pop'; pop.className = 'hm-pop';
+      S.pop = pop; S.arrow = d.createElement('div'); S.arrow.className = 'hm-pop-arrow';
+      S.meta = d.createElement('div'); S.meta.className = 'hm-pop-step';
+      S.title = d.createElement('div'); S.title.className = 'hm-pop-title';
+      S.text = d.createElement('div'); S.text.className = 'hm-pop-text';
+      S.actions = d.createElement('div'); S.actions.className = 'hm-pop-actions';
+      pop.appendChild(S.arrow); pop.appendChild(S.meta); pop.appendChild(S.title); pop.appendChild(S.text); pop.appendChild(S.actions);
+      d.body.appendChild(pop);
+      S.onMove = function () { place(); };
+      w.addEventListener('resize', S.onMove); w.addEventListener('scroll', S.onMove, true);
+      show();
+    } else {
+      S.cfg = cfg;
+      if (S.i !== cfg.index) { S.i = cfg.index; show(); }  /* the page and the pop-up disagree: the page is right */
     }
-    if (cfg.hasBack) { mk(cfg.back, 'hm-pop-btn ghost', '.st-key-tour_back button'); }
-    if (cfg.hasSkip) { mk(cfg.skip, 'hm-pop-btn ghost', '.st-key-tour_skip button'); }
-    mk(cfg.next, 'hm-pop-btn main', '.st-key-tour_next button');
-    pop.appendChild(arrow); pop.appendChild(meta); pop.appendChild(title); pop.appendChild(text); pop.appendChild(actions);
-    d.body.appendChild(pop);
-    function place() {
-      var el = d.querySelector(cfg.target), vw = w.innerWidth, vh = w.innerHeight;
-      var pw = Math.min(290, vw - 24); pop.style.width = pw + 'px';
-      var ph = pop.offsetHeight;
-      if (!el) { pop.style.left = ((vw - pw) / 2) + 'px'; pop.style.top = Math.max(8, vh - ph - 16) + 'px'; arrow.style.display = 'none'; return false; }
-      el.classList.add('hm-spot');
-      var r = el.getBoundingClientRect(); arrow.style.display = '';
-      var left = Math.max(12, Math.min(vw - pw - 12, r.left + r.width / 2 - pw / 2));
-      var top = r.bottom + 14, above = false;
-      if (top + ph > vh - 10) { top = r.top - ph - 14; above = true; }
-      if (top < 8) { top = Math.max(8, Math.min(vh - ph - 10, r.bottom + 14)); }
-      pop.style.left = left + 'px'; pop.style.top = top + 'px';
-      arrow.className = 'hm-pop-arrow ' + (above ? 'down' : 'up');
-      arrow.style.left = Math.max(16, Math.min(pw - 30, r.left + r.width / 2 - left - 8)) + 'px';
-      return true;
-    }
-    w.__hmTourPlace = place; w.addEventListener('resize', place); w.addEventListener('scroll', place, true);
-    var tries = 0, scrolled = false;
-    w.__hmTourTimer = setInterval(function () {
-      var ok = place();
-      if (ok && !scrolled) { scrolled = true; try { d.querySelector(cfg.target).scrollIntoView({block: 'nearest', inline: 'center', behavior: 'smooth'}); } catch (e) {} }
-      if (++tries > 40) { clearInterval(w.__hmTourTimer); w.__hmTourTimer = null; }
-    }, 150);
+    if (S.timer) { clearInterval(S.timer); }
+    S.ticks = 0;
+    S.timer = setInterval(function () { place(); if (++S.ticks > 45) { clearInterval(S.timer); S.timer = null; } }, 140);
   };
 })();
 """
@@ -4020,31 +4128,32 @@ def check_welcome():
         ss["_show_welcome"] = True
 
 
-def start_tour():
+def start_tour(kind="app"):
+    """kind "app" = the walk through the full app, "chat" = the short one inside a chat."""
     ss["tour"] = 1
+    ss["tour_kind"] = kind
     ss.pop("_tour_applied", None)
     ss["onb"] = None
-    ss["view"] = "hub"
+    ss["view"] = "hub" if kind == "app" else "chat"
 
 
 def end_tour(skipped=False):
     """The tour is over: back to the chat with their character. Someone who skipped gets the short discovery message there."""
     ss["tour"] = None
     ss.pop("_tour_applied", None)
-    ss["view"] = "chat"
+    ss["view"] = "chat"  # either tour ends in the chat with their character
     ss["onb"] = "tip" if skipped else None
     ss["_clear_spot"] = True  # cleared again on the next page draw, in case this one is cut short by the rerun
     spotlight()
 
 
 def _onb_go(story_id):
-    """Path A: straight into the chat (switching character if the link was for a different one)."""
+    """Path A: straight into the chat (switching character if the link was for a different one). The short chat tour starts by itself."""
     track_event("WelcomeChoice", key="welcome_choice", choice="chat")
     if story_id != current_story_id():
         ss["want_story"] = story_id
         ss.world_engine = new_engine()
-    ss["onb"] = "tip"
-    ss["view"] = "chat"
+    start_tour("chat")
     st.rerun()
 
 
@@ -4101,11 +4210,12 @@ def show_welcome():
 
 def apply_tour_step():
     """Before the tabs are drawn: move to the section this step explains (only when the step changes, so tapping around during a step is allowed)."""
+    steps = TOURS[ss.get("tour_kind", "app")]
     step = int(ss.get("tour") or 0)
-    if not 1 <= step <= len(TOUR_STEPS):
+    if not 1 <= step <= len(steps):
         ss["tour"] = None
         return None
-    cfg = TOUR_STEPS[step - 1]
+    cfg = steps[step - 1]
     if ss.get("_tour_applied") != step:
         ss["_tour_applied"] = step
         if cfg["tab"]:
@@ -4116,9 +4226,11 @@ def apply_tour_step():
 
 
 def render_tour(step):
-    """After the tabs are drawn: the small pop-up beside the real button, and the hidden buttons it presses."""
-    cfg = TOUR_STEPS[step - 1]
-    last = step == len(TOUR_STEPS)
+    """The small pop-up beside the real button, and the hidden buttons it presses. The whole tour is handed to the page at once,
+    so Next and Back answer instantly while the page catches up in the background."""
+    kind = ss.get("tour_kind", "app")
+    steps = TOURS[kind]
+    last = step == len(steps)
     try:
         box = st.container(key="hm_tour")  # kept out of sight by CSS; the pop-up presses these
     except TypeError:
@@ -4126,7 +4238,7 @@ def render_tour(step):
     with box:
         if st.button("next", key="tour_next"):
             if last:
-                track_event("TourDone", key="tour_done")
+                track_event("TourDone", key=f"tour_done_{kind}")
                 end_tour()
             else:
                 ss["tour"] = step + 1
@@ -4135,11 +4247,12 @@ def render_tour(step):
             ss["tour"] = step - 1
             st.rerun()
         if st.button("skip", key="tour_skip"):
-            track_event("TourSkipped", key="tour_skipped")
+            track_event("TourSkipped", key=f"tour_skipped_{kind}")
             end_tour(skipped=True)
             st.rerun()
-    cfg_js = {"target": cfg["target"], "title": x(cfg["title"]), "text": x(cfg["text"]), "progress": x("tour_progress").format(n=step, total=len(TOUR_STEPS)),
-              "next": x("tour_finish") if last else x("tour_next"), "back": x("tour_back"), "skip": x("tour_skip"), "hasBack": step > 1, "hasSkip": not last}
+    cfg_js = {"kind": kind, "index": step - 1,
+              "steps": [{"target": c["target"], "title": x(c["title"]), "text": x(c["text"])} for c in steps],
+              "labels": {"progress": x("tour_progress"), "next": x("tour_next"), "finish": x("tour_finish"), "back": x("tour_back"), "skip": x("tour_skip")}}
     run_tour_js("window.parent.hmTour(" + json.dumps(cfg_js).replace("</", "<\\/") + ");")
 
 
@@ -4240,7 +4353,7 @@ def render_tabs(active=None):
     'Create a Companion' comes first and glows. The small ? replays the tour."""
     if ss.pop("_clear_spot", False):  # a tour just ended: make sure no glow or pop-up is left on the page
         spotlight()
-    if ss.get("tour") and ss.get("view") != "hub":  # they left the tour (for example by tapping Chat): its pop-up goes away
+    if ss.get("tour") and (ss.get("tour_kind", "app") == "app") != (ss.get("view") == "hub"):  # they left the tour's page (for example by tapping Chat): its pop-up goes away
         ss["tour"] = None
         ss.pop("_tour_applied", None)
         spotlight()
@@ -4258,8 +4371,8 @@ def render_tabs(active=None):
             if st.button(x(HUB_TAB_TEXT[key]), key=f"tab_{key}", type="primary" if active == key else "secondary"):
                 go_tab(key)
                 st.rerun()
-        if st.button("?", key="hub_tour", help=x("tour_replay")):
-            start_tour()
+        if st.button("?", key="hub_tour", help=x("tour_replay")):  # in a chat this replays the short chat tour, in the full app the app tour
+            start_tour("chat" if ss.get("view") != "hub" else "app")
             st.rerun()
 
 # =============================================================== #PAGE-START
@@ -4510,13 +4623,13 @@ def tab_explore():
     st.markdown(x("sub_genre_title"))
     tabs = st.tabs([x("tab_community")] + labels)
     with tabs[0]:
-        kinds = ["avatar", "world"]
-        names = {"avatar": x("comm_avatars"), "world": x("comm_worlds")}
+        kinds = ["companion", "world", "avatar"]
+        names = {"companion": x("comm_companions"), "avatar": x("comm_avatars"), "world": x("comm_worlds")}
         if hasattr(st, "pills"):
-            kind = st.pills("community", kinds, selection_mode="single", default="avatar", format_func=lambda k: names[k], key="comm_kind", label_visibility="collapsed")
+            kind = st.pills("community", kinds, selection_mode="single", default="companion", format_func=lambda k: names[k], key="comm_kind", label_visibility="collapsed")
         else:
             kind = st.radio("community", kinds, format_func=lambda k: names[k], horizontal=True, key="comm_kind", label_visibility="collapsed")
-        render_community(kind or "avatar")
+        render_community(kind or "companion")
     for idx, (tab, (genre, icon, items)) in enumerate(zip(tabs[1:6], PRESETS)):
         with tab:
             st.markdown(f"### {labels[idx]}")
@@ -4941,7 +5054,13 @@ def render_game():
     render_tabs("chat")  # the compact tab row at the very top
     render_bond_bar(ss.pop("_bond_delta", 0))  # the romance bar (only while tracking is on)
     render_top_bar()
-    render_onb_tip()  # a small closable hint after "Take me to ..."
+    render_onb_tip()  # the discovery message, for visitors who skipped a tour
+    if ss.get("tour") and ss.get("tour_kind") == "chat":  # the short chat tour: three pop-ups, gone for good once they send a message
+        if any(m["role"] == "user" and not m.get("hidden") for m in engine["story_log"]):
+            ss["tour"] = None
+            spotlight()
+        else:
+            render_tour(int(ss["tour"]))
     render_browser_banner()  # inside TikTok, Instagram or Facebook: how to open the phone's own browser
     if ss.pop("_show_welcome", False):
         show_welcome()  # first-time visitors: the welcome pop-up
