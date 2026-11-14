@@ -73,7 +73,7 @@ THE BLOCKS, IN ORDER
   #ONBOARDING           the welcome pop-up, the guided tours (full app and a short chat tour), the discovery message, the TikTok / Instagram / Facebook browser hint
   #TABS                 the compact tab row (in the chat and in the full app), moving between sections
   #PAGE-START           runs on every click: login, guest id, account, opens the story
-  #SIDEBAR              the side menu: full app / back to story, language, status, restart, sign in / out, music, subscription, legal
+  #SIDEBAR              the side menu: explore, replay the tour, plan status, restart, sign in / out, music, my plan and settings, terms
   #PAYWALL-FLOW         payment-return handling, the retry screen and the paywall gate (opens the plans pop-up)
   #TAB-STORIES          the full app: the Stories screen, two cards per row on a phone
   #TAB-EXPLORE          the full app: the community wall (characters and worlds) and the genre scenarios
@@ -1021,11 +1021,9 @@ NEW_TEXT = {
         _PT: "Ótimo. Crie sua conta grátis acima e levamos você direto ao pagamento.",
         _AR: "رائع. أنشئ حسابك المجاني أعلاه وسننقلك مباشرة إلى الدفع."},
     "msgs_left": {_EN: "💬 {n} free messages left", _ES: "💬 Te quedan {n} mensajes gratis", _PT: "💬 Restam {n} mensagens grátis", _AR: "💬 تبقّت {n} رسائل مجانية"},
-    "btn_restart": {_EN: "🔄 Restart this story", _ES: "🔄 Reiniciar esta historia", _PT: "🔄 Reiniciar esta história", _AR: "🔄 إعادة بدء هذه القصة"},
     "restart_confirm": {
         _EN: "This erases your conversation with {name}.", _ES: "Esto borra tu conversación con {name}.",
         _PT: "Isso apaga a sua conversa com {name}.", _AR: "سيؤدي هذا إلى حذف محادثتك مع {name}."},
-    "restart_yes": {_EN: "Yes, erase and restart", _ES: "Sí, borrar y reiniciar", _PT: "Sim, apagar e reiniciar", _AR: "نعم، احذف وابدأ من جديد"},
     "btn_retry_msg": {_EN: "↻ Try again", _ES: "↻ Intentar de nuevo", _PT: "↻ Tentar de novo", _AR: "↻ حاول مرة أخرى"},
     "err_conn": {
         _EN: "Connection problem. Your message wasn't sent. Please try again.",
@@ -1034,8 +1032,6 @@ NEW_TEXT = {
         _AR: "مشكلة في الاتصال. لم يتم إرسال رسالتك. حاول مرة أخرى."},
     "chat_ph_named": {_EN: "Reply to {name}…", _ES: "Responde a {name}…", _PT: "Responda a {name}…", _AR: "ردّ على {name}…"},
     "btn_menu": {_EN: "🏠 Explore Haymaker", _ES: "🏠 Explora Haymaker", _PT: "🏠 Explore o Haymaker", _AR: "🏠 استكشف هايميكر"},
-    "btn_menu_full": {_EN: "🏠 All stories & settings", _ES: "🏠 Todas las historias y ajustes", _PT: "🏠 Todas as histórias e ajustes", _AR: "🏠 كل القصص والإعدادات"},
-    "btn_continue": {_EN: "▶ Back to {name}", _ES: "▶ Volver con {name}", _PT: "▶ Voltar para {name}", _AR: "▶ العودة إلى {name}"},
     "romance_toggle": {_EN: '💗 Romance', _ES: '💗 Romance', _PT: '💗 Romance', _AR: '💗 الرومانسية'},
     "bond_partner": {_EN: 'Love interest', _ES: 'Interés romántico', _PT: 'Par romântico', _AR: 'الحبيب'},
     "bond_s0": {_EN: 'Strangers', _ES: 'Desconocidos', _PT: 'Desconhecidos', _AR: 'غرباء'},
@@ -1145,7 +1141,6 @@ NEW_TEXT = {
     "tour_back": {_EN: '◀ Back'},
     "tour_skip": {_EN: 'Skip tour'},
     "tour_done": {_EN: '💕 Take me to {name}!'},
-    "tour_replay": {_EN: '💕 Replay the tour'},
     "intro_title": {_EN: 'Start here, pookie ✨'},
     "intro_btn": {_EN: '✨ Create my character'},
     "intro_close": {_EN: 'Got it'},
@@ -1236,6 +1231,39 @@ NEW_TEXT = {
     "ctour2_text": {_EN: 'Flip this on to watch your 💗 bond grow. It only moves when something meaningful happens!'},
     "ctour3_title": {_EN: "There's more!"},
     "ctour3_text": {_EN: "Create your own companion, explore stories and worlds, all up here ✨ Tap a tab whenever you're ready!"},
+    "status_control": {_EN: '💕 My Haymaker', _ES: '💕 Mi Haymaker', _PT: '💕 Meu Haymaker', _AR: '💕 هايميكر الخاص بي'},
+    "btn_menu_full": {_EN: '🏠 Explore Haymaker', _ES: '🏠 Explora Haymaker', _PT: '🏠 Explore o Haymaker', _AR: '🏠 استكشف هايميكر'},
+    "btn_continue": {_EN: '💬 Back to {name}', _ES: '💬 Volver con {name}', _PT: '💬 Voltar para {name}', _AR: '💬 العودة إلى {name}'},
+    "tour_replay": {_EN: '💕 Show me around again', _ES: '💕 Enséñame todo otra vez', _PT: '💕 Mostre tudo de novo', _AR: '💕 أرني كل شيء مرة أخرى'},
+    "trial_active": {_EN: '💬 {} free messages left, pookie!', _ES: '💬 ¡Te quedan {} mensajes gratis, cariño!', _PT: '💬 Faltam {} mensagens grátis, amor!', _AR: '💬 تبقّى لديك {} رسائل مجانية!'},
+    "pool_depleted": {_EN: '😢 Your free messages are all used up. Pick a plan to keep the magic going!', _ES: '😢 Ya usaste tus mensajes gratis. ¡Elige un plan para seguir con la magia!', _PT: '😢 Suas mensagens grátis acabaram. Escolha um plano para continuar a magia!', _AR: '😢 انتهت رسائلك المجانية. اختر خطة لتكمل السحر!'},
+    "premium_pilot": {_EN: '💎 VIP pookie · {}', _ES: '💎 VIP · {}', _PT: '💎 VIP · {}', _AR: '💎 عضو VIP · {}'},
+    "msg_profile_unverified": {_EN: "🤔 Couldn't check your account just now. Please try again!", _ES: '🤔 No pudimos revisar tu cuenta. ¡Inténtalo de nuevo!', _PT: '🤔 Não conseguimos verificar sua conta agora. Tente novamente!', _AR: '🤔 تعذّر التحقق من حسابك الآن. حاول مرة أخرى!'},
+    "btn_restart": {_EN: '🔄 Start this story over', _ES: '🔄 Empezar esta historia de nuevo', _PT: '🔄 Recomeçar esta história', _AR: '🔄 ابدأ هذه القصة من جديد'},
+    "restart_confirm": {_EN: 'Start over with {name}? This erases your chat with them, pookie.', _ES: '¿Empezar de nuevo con {name}? Se borrará tu conversación.', _PT: 'Recomeçar com {name}? Isso apaga a sua conversa.', _AR: 'البدء من جديد مع {name}؟ ستُمسح محادثتك.'},
+    "restart_yes": {_EN: 'Yes, start over 💔', _ES: 'Sí, empezar de nuevo 💔', _PT: 'Sim, recomeçar 💔', _AR: 'نعم، ابدأ من جديد 💔'},
+    "btn_logout_sidebar": {_EN: '👋 Sign out', _ES: '👋 Cerrar sesión', _PT: '👋 Sair', _AR: '👋 تسجيل الخروج'},
+    "sb2_account": {_EN: '🔑 Sign in or make a free account', _ES: '🔑 Inicia sesión o crea una cuenta gratis', _PT: '🔑 Entre ou crie uma conta grátis', _AR: '🔑 سجّل الدخول أو أنشئ حسابًا مجانيًا'},
+    "lbl_audio_scape": {_EN: '🎵 Music', _ES: '🎵 Música', _PT: '🎵 Música', _AR: '🎵 الموسيقى'},
+    "btn_mute_audio": {_EN: '🔇 Music off', _ES: '🔇 Música apagada', _PT: '🔇 Música desligada', _AR: '🔇 إيقاف الموسيقى'},
+    "btn_play_audio": {_EN: '🎵 Music on', _ES: '🎵 Música encendida', _PT: '🎵 Música ligada', _AR: '🎵 تشغيل الموسيقى'},
+    "btn_next_track": {_EN: '⏭ Next song', _ES: '⏭ Siguiente canción', _PT: '⏭ Próxima música', _AR: '⏭ الأغنية التالية'},
+    "cap_audio_authorize": {_EN: "🎶 Can't hear anything? Tap play on the player above (phones need one tap first).", _ES: '🎶 ¿No oyes nada? Toca play en el reproductor de arriba (el teléfono necesita un toque primero).', _PT: '🎶 Não ouve nada? Toque em play no player acima (o celular precisa de um toque primeiro).', _AR: '🎶 لا تسمع شيئًا؟ اضغط تشغيل في المشغّل أعلاه (الهاتف يحتاج لمسة أولى).'},
+    "settings_control": {_EN: '⚙️ My plan & settings', _ES: '⚙️ Mi plan y ajustes', _PT: '⚙️ Meu plano e ajustes', _AR: '⚙️ خطتي وإعداداتي'},
+    "settings_sub_status_title": {_EN: '📊 My plan', _ES: '📊 Mi plan', _PT: '📊 Meu plano', _AR: '📊 خطتي'},
+    "sub_mgmt_title": {_EN: '💳 Manage my subscription', _ES: '💳 Gestionar mi suscripción', _PT: '💳 Gerenciar minha assinatura', _AR: '💳 إدارة اشتراكي'},
+    "settings_status_free": {_EN: "You're on the free plan: 12 free messages to start, pookie! Pick a plan for unlimited chat, companion portraits and more ✨", _ES: 'Estás en el plan gratis: 12 mensajes gratis para empezar. Elige un plan para chat ilimitado, retratos de compañeros y más ✨', _PT: 'Você está no plano grátis: 12 mensagens grátis para começar. Escolha um plano para chat ilimitado, retratos de companheiros e mais ✨', _AR: 'أنت على الخطة المجانية: 12 رسالة مجانية للبدء. اختر خطة لمحادثة غير محدودة وصور للرفاق والمزيد ✨'},
+    "lbl_premium_active": {_EN: '💎 Your plan is active. Thank you, pookie!', _ES: '💎 Tu plan está activo. ¡Gracias, cariño!', _PT: '💎 Seu plano está ativo. Obrigada, amor!', _AR: '💎 خطتك نشطة. شكرًا لك!'},
+    "settings_footer": {_EN: 'Payments by Stripe. Cancel any time. 18+ only 💕', _ES: 'Pagos con Stripe. Cancela cuando quieras. Solo +18 💕', _PT: 'Pagamentos via Stripe. Cancele quando quiser. Apenas 18+ 💕', _AR: 'الدفع عبر Stripe. ألغِ في أي وقت. +18 فقط 💕'},
+    "manage_sub": {_EN: '💳 Manage my subscription', _ES: '💳 Gestionar mi suscripción', _PT: '💳 Gerenciar minha assinatura', _AR: '💳 إدارة اشتراكي'},
+    "portal_open": {_EN: 'Open my billing page', _ES: 'Abrir mi página de pagos', _PT: 'Abrir minha página de pagamentos', _AR: 'فتح صفحة الدفع الخاصة بي'},
+    "btn_cancel_sub": {_EN: 'Cancel my subscription', _ES: 'Cancelar mi suscripción', _PT: 'Cancelar minha assinatura', _AR: 'إلغاء اشتراكي'},
+    "cancel_sub_confirm": {_EN: 'Yes, stop my plan from renewing. I keep full access until the end of the period I already paid for.', _ES: 'Sí, que mi plan no se renueve. Conservo el acceso completo hasta el final del periodo ya pagado.', _PT: 'Sim, não renovar meu plano. Mantenho o acesso completo até o fim do período já pago.', _AR: 'نعم، أوقف تجديد خطتي. أحتفظ بالوصول الكامل حتى نهاية الفترة المدفوعة.'},
+    "sub_access_line": {_EN: 'Your plan: {plan} · Active until {date}', _ES: 'Tu plan: {plan} · Activo hasta {date}', _PT: 'Seu plano: {plan} · Ativo até {date}', _AR: 'خطتك: {plan} · نشطة حتى {date}'},
+    "msg_no_subscription": {_EN: "You don't have an active plan yet, pookie. Pick one whenever you like 💕", _ES: 'Aún no tienes un plan activo. Elige uno cuando quieras 💕', _PT: 'Você ainda não tem um plano ativo. Escolha um quando quiser 💕', _AR: 'ليس لديك خطة نشطة بعد. اختر واحدة متى شئت 💕'},
+    "msg_already_cancelled": {_EN: "Your plan won't renew. You keep access until the end of the period you paid for.", _ES: 'Tu plan no se renovará. Conservas el acceso hasta el final del periodo pagado.', _PT: 'Seu plano não será renovado. Você mantém o acesso até o fim do período pago.', _AR: 'لن تُجدَّد خطتك. تحتفظ بالوصول حتى نهاية الفترة المدفوعة.'},
+    "msg_cancel_fail": {_EN: "We couldn't cancel just now. Please try again, or use 'Manage my subscription'.", _ES: 'No pudimos cancelar ahora. Inténtalo de nuevo o usa «Gestionar mi suscripción».', _PT: 'Não conseguimos cancelar agora. Tente novamente ou use «Gerenciar minha assinatura».', _AR: 'تعذّر الإلغاء الآن. حاول مرة أخرى أو استخدم «إدارة اشتراكي».'},
+    "legal_compliance_link": {_EN: '📜 Terms & Privacy', _ES: '📜 Términos y privacidad', _PT: '📜 Termos e privacidade', _AR: '📜 الشروط والخصوصية'},
 }
 for _key, _by_lang in NEW_TEXT.items():  # hand them to the text lookup x(): any language without a line shows the English one
     for _lang_name, _text in _by_lang.items():
@@ -4449,7 +4477,7 @@ with st.sidebar:
             ss.pop("_confirm_restart", None)
             restart_story()
             st.rerun()
-    if engine["world_name"]:
+    if engine["world_name"] and not (engine.get("world_customization") or {}).get("companion_id"):  # health and items belong to adventures, not to companions
         st.caption(f"❤️ {char['health']}/100 · 🎒 {len(char['inventory'])}")
     st.divider()
 
@@ -4458,7 +4486,7 @@ with st.sidebar:
         if st.button(x("btn_logout_sidebar"), type="primary", key="logout_sidebar", use_container_width=True):
             do_logout()
     else:
-        with st.expander(f"🔑 {x('btn_signin')} / {x('btn_signup')}"):
+        with st.expander(x("sb2_account")):
             render_auth_form("menu")
     st.divider()
 
@@ -4481,7 +4509,7 @@ with st.sidebar:
             st.audio(audio["track_url"], format="audio/mp3", loop=True)
             st.caption(x("cap_audio_authorize"))
 
-    with st.expander(x("settings_control").upper()):
+    with st.expander(x("settings_control")):
         if settings_nav([x("settings_sub_status_title"), x("sub_mgmt_title")]) == 0:
             st.subheader(x("settings_sub_status_title"))
             if ss.is_premium:
@@ -5037,9 +5065,12 @@ def render_hub():
         render_tour(step)
     elif ss.get("onb") == "intro":
         render_intro_card()
-    for key in list(ss.keys()):  # keep half-typed forms while another section is open
-        if str(key).startswith(("cr_", "cf_")) or key in CREATE_FORM_KEYS:
+    keep = [k for k in list(ss.keys()) if k in CREATE_FORM_KEYS or (str(k).startswith("cf_") and not str(k).startswith(("cf_go_", "cf_paint_", "cf_cancel_")))]
+    for key in keep:  # keep half-typed forms while another section is open (a button's own key can never be assigned: those are skipped)
+        try:
             ss[key] = ss[key]
+        except Exception as e:
+            print("could not keep", key, repr(e)[:100])
     panels = (tab_companion, tab_stories, tab_explore, tab_mine, tab_avatars, tab_profile)
     panels[idx]()
 
